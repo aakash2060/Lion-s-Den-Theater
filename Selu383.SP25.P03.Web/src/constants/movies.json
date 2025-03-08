@@ -1,0 +1,63 @@
+[
+    {
+      "name": "Dune: Part Two",
+      "duration": "2h 46m",
+      "release_date": "2024-03-01",
+      "image": "https://image.tmdb.org/t/p/w500/8XYhgBg19nYz3XzGftTmgnUZtxl.jpg"
+    },
+    {
+      "name": "Oppenheimer",
+      "duration": "3h 0m",
+      "release_date": "2023-07-21",
+      "image": "https://image.tmdb.org/t/p/w500/7I0y6JPr80xlvJ4ZMtgj5qI3wWm.jpg"
+    },
+    {
+      "name": "Spider-Man: Across the Spider-Verse",
+      "duration": "2h 20m",
+      "release_date": "2023-06-02",
+      "image": "https://image.tmdb.org/t/p/w500/lDOaLqR89we5pL2s9BxVKcA9oKk.jpg"
+    },
+    {
+      "name": "John Wick: Chapter 4",
+      "duration": "2h 49m",
+      "release_date": "2023-03-24",
+      "image": "https://image.tmdb.org/t/p/w500/7UroSYIRh82H4FCzA4MRQeP0fVB.jpg"
+    },
+    {
+      "name": "Barbie",
+      "duration": "1h 54m",
+      "release_date": "2023-07-21",
+      "image": "https://image.tmdb.org/t/p/w500/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg"
+    },
+    {
+      "name": "The Batman",
+      "duration": "2h 56m",
+      "release_date": "2022-03-04",
+      "image": "https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg"
+    },
+    {
+      "name": "Guardians of the Galaxy Vol. 3",
+      "duration": "2h 30m",
+      "release_date": "2023-05-05",
+      "image": "https://image.tmdb.org/t/p/w500/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg"
+    },
+    {
+      "name": "Mission: Impossible – Dead Reckoning Part One",
+      "duration": "2h 43m",
+      "release_date": "2023-07-12",
+      "image": "https://image.tmdb.org/t/p/w500/NNxYkU70HPurnNCSiCjYAmacwm.jpg"
+    },
+    {
+      "name": "Wonka",
+      "duration": "1h 56m",
+      "release_date": "2023-12-15",
+      "image": "https://image.tmdb.org/t/p/w500/q6nXhD59Xfoyexxxlmtdp5bG4Gw.jpg"
+    },
+    {
+      "name": "Avatar: The Way of Water",
+      "duration": "3h 12m",
+      "release_date": "2022-12-16",
+      "image": "https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg"
+    }
+  ]
+  
