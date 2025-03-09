@@ -1,11 +1,10 @@
 @import "tailwindcss";
 
 /* Global Font & Background */
-/* Global Styles */
 body {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  background-color: #242424;
-  color: rgba(255, 255, 255, 0.87);
+  background-color: #121212; /* Near-Black Background */
+  color: #B3B3B3; /* Soft Gray Text */
   margin: 0;
   display: flex;
   flex-direction: column;
@@ -18,23 +17,21 @@ nav {
   top: 0;
   left: 0;
   width: 100%;
-  background-color: #1a1a1a;
+  background-color: rgba(18, 18, 18, 0.9); /* Semi-transparent dark */
   color: white;
   z-index: 1000;
   height: 70px; /* Ensuring Navbar Height */
   display: flex;
   align-items: center;
   padding: 0 20px;
+  backdrop-filter: blur(8px); /* Glass effect */
 }
 
-
 /* Swiper */
-
 .mySwiper {
   width: 100%;
   height: auto;
 }
-
 
 /* Push Content Below Navbar */
 .main-content {
@@ -43,13 +40,79 @@ nav {
   text-align: center;
 }
 
+/* Buttons */
+button {
+  background-color: #E50914; /* Netflix Red */
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background-color: #ff1f1f; /* Slightly lighter red */
+}
+
 /* Footer */
 footer {
   background-color: #1a1a1a;
-  color: white;
+  color: #FFD700; /* Golden Footer Text */
   text-align: center;
   padding: 15px;
   position: relative;
   bottom: 0;
   width: 100%;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* Divider Lines for Sections */
+.section-divider {
+  width: 80%;
+  height: 2px;
+  background-color: #FFD700; /* Golden Divider */
+  margin: 40px auto;
+  opacity: 0.8;
+}
+
+/* Movie Cards */
+.movie-card {
+  background-color: #1a1a1a;
+  border: 2px solid #FFD700; /* Golden Border */
+  border-radius: 10px;
+  overflow: hidden;
+  transition: 0.3s;
+}
+
+.movie-card:hover {
+  transform: scale(1.05);
+  border-color: #E50914; /* Highlight border in red on hover */
+}
+
+/* Movie Title */
+.movie-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #FFD700; /* Golden Titles */
+}
+
+/* Hero Carousel Text */
+.hero-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 2px 2px 8px rgba(255, 255, 255, 0.3);
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  color: #FFD700; /* Golden Subtitle */
+}
+
+/* Smooth Scroll */
+html {
+  scroll-behavior: smooth;
 }

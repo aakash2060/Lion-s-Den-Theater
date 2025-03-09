@@ -1,63 +1,77 @@
 [
-    {
-      "name": "Dune: Part Two",
-      "duration": "2h 46m",
-      "release_date": "2024-03-01",
-      "image": "https://image.tmdb.org/t/p/w500/8XYhgBg19nYz3XzGftTmgnUZtxl.jpg"
-    },
-    {
-      "name": "Oppenheimer",
-      "duration": "3h 0m",
-      "release_date": "2023-07-21",
-      "image": "https://image.tmdb.org/t/p/w500/7I0y6JPr80xlvJ4ZMtgj5qI3wWm.jpg"
-    },
-    {
-      "name": "Spider-Man: Across the Spider-Verse",
-      "duration": "2h 20m",
-      "release_date": "2023-06-02",
-      "image": "https://image.tmdb.org/t/p/w500/lDOaLqR89we5pL2s9BxVKcA9oKk.jpg"
-    },
-    {
-      "name": "John Wick: Chapter 4",
-      "duration": "2h 49m",
-      "release_date": "2023-03-24",
-      "image": "https://image.tmdb.org/t/p/w500/7UroSYIRh82H4FCzA4MRQeP0fVB.jpg"
-    },
-    {
-      "name": "Barbie",
-      "duration": "1h 54m",
-      "release_date": "2023-07-21",
-      "image": "https://image.tmdb.org/t/p/w500/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg"
-    },
-    {
-      "name": "The Batman",
-      "duration": "2h 56m",
-      "release_date": "2022-03-04",
-      "image": "https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg"
-    },
-    {
-      "name": "Guardians of the Galaxy Vol. 3",
-      "duration": "2h 30m",
-      "release_date": "2023-05-05",
-      "image": "https://image.tmdb.org/t/p/w500/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg"
-    },
-    {
-      "name": "Mission: Impossible – Dead Reckoning Part One",
-      "duration": "2h 43m",
-      "release_date": "2023-07-12",
-      "image": "https://image.tmdb.org/t/p/w500/NNxYkU70HPurnNCSiCjYAmacwm.jpg"
-    },
-    {
-      "name": "Wonka",
-      "duration": "1h 56m",
-      "release_date": "2023-12-15",
-      "image": "https://image.tmdb.org/t/p/w500/q6nXhD59Xfoyexxxlmtdp5bG4Gw.jpg"
-    },
-    {
-      "name": "Avatar: The Way of Water",
-      "duration": "3h 12m",
-      "release_date": "2022-12-16",
-      "image": "https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg"
-    }
-  ]
-  
+  {
+    "name": "Dune: Part Two",
+    "duration": "2h 46m",
+    "release_date": "2024-03-01",
+    "image": "https://m.media-amazon.com/images/M/MV5BNTc0YmQxMjEtODI5MC00NjFiLTlkMWUtOGQ5NjFmYWUyZGJhXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg",
+    "background": "https://www.pluggedin.com/wp-content/uploads/2024/02/dune-part-two-1024x587.jpg",
+    "description": "Paul Atreides unites with Chani and the Fremen while seeking revenge.",
+    "rating": "8.5",
+    "rottenTomatoes": "92",
+    "category": "Sci-Fi",
+    "director": "Denis Villeneuve",
+    "cast": ["Timothée Chalamet", "Zendaya", "Rebecca Ferguson"],
+    "trailer": "https://www.youtube.com/watch?v=dune2trailer",
+    "status": "now_showing"
+  },
+  {
+    "name": "Spider-Man 2",
+    "duration": "2h 20m",
+    "release_date": "2023-06-02",
+    "image": "https://m.media-amazon.com/images/M/MV5BNGQ0YTQyYTgtNWI2YS00NTE2LWJmNDItNTFlMTUwNmFlZTM0XkEyXkFqcGc@._V1_.jpg",
+    "background": "https://hard-drive.net/wp-content/uploads/2023/10/spider-man-2-movie.jpg",
+    "description": "Miles Morales embarks on a journey through the multiverse.",
+    "rating": "8.8",
+    "rottenTomatoes": "95",
+    "category": "Action",
+    "director": "Joaquim Dos Santos",
+    "cast": ["Shameik Moore", "Hailee Steinfeld", "Jake Johnson"],
+    "trailer": "https://www.youtube.com/watch?v=spidermantrailer",
+    "status": "now_showing"
+  },
+  {
+    "name": "Inside Out 2",
+    "duration": "2h 15m",
+    "release_date": "2025-06-14",
+    "image": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRR-nhD4r2BN-8ajkk69yfFyh72SWxvs2CatBGUMQEFwyZbSppp8K57RbiKBcq430NWMxm2",
+    "background": "https://www.sciencefriday.com/wp-content/uploads/2024/06/inside-out-2-promo.jpeg",
+    "description": "Riley is back with new emotions in her teenage years.",
+    "rating": "N/A",
+    "rottenTomatoes": "N/A",
+    "category": "Animation",
+    "director": "Kelsey Mann",
+    "cast": ["Amy Poehler", "Phyllis Smith", "Lewis Black"],
+    "trailer": "https://www.youtube.com/watch?v=insideout2trailer",
+    "status": "upcoming"
+  },
+  {
+    "name": "Oppenheimer",
+    "duration": "3h 0m",
+    "release_date": "2023-07-21",
+    "image": "https://m.media-amazon.com/images/M/MV5BN2JkMDc5MGQtZjg3YS00NmFiLWIyZmQtZTJmNTM5MjVmYTQ4XkEyXkFqcGc@._V1_.jpg",
+    "background": "https://media.gq.com/photos/64b96805a8ffbec76cc1e2d2/16:9/w_2560%2Cc_limit/Oppenheimer%2520final.jpg",
+    "description": "A biographical drama exploring the creation of the atomic bomb.",
+    "rating": "9.0",
+    "rottenTomatoes": "93",
+    "category": "Biography",
+    "director": "Christopher Nolan",
+    "cast": ["Cillian Murphy", "Robert Downey Jr.", "Emily Blunt"],
+    "trailer": "https://www.youtube.com/watch?v=oppenheimertrailer",
+    "status": "now_showing"
+  },
+  {
+    "name": "Deadpool 3",
+    "duration": "2h 10m",
+    "release_date": "2024-07-26",
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQk1xmfpyTo8qc0ON1xirEIr5u8nyjD4KiTNw&s",
+    "background": "https://people.com/thmb/4EMsItFKd2BMh4ytTf6Ah0jjXSg=/4000x0/filters:no_upscale():max_bytes(150000):strip_icc():focal(749x247:751x249)/hugh-jackman-ryan-reynolds-deadpool-012324-4-3a6ee7a8c28b472c9a347a431f3b225b.jpg",
+    "description": "Deadpool joins the MCU in an action-packed adventure.",
+    "rating": "N/A",
+    "rottenTomatoes": "N/A",
+    "category": "Action",
+    "director": "Shawn Levy",
+    "cast": ["Ryan Reynolds", "Hugh Jackman", "Morena Baccarin"],
+    "trailer": "https://www.youtube.com/watch?v=deadpool3trailer",
+    "status": "upcoming"
+  }
+]
