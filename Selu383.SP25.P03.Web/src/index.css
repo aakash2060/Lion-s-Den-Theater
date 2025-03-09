@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+
+
+
 /* Global Font & Background */
 /* Global Styles */
 body {
@@ -28,6 +31,15 @@ nav {
   align-items: center;
   padding: 0 20px;
 }
+
+
+/* Swiper */
+
+.mySwiper {
+  width: 100%;
+  height: auto;
+}
+
 
 /* Push Content Below Navbar */
 .main-content {
