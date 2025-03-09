@@ -4,6 +4,7 @@ import Footer from "./Components/Footer";
 import Home from "./pages/Home";
 import DiscoverMovies from "./pages/DiscoverMovies";
 import FoodDrinks from "./pages/FoodDrinks";
+import "./index.css"; 
 
 const App = () => {
   return (
