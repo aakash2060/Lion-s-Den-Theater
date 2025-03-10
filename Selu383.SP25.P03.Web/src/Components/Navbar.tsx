@@ -11,7 +11,7 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 w-full bg-black bg-opacity-90 backdrop-blur-md text-white px-8 py-4 flex items-center justify-between shadow-md border-b border-gray-700">
       {/* Left Section - Logo */}
       <div className="flex items-center space-x-4">
-        <img src="/vite.svg" alt="Logo" className="h-10 w-auto" />
+        <img src="/logos.png" alt="Logo" className="h-15 w-auto" />
         <Link to="/" className="text-lg font-bold text-white hover:text-primary transition duration-200">
           Lion's Den
         </Link>
