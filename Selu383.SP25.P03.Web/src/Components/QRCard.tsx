@@ -14,7 +14,7 @@ export default function QRCard() {
           <div className="flex items-center mt-1">
          
             <div className="ml-2">
-              <p className="text-sm">Lion's Don</p>
+              <p className="text-sm">Lion's Den</p>
               <p className="text-yellow-400">★★★★★</p>
             </div>
           </div>
