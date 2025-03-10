@@ -73,5 +73,84 @@
     "cast": ["Ryan Reynolds", "Hugh Jackman", "Morena Baccarin"],
     "trailer": "https://www.youtube.com/watch?v=deadpool3trailer",
     "status": "upcoming"
-  }
+  },
+  {
+    "name": "Dune: Part Two",
+    "duration": "2h 46m",
+    "release_date": "2024-03-01",
+    "image": "https://i0.wp.com/www.thewrap.com/wp-content/uploads/2024/02/dune-2.jpg?w=1200&quality=89&ssl=1",
+    "background": "https://images.hindustantimes.com/tech/img/2024/02/26/960x540/Dune_Part_2_1708922683966_1708922689945.jpg",
+    "description": "Paul Atreides unites with Chani and the Fremen while seeking revenge against those who destroyed his family.",
+    "rating": "N/A",
+    "rottenTomatoes": "N/A",
+    "category": "Sci-Fi",
+    "director": "Denis Villeneuve",
+    "cast": ["Timothée Chalamet", "Zendaya", "Rebecca Ferguson"],
+    "trailer": "https://www.youtube.com/watch?v=Way9Dexny3w",
+    "status": "upcoming"
+  },
+  
+    
+      {
+        "name": "Joker: Folie à Deux",
+        "duration": "2h 15m",
+        "release_date": "2024-10-04",
+        "image": "https://ca-times.brightspotcdn.com/dims4/default/92b3b88/2147483647/strip/false/crop/3200x1768+0+0/resize/1486x821!/quality/75/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.amazonaws.com%2F7c%2F1d%2Fc11c1b0e46cab3e7d14be3663c1e%2Fla-et-mn-tiff-movies-02.jpg",
+        "background": "https://variety.com/wp-content/uploads/2024/02/Joker-Folie-A-Deux-First-Look.jpg",
+        "description": "A sequel to the 2019 film 'Joker,' featuring Arthur Fleck's descent into madness alongside Harley Quinn.",
+        "rating": "N/A",
+        "rottenTomatoes": "N/A",
+        "category": "Crime",
+        "director": "Todd Phillips",
+        "cast": ["Joaquin Phoenix", "Lady Gaga", "Zazie Beetz"],
+        "trailer": "https://www.youtube.com/watch?v=joker2trailer",
+        "status": "upcoming"
+      },
+      {
+        "name": "Kingdom of the Planet of the Apes",
+        "duration": "2h 20m",
+        "release_date": "2024-05-24",
+        "image": "https://static01.nyt.com/images/2024/05/06/multimedia/kingdom1-wzvt/kingdom1-wzvt-mediumSquareAt3X.jpg",
+        "background": "https://static1.colliderimages.com/wordpress/wp-content/uploads/2023/12/kingdom-of-the-planet-of-the-apes.jpg",
+        "description": "Many years after Caesar's reign, a new ape empire rises as humans struggle to survive.",
+        "rating": "N/A",
+        "rottenTomatoes": "N/A",
+        "category": "Sci-Fi",
+        "director": "Wes Ball",
+        "cast": ["Owen Teague", "Freya Allan", "Kevin Durand"],
+        "trailer": "https://www.youtube.com/watch?v=planetapestrailer",
+        "status": "upcoming"
+      },
+      {
+        "name": "Godzilla x Kong: The New Empire",
+        "duration": "2h 05m",
+        "release_date": "2024-04-12",
+        "image": "https://m.media-amazon.com/images/M/MV5BMjNlY2UxYTMtYzMzNC00ZGEyLTk4ODUtNTI3ODYxOTY2OWY4XkEyXkFqcGdeQWFybm8@._V1_.jpg",
+        "background": "https://cdn.vox-cdn.com/thumbor/nHmnM4lt8vO2WkBXLHjTkXlItRk=/0x0:1920x1080/920x613/filters:focal(960x540:961x541)/cdn.vox-cdn.com/uploads/chorus_asset/file/25164306/godzillakong.jpg",
+        "description": "The epic battle between Godzilla and Kong continues as they face a new colossal threat.",
+        "rating": "N/A",
+        "rottenTomatoes": "N/A",
+        "category": "Action",
+        "director": "Adam Wingard",
+        "cast": ["Rebecca Hall", "Brian Tyree Henry", "Dan Stevens"],
+        "trailer": "https://www.youtube.com/watch?v=godzillakongtrailer",
+        "status": "upcoming"
+      },
+      {
+        "name": "The Batman Part II",
+        "duration": "TBA",
+        "release_date": "2025-10-03",
+        "image": "https://variety.com/wp-content/uploads/2024/09/batman.png?w=1000&h=667&crop=1",
+        "background": "https://static1.colliderimages.com/wordpress/wp-content/uploads/2023/12/the-batman-2.jpg",
+        "description": "The sequel to Matt Reeves' 'The Batman,' continuing the story of Bruce Wayne.",
+        "rating": "N/A",
+        "rottenTomatoes": "N/A",
+        "category": "Action",
+        "director": "Matt Reeves",
+        "cast": ["Robert Pattinson", "Zoë Kravitz", "Colin Farrell"],
+        "trailer": "https://www.youtube.com/watch?v=batman2trailer",
+        "status": "upcoming"
+      }
+    
+    
 ]
