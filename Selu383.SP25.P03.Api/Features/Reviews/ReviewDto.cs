@@ -7,7 +7,20 @@ namespace Selu383.SP25.P03.Api.Features.Reviews
         public int Id { get; set; }
         public string review { get; set; }
         public int Rating { get; set; }
+        public UserDto User { get; set; }
+    }
+
+    public class CreateReviewDto
+    {
+        public int Id { get; set; }
+        public string review { get; set; }
+        public int Rating { get; set; }
         public int UserId { get; set; }
-        public User User { get; set; }
+    }
+
+    public class UpdateReviewDto
+    {
+        public string review { get; set; }
+        public int Rating { get; set; }
     }
 }
