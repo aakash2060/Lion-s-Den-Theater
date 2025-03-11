@@ -1,4 +1,3 @@
-import React from "react";
 import MovieCarousel from "../Components/MovieCarousel";
 import MovieCard from "../Components/MovieCard";
 import movies from "../constants/movies.json";

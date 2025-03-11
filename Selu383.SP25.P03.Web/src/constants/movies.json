@@ -15,6 +15,21 @@
     "status": "now_showing"
   },
   {
+    "name": "Loot",
+    "duration": "20 years",
+    "release_date": "2004-01-18",
+    "image": "/Loot.jpeg",
+    "background": "/LootBg.jpeg",
+    "description": "A thrilling heist movie where a group of masterminds plans the biggest robbery in the city, but unexpected challenges put their plan at risk.",
+    "rating": "10",
+    "rottenTomatoes": "N/A",
+    "category": "Crime",
+    "director": "Subin Bista",
+    "cast": ["Anuraj Pant", "Ajyol Dhamala", "Niraj Bhatta", "Aakash Poudel"],
+    "trailer": "https://www.youtube.com/watch?v=loottrailer",
+    "status": "now_showing"
+  },
+  {
     "name": "Spider-Man 2",
     "duration": "2h 20m",
     "release_date": "2023-06-02",
