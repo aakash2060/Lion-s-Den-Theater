@@ -82,11 +82,7 @@ const DiscoverMovies = () => {
             onMouseLeave={() => setHoveredMovie(null)}
           >
             <MovieCard {...movie} />
-            {hoveredMovie === movie.name && (
-              <div className="absolute bottom-0 left-0 bg-black bg-opacity-80 text-white p-2 w-full text-sm">
-                🎭 {movie.category} | 🎬 {movie.director}
-              </div>
-            )}
+            {hoveredMovie === movie.name }
           </div>
         ))}
       </div>
