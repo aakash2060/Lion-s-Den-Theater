@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import MovieCard from "../Components/MovieCard";
 import movies from "../constants/movies.json";
 import QRCard from "../Components/QRCard";
