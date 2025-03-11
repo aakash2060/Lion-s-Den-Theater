@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.P03.Api.Data;
+using Selu383.SP25.P03.Api.Features.Payment;
 using Selu383.SP25.P03.Api.Features.Users;
+using Stripe;
 
 namespace Selu383.SP25.P03.Api
 {
@@ -66,6 +68,11 @@ namespace Selu383.SP25.P03.Api
 
                 options.SlidingExpiration = true;
             });
+
+            //Stripe config
+            var stripeSettings = builder.Configuration.GetSection("Stripe");
+            builder.Services.Configure<StripeSettings>(stripeSettings);
+            StripeConfiguration.ApiKey = stripeSettings["SecretKey"];
 
             var app = builder.Build();
 
