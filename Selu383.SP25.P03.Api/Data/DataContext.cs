@@ -13,6 +13,7 @@ namespace Selu383.SP25.P03.Api.Data
         }
 
         public DbSet<Theater> Theaters { get; set; }
+        public object Movies { get; internal set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
