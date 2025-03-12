@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Selu383.SP25.P03.Api.Features.Theaters
+﻿namespace Selu383.SP25.P03.Api.Features.Theaters
 {
     public class ShowtimeDto
     {

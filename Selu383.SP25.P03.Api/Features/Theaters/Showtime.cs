@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Net.Sockets;
+﻿using System.ComponentModel.DataAnnotations;
 using Selu383.SP25.P03.Api.Features.Movies;
 
 namespace Selu383.SP25.P03.Api.Features.Theaters
