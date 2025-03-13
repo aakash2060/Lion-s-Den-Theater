@@ -1,4 +1,7 @@
-﻿namespace Selu383.SP25.P03.Api.Features.Movies
+﻿using System.Security.Cryptography.X509Certificates;
+using Selu383.SP25.P03.Api.Features.Theaters;
+
+namespace Selu383.SP25.P03.Api.Features.Movies
 {
     public class MovieDto
     {
@@ -15,7 +18,7 @@
     }
     public class MovieDetailsDto: MovieDto
     {
-
+        public List<ShowtimeDto> Showtimes { get; set; } = new List<ShowtimeDto>();
     }
     public class CreateMovieDto
     {

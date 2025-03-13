@@ -15,6 +15,7 @@ namespace Selu383.SP25.P03.Api.Features.Theaters
         public string TicketType { get; set; } // adult or child
         public string ConfirmationNumber { get; set; }
         public Showtime Showtime { get; set; }
+        public bool IsCheckedIn { get; internal set; }
         //public User User { get; set; }
         //public Movie PosterUrl { get; set; }
 

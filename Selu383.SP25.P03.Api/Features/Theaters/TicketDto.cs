@@ -10,7 +10,7 @@
         public decimal Price { get; set; }
         public bool IsCheckedIn { get; set; }
         public string TicketType { get; set; }
-        public string ConfirmationCode { get; set; }
+        public string ConfirmationNumber { get; set; }
         public string MovieTitle { get; set; }
         public string TheaterName { get; set; }
         public int HallNumber { get; set; }

@@ -8,12 +8,11 @@
         public int HallId { get; set; }
         public int HallNumber { get; set; }
         public int TheaterId { get; set; }
-        public string TheaterName { get; set; }
+        //public string TheaterName { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public decimal TicketPrice { get; set; }
         public bool Is3D { get; set; }
-        public string SpecialEvent { get; set; }
         public int AvailableSeats { get; set; }
     }
 
@@ -32,7 +31,6 @@
         public DateTime StartTime { get; set; }
         public decimal TicketPrice { get; set; }
         public bool Is3D { get; set; }
-        public string SpecialEvent { get; set; }
     }
 
     public class UpdateShowtimeDto
@@ -40,6 +38,5 @@
         public DateTime StartTime { get; set; }
         public decimal TicketPrice { get; set; }
         public bool Is3D { get; set; }
-        public string SpecialEvent { get; set; }
     }
 }
