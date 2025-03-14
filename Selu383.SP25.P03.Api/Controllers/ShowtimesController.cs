@@ -61,10 +61,10 @@ namespace Selu383.SP25.P03.Api.Controllers
                 HallId = showtime.HallId,
                 HallNumber = showtime.Hall.HallNumber,
                 TheaterId = showtime.Hall.TheaterId,
-                TheaterName = showtime.Hall.Theater.Name,
+                //TheaterName = showtime.Hall.Theater.Name,
                 StartTime = showtime.StartTime,
                 EndTime = showtime.EndTime,
-                TicketPrice = showtime.TicketPrice,
+                Price = showtime.TicketPrice,
                 Is3D = showtime.Is3D,
                 TotalSeats = showtime.Hall.Capacity,
                 AvailableSeats = showtime.Hall.Capacity - showtime.Tickets.Count,
@@ -137,10 +137,10 @@ namespace Selu383.SP25.P03.Api.Controllers
                 HallId = showtime.HallId,
                 HallNumber = hall.HallNumber,
                 TheaterId = hall.TheaterId,
-                TheaterName = hall.Theater?.Name,
+                //TheaterName = hall.Theater?.Name,
                 StartTime = showtime.StartTime,
                 EndTime = showtime.EndTime,
-                TicketPrice = showtime.TicketPrice,
+                Price = showtime.TicketPrice,
                 Is3D = showtime.Is3D,
                 AvailableSeats = hall.Capacity
             };
@@ -195,10 +195,10 @@ namespace Selu383.SP25.P03.Api.Controllers
                 HallId = showtime.HallId,
                 HallNumber = showtime.Hall.HallNumber,
                 TheaterId = showtime.Hall.TheaterId,
-                TheaterName = showtime.Hall.Theater.Name,
+                //TheaterName = showtime.Hall.Theater.Name,
                 StartTime = showtime.StartTime,
                 EndTime = showtime.EndTime,
-                TicketPrice = showtime.TicketPrice,
+                Price = showtime.TicketPrice,
                 Is3D = showtime.Is3D,
                 AvailableSeats = showtime.Hall.Capacity - tickets.Count(t => t.ShowtimeId == showtime.Id)
             };
@@ -252,10 +252,10 @@ namespace Selu383.SP25.P03.Api.Controllers
                     HallId = s.HallId,
                     HallNumber = s.Hall.HallNumber,
                     TheaterId = s.Hall.TheaterId,
-                    TheaterName = s.Hall.Theater.Name,
+                    //TheaterName = s.Hall.Theater.Name,
                     StartTime = s.StartTime,
                     EndTime = s.EndTime,
-                    TicketPrice = s.TicketPrice,
+                    Price = s.TicketPrice,
                     Is3D = s.Is3D,
                     AvailableSeats = s.Hall.Capacity - tickets.Count(t => t.ShowtimeId == s.Id)
                 });

@@ -75,7 +75,7 @@ namespace Selu383.SP25.P03.Api.Controllers
                     //TheaterName = s.Hall.Theater.Name,
                     StartTime = s.StartTime,
                     EndTime = s.EndTime,
-                    TicketPrice = s.TicketPrice,
+                    Price = s.TicketPrice,
                     Is3D = s.Is3D,
                     AvailableSeats = s.Hall.Capacity - _context.Tickets.Count(t => t.ShowtimeId == s.Id)
                 }).ToList()

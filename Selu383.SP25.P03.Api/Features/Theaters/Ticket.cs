@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Selu383.SP25.P03.Api.Features.Users;
 //using Selu383.SP25.P03.Api.Features.Movies;
 
 namespace Selu383.SP25.P03.Api.Features.Theaters
@@ -16,7 +17,7 @@ namespace Selu383.SP25.P03.Api.Features.Theaters
         public string ConfirmationNumber { get; set; }
         public Showtime Showtime { get; set; }
         public bool IsCheckedIn { get; internal set; }
-        //public User User { get; set; }
+        public User User { get; set; }
         //public Movie PosterUrl { get; set; }
 
 

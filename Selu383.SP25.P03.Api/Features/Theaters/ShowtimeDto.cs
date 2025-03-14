@@ -11,7 +11,7 @@
         //public string TheaterName { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-        public decimal TicketPrice { get; set; }
+        public decimal Price { get; set; }
         public bool Is3D { get; set; }
         public int AvailableSeats { get; set; }
     }
