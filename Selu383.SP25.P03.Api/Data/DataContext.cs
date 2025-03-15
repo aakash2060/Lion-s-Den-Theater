@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.P03.Api.Features.Users;
 using Selu383.SP25.P03.Api.Features.Theaters;
 using Selu383.SP25.P03.Api.Features.Movies;
+using Selu383.SP25.P03.Api.Features.Reviews;
+
 
 namespace Selu383.SP25.P03.Api.Data
 {
@@ -18,6 +20,9 @@ namespace Selu383.SP25.P03.Api.Data
         public DbSet<Showtime> Showtimes { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<Hall> Halls { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
