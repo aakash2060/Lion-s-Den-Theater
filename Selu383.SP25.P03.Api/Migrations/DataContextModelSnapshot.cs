@@ -503,6 +503,8 @@ namespace Selu383.SP25.P03.Api.Migrations
                     b.Navigation("Hall");
 
                     b.Navigation("Movie");
+                    
+                    });
 
             modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Reviews.Review", b =>
                 {
