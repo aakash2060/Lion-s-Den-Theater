@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.P03.Api.Data;
@@ -30,7 +29,6 @@ namespace Selu383.SP25.P03.Api
 
             builder.Services.Configure<IdentityOptions>(options =>
             {
-                // Password settings.
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireNonAlphanumeric = true;
@@ -38,12 +36,10 @@ namespace Selu383.SP25.P03.Api
                 options.Password.RequiredLength = 6;
                 options.Password.RequiredUniqueChars = 1;
 
-                // Lockout settings.
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.AllowedForNewUsers = true;
 
-                // User settings.
                 options.User.AllowedUserNameCharacters =
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
                 options.User.RequireUniqueEmail = false;
@@ -51,7 +47,6 @@ namespace Selu383.SP25.P03.Api
 
             builder.Services.ConfigureApplicationCookie(options =>
             {
-                // Cookie settings
                 options.Cookie.HttpOnly = true;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
                 options.Events.OnRedirectToLogin = context =>
@@ -69,6 +64,18 @@ namespace Selu383.SP25.P03.Api
                 options.SlidingExpiration = true;
             });
 
+            // ? Enable CORS (Fix frontend requests being blocked)
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowReactApp", policy =>
+                {
+                    policy.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost") // Allow any localhost
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                });
+            });
+
             //Stripe config
             var stripeSettings = builder.Configuration.GetSection("Stripe");
             builder.Services.Configure<StripeSettings>(stripeSettings);
@@ -83,11 +90,8 @@ namespace Selu383.SP25.P03.Api
                 SeedTheaters.Initialize(scope.ServiceProvider);
                 await SeedRoles.Initialize(scope.ServiceProvider);
                 await SeedUsers.Initialize(scope.ServiceProvider);
-                //SeedReviews.Initialize(scope.ServiceProvider);
-
             }
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -98,13 +102,17 @@ namespace Selu383.SP25.P03.Api
 
             app.UseRouting();
 
+            //  Apply CORS before authentication & authorization
+            app.UseCors("AllowReactApp");
+
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(x =>
-               {
-                   x.MapControllers();
-               });
+            {
+                x.MapControllers();
+            });
+
             app.UseStaticFiles();
 
             if (app.Environment.IsDevelopment())
