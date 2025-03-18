@@ -47,34 +47,40 @@ namespace Selu383.SP25.P03.Api
 
             builder.Services.ConfigureApplicationCookie(options =>
             {
-                options.Cookie.HttpOnly = true;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+                options.Cookie.HttpOnly = true; //  Prevents access from JavaScript (good for security)
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //  Allow cookies for HTTP 
+                options.Cookie.SameSite = SameSiteMode.None; //  Ensures cross-origin requests can still work
+                options.Cookie.Name = "AuthCookie"; //  Give the cookie a custom name
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(60); //  Keeps user logged in for 60 minutes
+                options.SlidingExpiration = true;
+
                 options.Events.OnRedirectToLogin = context =>
                 {
-                    context.Response.StatusCode = 401;
+                    context.Response.StatusCode = 401; //  Prevents redirect loops
                     return Task.CompletedTask;
                 };
 
                 options.Events.OnRedirectToAccessDenied = context =>
                 {
-                    context.Response.StatusCode = 403;
+                    context.Response.StatusCode = 403; //  Prevents redirect loops
                     return Task.CompletedTask;
                 };
 
-                options.SlidingExpiration = true;
+                 //  Refreshes session on activity
             });
 
-            // ? Enable CORS (Fix frontend requests being blocked)
+            //CORS 
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowReactApp", policy =>
                 {
-                    policy.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost") // Allow any localhost
+                    policy.WithOrigins("http://localhost:5173", "https://localhost:7027") //  Explicitly allow frontend
                           .AllowAnyHeader()
                           .AllowAnyMethod()
-                          .AllowCredentials();
+                          .AllowCredentials(); //  Allows cookies
                 });
             });
+
 
             //Stripe config
             var stripeSettings = builder.Configuration.GetSection("Stripe");

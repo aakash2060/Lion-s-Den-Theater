@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUser, FaSearch, FaBars, FaTimes } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext"; //  Import authentication context
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { user, logout } = useAuth(); // Get auth state
 
   const navLinks = [
     { id: 1, name: "Discover Movies", path: "/discover-movies" },
@@ -49,11 +52,40 @@ const Navbar = () => {
           />
         </div>
 
-        {/* Profile Icon - Redirects to Login for Now */}
-        <FaUser
-          className="text-xl text-white hover:text-primary cursor-pointer transition duration-200 hidden md:block"
-          onClick={() => navigate("/login")} 
-        />
+        {/*  Profile Icon - Show Profile Dropdown if Logged In */}
+        <div className="relative hidden md:block">
+          <button
+            className="text-xl text-white hover:text-primary transition duration-200"
+            onClick={() => {
+              if (!user) {
+                navigate("/login"); // 
+              } else {
+                setProfileMenuOpen(!profileMenuOpen); // 
+              }
+            }}
+          >
+            <FaUser />
+          </button>
+
+          {/*  Profile Dropdown (Only visible if logged in) */}
+          {profileMenuOpen && user && (
+            <div className="absolute right-0 mt-2 w-40 bg-white text-black rounded-md shadow-lg">
+              <Link to="/profile" className="block px-4 py-2 hover:bg-gray-100">
+                Profile
+              </Link>
+              <button
+                onClick={() => {
+                  logout();
+                  setProfileMenuOpen(false);
+                  navigate("/login");
+                }}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Hamburger Menu Button - Visible Only on Mobile */}
         <button
@@ -94,7 +126,7 @@ const Navbar = () => {
               className="text-3xl text-white cursor-pointer"
               onClick={() => {
                 setMenuOpen(false);
-                navigate("/login");
+                navigate(user ? "/profile" : "/login"); 
               }}
             />
           </div>
