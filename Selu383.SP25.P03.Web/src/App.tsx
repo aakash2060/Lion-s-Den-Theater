@@ -8,6 +8,7 @@ import FoodDrinks from "./pages/FoodDrinks";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
+import MovieDescriptionPage from "./pages/MovieDescription";
 import "./index.css";
 
 const App = () => {
@@ -24,6 +25,7 @@ const App = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/movie-description/:movieName" element={<MovieDescriptionPage />} />
             </Routes>
           </main>
           <Footer />
