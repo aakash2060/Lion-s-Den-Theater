@@ -25,7 +25,7 @@ namespace Selu383.SP25.P03.Api
                 .GetSection("EmailConfiguration")
                 .Get<EmailConfiguration>();
             builder.Services.AddSingleton(emailConfig);
-            builder.Services.AddScoped<EmailService.IEmailSender, EmailService.EmailSender>();
+            builder.Services.AddTransient<EmailService.IEmailSender, EmailService.EmailSender>(); //scoped ==> transient
             builder.Services.AddControllers();
 
             // Add Swagger services
@@ -92,7 +92,7 @@ namespace Selu383.SP25.P03.Api
                 SeedTheaters.Initialize(scope.ServiceProvider);
                 await SeedRoles.Initialize(scope.ServiceProvider);
                 await SeedUsers.Initialize(scope.ServiceProvider);
-                //SeedReviews.Initialize(scope.ServiceProvider);
+                SeedReviews.Initialize(scope.ServiceProvider);
 
             }
 
