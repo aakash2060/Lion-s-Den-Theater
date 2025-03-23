@@ -86,7 +86,7 @@ const Home = () => {
             </section>
 
            {/* Exclusive Offers & Membership */}
-           <section className="bg-gradient-to-r from-red-600 to-pink-600 p-10 text-center mt-16">
+           <section className="bg-[#7c0000] p-10 text-center mt-16">
                 <h2 className="text-3xl font-bold">Get early access, discounts, and more with Lion’s Den Plus.</h2>
                 <p className="mt-2">Unlock unlimited movies and exclusive perks.</p>
 
