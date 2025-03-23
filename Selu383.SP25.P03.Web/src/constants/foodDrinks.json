@@ -1,0 +1,99 @@
+[
+  {
+    "name": "Classic Popcorn",
+    "description": "Our signature buttery popcorn, freshly popped",
+    "price": 5.99,
+    "category": "popcorn",
+    "size": "Medium",
+    "image": "https://images.unsplash.com/photo-1578849278619-e73505e9610f?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "name": "Butter Lover's Popcorn",
+    "description": "Extra buttery goodness on our classic popcorn",
+    "price": 6.99,
+    "category": "popcorn",
+    "size": "Medium",
+    "image": "https://images.unsplash.com/photo-1585647347483-22b66260dfff?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+  },
+
+  {
+    "name": "Nachos & Cheese",
+    "description": "Crispy tortilla chips with warm nacho cheese sauce",
+    "price": 6.49,
+    "category": "snacks",
+    "size": "Regular",
+    "image": "https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "name": "Pretzel Bites",
+    "description": "Warm soft pretzel bites served with cheese dipping sauce",
+    "price": 5.99,
+    "category": "snacks",
+    "size": "Regular",
+    "image": "https://images.unsplash.com/photo-1566478989037-eec170784d0b?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "name": "Chicken Tenders",
+    "description": "Crispy breaded chicken tenders with choice of dipping sauce",
+    "price": 8.99,
+    "category": "snacks",
+    "size": "4 pieces",
+    "image": "https://images.unsplash.com/photo-1562967914-608f82629710?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "name": "Mozzarella Sticks",
+    "description": "Golden fried mozzarella sticks with marinara sauce",
+    "price": 7.49,
+    "category": "snacks",
+    "size": "6 pieces",
+    "image": "https://images.unsplash.com/photo-1548340748-6d2b7d7da280?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "name": "Candy - Reese's Pieces",
+    "description": "Peanut butter candies in a crunchy shell",
+    "price": 4.99,
+    "category": "snacks",
+    "size": "Regular",
+    "image": "https://images.pexels.com/photos/1375807/pexels-photo-1375807.jpeg?auto=compress&cs=tinysrgb&w=600"
+  },
+  {
+    "name": "Candy - Sour Patch Kids",
+    "description": "Sour then sweet chewy candies",
+    "price": 4.99,
+    "category": "snacks",
+    "size": "Regular",
+    "image": "https://images.unsplash.com/photo-1582058091505-f87a2e55a40f?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "name": "Cola",
+    "description": "Refreshing carbonated cola beverage",
+    "price": 4.99,
+    "category": "beverages",
+    "size": "Medium",
+    "image": "https://images.pexels.com/photos/2983100/pexels-photo-2983100.jpeg?auto=compress&cs=tinysrgb&w=600"
+  },
+  {
+    "name": "Diet Cola",
+    "description": "Zero calorie cola with all the flavor",
+    "price": 4.99,
+    "category": "beverages",
+    "size": "Medium",
+    "image": "https://images.pexels.com/photos/2668308/pexels-photo-2668308.jpeg?auto=compress&cs=tinysrgb&w=600"
+  },
+  {
+    "name": "Fresh Brewed Coffee",
+    "description": "Hot premium coffee, perfect for evening shows",
+    "price": 3.99,
+    "category": "beverages",
+    "size": "16 oz",
+    "image": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+  },
+  {
+    "name": "Date Night Special",
+    "description": "Medium popcorn, two medium drinks, and shared candy",
+    "price": 14.99,
+    "category": "combos",
+    "size": "For 2",
+    "image": "https://images.pexels.com/photos/7991486/pexels-photo-7991486.jpeg?auto=compress&cs=tinysrgb&w=600"
+  }
+]
