@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.P03.Api.Data;
 using Selu383.SP25.P03.Api.Features.Recovery;
 using Selu383.SP25.P03.Api.Features.Users;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace Selu383.SP25.P03.Api.Controllers
@@ -34,28 +35,65 @@ namespace Selu383.SP25.P03.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         public async Task<ActionResult<UserDto>> CreateUser([FromBody] CreateUserDto dto)
         {
-            if (!dto.Roles.Any() || !dto.Roles.All(x => roles.Any(y => x == y.Name)))
+            // Ensure all required fields are provided
+            if (string.IsNullOrWhiteSpace(dto.FirstName) ||
+                string.IsNullOrWhiteSpace(dto.LastName) ||
+                string.IsNullOrWhiteSpace(dto.Email) ||
+                string.IsNullOrWhiteSpace(dto.Password) ||
+                string.IsNullOrWhiteSpace(dto.Username))
             {
-                return BadRequest();
+                return BadRequest("All fields are required.");
             }
 
-            var result = await userManager.CreateAsync(new User { UserName = dto.Username }, dto.Password);
-            if (result.Succeeded)
+            // Check if email already exists
+            if (await userManager.FindByEmailAsync(dto.Email) != null)
             {
-                await userManager.AddToRolesAsync(await userManager.FindByNameAsync(dto.Username), dto.Roles);
+                return BadRequest("Email is already taken.");
+            }
 
-                var user = await userManager.FindByNameAsync(dto.Username);
-                return new UserDto
+            // Check if username already exists
+            if (await userManager.FindByNameAsync(dto.Username) != null)
+            {
+                return BadRequest("Username is already taken.");
+            }
+
+            // Create the new user
+            var newUser = new User
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                UserName = dto.Username,
+                Email = dto.Email
+            };
+
+            // Create user with Identity
+            var result = await userManager.CreateAsync(newUser, dto.Password);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors);
+            }
+
+            // Assign roles if provided
+            if (dto.Roles != null && dto.Roles.Length > 0)
+            {
+                var validRoles = await roles.Select(r => r.Name).ToListAsync();
+                if (!dto.Roles.All(role => validRoles.Contains(role)))
                 {
-                    Id = user.Id,
-                    UserName = dto.Username,
-                    Roles = dto.Roles
-                };
+                    return BadRequest("Invalid roles provided.");
+                }
+
+                await userManager.AddToRolesAsync(newUser, dto.Roles);
             }
-            return BadRequest();
+
+            // Return created user
+            return new UserDto
+            {
+                Id = newUser.Id,
+                UserName = newUser.UserName,
+                Roles = dto.Roles ?? new string[] { } // Return empty array if no roles
+            };
         }
 
         [HttpPost("forgotpassword")]
