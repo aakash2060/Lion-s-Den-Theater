@@ -13,13 +13,11 @@ namespace Selu383.SP25.P03.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             builder.Services.AddDbContext<DataContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DataContext") ?? throw new InvalidOperationException("Connection string 'DataContext' not found.")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DataContext")
+                    ?? throw new InvalidOperationException("Connection string 'DataContext' not found.")));
 
             builder.Services.AddControllers();
-
-            // Add Swagger services
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -41,48 +39,32 @@ namespace Selu383.SP25.P03.Api
                 options.Lockout.AllowedForNewUsers = true;
 
                 options.User.AllowedUserNameCharacters =
-                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
                 options.User.RequireUniqueEmail = false;
             });
 
             builder.Services.ConfigureApplicationCookie(options =>
             {
-                options.Cookie.HttpOnly = true; //  Prevents access from JavaScript (good for security)
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //  Allow cookies for HTTP 
-                options.Cookie.SameSite = SameSiteMode.None; //  Ensures cross-origin requests can still work
-                options.Cookie.Name = "AuthCookie"; //  Give the cookie a custom name
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(60); //  Keeps user logged in for 60 minutes
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.Name = "AuthCookie";
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
                 options.SlidingExpiration = true;
 
                 options.Events.OnRedirectToLogin = context =>
                 {
-                    context.Response.StatusCode = 401; //  Prevents redirect loops
+                    context.Response.StatusCode = 401;
                     return Task.CompletedTask;
                 };
 
                 options.Events.OnRedirectToAccessDenied = context =>
                 {
-                    context.Response.StatusCode = 403; //  Prevents redirect loops
+                    context.Response.StatusCode = 403;
                     return Task.CompletedTask;
                 };
-
-                 //  Refreshes session on activity
             });
 
-            //CORS 
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowReactApp", policy =>
-                {
-                    policy.WithOrigins("http://localhost:5173", "https://localhost:7027") //  Explicitly allow frontend
-                          .AllowAnyHeader()
-                          .AllowAnyMethod()
-                          .AllowCredentials(); //  Allows cookies
-                });
-            });
-
-
-            //Stripe config
             var stripeSettings = builder.Configuration.GetSection("Stripe");
             builder.Services.Configure<StripeSettings>(stripeSettings);
             StripeConfiguration.ApiKey = stripeSettings["SecretKey"];
@@ -105,12 +87,7 @@ namespace Selu383.SP25.P03.Api
             }
 
             app.UseHttpsRedirection();
-
             app.UseRouting();
-
-            //  Apply CORS before authentication & authorization
-            app.UseCors("AllowReactApp");
-
             app.UseAuthentication();
             app.UseAuthorization();
 
