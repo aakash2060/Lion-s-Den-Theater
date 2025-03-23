@@ -20,13 +20,15 @@ const MovieDescriptionPage = () => {
 
       <div className="flex justify-center mb-10">
         {youtubeId ? (
+          <div className="w-full max-w-screen-2xl aspect-video">
           <iframe
-            className="rounded-2xl shadow-lg w-full max-w-4xl aspect-video"
-            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1`}
+            className="w-full h-full border-none rounded-none"
+            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0`}
             title={`${movie.name} Trailer`}
             allow="autoplay; encrypted-media"
             allowFullScreen
           />
+        </div>
         ) : (
           <div className="bg-gray-800 w-full max-w-4xl h-64 flex items-center justify-center rounded-2xl shadow-xl">
             <p className="text-gray-400">Trailer unavailable</p>
