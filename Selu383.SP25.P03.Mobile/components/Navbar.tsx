@@ -1,20 +1,37 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const Navbar = () => {
     return (
-        <View className="flex-row items-center bg-black p-4">
-            {/* App Name - Increased text size */}
-            <Text className="text-white text-10xl font-bold flex-1">Lion's Den</Text> {/* Increased from text-5xl to text-6xl */}
-            
-            {/* Icons - Moved to the right and increased size */}
-            <View className="flex-row items-center space-x-7"> {/* Increased space between icons */}
-        <TouchableOpacity>
-                    <Icon name="user" size={30} color="white" /> {/* Increased icon size */}
-                </TouchableOpacity>
+        <SafeAreaView>
+            <View style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                backgroundColor: "black",
+                padding: 16
+            }}>
+                {/* App Title */}
+                <Text style={{ fontSize: 24, fontWeight: "bold", color: "white" }}>
+                    Lion's Den
+                </Text>
+
+                {/* Icon Buttons */}
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <TouchableOpacity style={{ marginHorizontal: 10 }}>
+                        <Icon name="search" size={25} color="white" />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={{ marginHorizontal: 10 }}>
+                        <Icon name="envelope" size={25} color="white" />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={{ marginHorizontal: 10 }}>
+                        <Icon name="user" size={25} color="white" />
+                    </TouchableOpacity>
+                </View>
             </View>
-        </View>
+        </SafeAreaView>
     );
 };
 

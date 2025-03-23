@@ -5,7 +5,8 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import Navbar from '@/components/Navbar'; 
+import Navbar from '@/components/Navbar';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -15,10 +16,10 @@ export default function TabLayout() {
       {/* Navbar always on top */}
       <Navbar />
 
-      {/* Tab Navigation */}
+     
       <Tabs
         screenOptions={{
-          headerShown: false,
+          headerShown: false, // This ensures no tab bar appears at the top
           tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
           tabBarBackground: TabBarBackground,
           tabBarStyle: Platform.select({
@@ -31,17 +32,16 @@ export default function TabLayout() {
       >
         <Tabs.Screen
           name="index"
-          
           options={{
             title: 'Home',
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
           }}
         />
         <Tabs.Screen
-          name="explore"
+          name="foods"
           options={{
-            title: 'Explore',
-            tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+            title: 'Food and Drinks',
+            tabBarIcon: ({ color }) => <Icon name="cutlery" size={28} color={color}/>,
           }}
         />
       </Tabs>
