@@ -18,6 +18,10 @@
       },
       "package": "com.selu383.sp25.p03.g01"
     },
+    "expo":
+    {
+       "bundler": "metro"
+    },
     "web": {
       "bundler": "metro",
       "output": "static",

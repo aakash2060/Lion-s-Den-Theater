@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.P03.Api.Features.Users;
 using Selu383.SP25.P03.Api.Features.Theaters;
+using Selu383.SP25.P03.Api.Features.Movies;
 using Selu383.SP25.P03.Api.Features.Reviews;
+
 
 namespace Selu383.SP25.P03.Api.Data
 {
@@ -14,6 +16,10 @@ namespace Selu383.SP25.P03.Api.Data
         }
 
         public DbSet<Theater> Theaters { get; set; }
+        public DbSet<Movie> Movies{ get;  set; }
+        public DbSet<Showtime> Showtimes { get; set; }
+        public DbSet<Ticket> Tickets { get; set; }
+        public DbSet<Hall> Halls { get; set; }
         public DbSet<Review> Reviews { get; set; }
 
 
@@ -36,6 +42,15 @@ namespace Selu383.SP25.P03.Api.Data
                 .HasForeignKey(e => e.RoleId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Ticket>()
+                .Property(t => t.Price)
+                .HasPrecision(18, 2);
+
+            builder.Entity<Showtime>()
+                .Property(t => t.TicketPrice)
+                .HasPrecision(18, 2);
+
         }
     }
 }

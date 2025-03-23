@@ -1,4 +1,6 @@
+using EmailService;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.P03.Api.Data;
 using Selu383.SP25.P03.Api.Features.Payment;
@@ -17,6 +19,12 @@ namespace Selu383.SP25.P03.Api
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DataContext")
                     ?? throw new InvalidOperationException("Connection string 'DataContext' not found.")));
 
+            //Email Config
+            var emailConfig = builder.Configuration
+                .GetSection("EmailConfiguration")
+                .Get<EmailConfiguration>();
+            builder.Services.AddSingleton(emailConfig);
+            builder.Services.AddScoped<EmailService.IEmailSender, EmailService.EmailSender>();
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -24,6 +32,7 @@ namespace Selu383.SP25.P03.Api
             builder.Services.AddIdentity<User, Role>()
                 .AddEntityFrameworkStores<DataContext>()
                 .AddDefaultTokenProviders();
+            builder.Services.Configure<DataProtectionTokenProviderOptions>(opt => opt.TokenLifespan = TimeSpan.FromSeconds(120));       //token expires in 120 seconds
 
             builder.Services.Configure<IdentityOptions>(options =>
             {
@@ -65,6 +74,7 @@ namespace Selu383.SP25.P03.Api
                 };
             });
 
+
             var stripeSettings = builder.Configuration.GetSection("Stripe");
             builder.Services.Configure<StripeSettings>(stripeSettings);
             StripeConfiguration.ApiKey = stripeSettings["SecretKey"];
@@ -78,6 +88,11 @@ namespace Selu383.SP25.P03.Api
                 SeedTheaters.Initialize(scope.ServiceProvider);
                 await SeedRoles.Initialize(scope.ServiceProvider);
                 await SeedUsers.Initialize(scope.ServiceProvider);
+
+
+                SeedMovies.Initialize(scope.ServiceProvider);
+                //SeedReviews.Initialize(scope.ServiceProvider);
+
             }
 
             if (app.Environment.IsDevelopment())
