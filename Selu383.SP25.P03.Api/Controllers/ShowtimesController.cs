@@ -1,12 +1,13 @@
-﻿using System.Net.Sockets;
-using System;
+﻿using System;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.P03.Api.Data;
 using Selu383.SP25.P03.Api.Features.Movies;
 using Selu383.SP25.P03.Api.Features.Theaters;
 using Selu383.SP25.P03.Api.Features.Users;
+using System.Threading.Tasks;
 
 namespace Selu383.SP25.P03.Api.Controllers
 {
@@ -19,10 +20,12 @@ namespace Selu383.SP25.P03.Api.Controllers
         private readonly DbSet<Hall> halls;
         private readonly DbSet<Ticket> tickets;
         private readonly DataContext dataContext;
+        private readonly UserManager<User> userManager;
 
-        public ShowtimesController(DataContext dataContext)
+        public ShowtimesController(DataContext dataContext, UserManager<User> userManager)
         {
             this.dataContext = dataContext;
+            this.userManager = userManager;
             showtimes = dataContext.Set<Showtime>();
             movies = dataContext.Set<Movie>();
             halls = dataContext.Set<Hall>();
@@ -30,21 +33,61 @@ namespace Selu383.SP25.P03.Api.Controllers
         }
 
         [HttpGet]
-        public IQueryable<ShowtimeDto> GetAllShowtimes()
+        public async Task<ActionResult<IEnumerable<ShowtimeDto>>> GetAllShowtimes()
         {
-            return GetShowtimeDtos(showtimes);
+            var result = await GetShowtimeDtos(showtimes).ToListAsync();
+            return Ok(result);
         }
 
-        [HttpGet]
-        [Route("{id}")]
-        public ActionResult<ShowtimeDetailDto> GetShowtimeById(int id)
+        [HttpGet("upcoming")]
+        public async Task<ActionResult<IEnumerable<ShowtimeDto>>> GetUpcomingShowtimes()
         {
-            var showtime = showtimes
+            var result = await GetShowtimeDtos(showtimes.Where(s => s.StartTime > DateTime.UtcNow))
+                .ToListAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("theater/{theaterId}")]
+        public async Task<ActionResult<IEnumerable<ShowtimeDto>>> GetShowtimesByTheater(int theaterId)
+        {
+            // Check if theater exists
+            var theaterExists = await dataContext.Set<Theater>().AnyAsync(t => t.Id == theaterId);
+            if (!theaterExists)
+            {
+                return NotFound("Theater not found");
+            }
+
+            var result = await GetShowtimeDtos(showtimes
+                .Where(s => s.Hall.TheaterId == theaterId))
+                .ToListAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("movie/{movieId}")]
+        public async Task<ActionResult<IEnumerable<ShowtimeDto>>> GetShowtimesByMovie(int movieId)
+        {
+            // Check if movie exists
+            var movieExists = await movies.AnyAsync(m => m.Id == movieId);
+            if (!movieExists)
+            {
+                return NotFound("Movie not found");
+            }
+
+            var result = await GetShowtimeDtos(showtimes
+                .Where(s => s.MovieId == movieId))
+                .ToListAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ShowtimeDetailDto>> GetShowtimeById(int id)
+        {
+            var showtime = await showtimes
                 .Include(s => s.Movie)
                 .Include(s => s.Hall)
                 .ThenInclude(h => h.Theater)
                 .Include(s => s.Tickets)
-                .FirstOrDefault(x => x.Id == id);
+                .FirstOrDefaultAsync(x => x.Id == id);
 
             if (showtime == null)
             {
@@ -61,50 +104,63 @@ namespace Selu383.SP25.P03.Api.Controllers
                 HallId = showtime.HallId,
                 HallNumber = showtime.Hall.HallNumber,
                 TheaterId = showtime.Hall.TheaterId,
-                //TheaterName = showtime.Hall.Theater.Name,
+                TheaterName = showtime.Hall.Theater.Name, 
                 StartTime = showtime.StartTime,
                 EndTime = showtime.EndTime,
                 Price = showtime.TicketPrice,
                 Is3D = showtime.Is3D,
                 TotalSeats = showtime.Hall.Capacity,
                 AvailableSeats = showtime.Hall.Capacity - showtime.Tickets.Count,
-                IsSoldOut = showtime.IsSoldOut
+                IsSoldOut = showtime.Tickets.Count >= showtime.Hall.Capacity
             };
 
             return Ok(result);
         }
 
         [HttpPost]
-        [Authorize(Roles = UserRoleNames.Admin)]
-        public ActionResult<ShowtimeDto> CreateShowtime(CreateShowtimeDto dto)
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<ActionResult<ShowtimeDto>> CreateShowtime(CreateShowtimeDto dto)
         {
             if (IsInvalid(dto))
             {
-                return BadRequest();
+                return BadRequest("Invalid showtime data");
             }
 
-            var movie = movies.Find(dto.MovieId);
+            var movie = await movies.FindAsync(dto.MovieId);
             if (movie == null)
             {
                 return BadRequest("Movie not found");
             }
 
-            var hall = halls.Find(dto.HallId);
+            var hall = await halls
+                .Include(h => h.Theater)
+                .FirstOrDefaultAsync(h => h.Id == dto.HallId);
+
             if (hall == null)
             {
                 return BadRequest("Hall not found");
+            }
+
+            // Check if the current user is a manager and manages this theater
+            if (User.IsInRole(UserRoleNames.Manager) && !User.IsInRole(UserRoleNames.Admin))
+            {
+                var currentUser = await userManager.GetUserAsync(User);
+                if (currentUser == null || hall.Theater.ManagerId != currentUser.Id)
+                {
+                    return Forbid();
+                }
             }
 
             // Calculate end time based on movie duration
             var endTime = dto.StartTime.AddMinutes(movie.Duration);
 
             // Check if hall is already booked for this time
-            var conflictingShowtime = showtimes
+            var conflictingShowtime = await showtimes
                 .Where(s => s.HallId == dto.HallId)
                 .Where(s => (dto.StartTime >= s.StartTime && dto.StartTime < s.EndTime) ||
                           (endTime > s.StartTime && endTime <= s.EndTime) ||
                           (dto.StartTime <= s.StartTime && endTime >= s.EndTime))
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (conflictingShowtime != null)
             {
@@ -122,12 +178,7 @@ namespace Selu383.SP25.P03.Api.Controllers
             };
 
             showtimes.Add(showtime);
-            dataContext.SaveChanges();
-
-            // Load theater information for the response
-            dataContext.Entry(hall)
-                .Reference(h => h.Theater)
-                .Load();
+            await dataContext.SaveChangesAsync();
 
             var result = new ShowtimeDto
             {
@@ -137,7 +188,7 @@ namespace Selu383.SP25.P03.Api.Controllers
                 HallId = showtime.HallId,
                 HallNumber = hall.HallNumber,
                 TheaterId = hall.TheaterId,
-                //TheaterName = hall.Theater?.Name,
+                TheaterName = hall.Theater.Name, 
                 StartTime = showtime.StartTime,
                 EndTime = showtime.EndTime,
                 Price = showtime.TicketPrice,
@@ -148,32 +199,48 @@ namespace Selu383.SP25.P03.Api.Controllers
             return CreatedAtAction(nameof(GetShowtimeById), new { id = result.Id }, result);
         }
 
-        [HttpPut]
-        [Route("{id}")]
-        [Authorize(Roles = UserRoleNames.Admin + ",")]
-        public ActionResult<ShowtimeDto> UpdateShowtime(int id, UpdateShowtimeDto dto)
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<ActionResult<ShowtimeDto>> UpdateShowtime(int id, UpdateShowtimeDto dto)
         {
-            var showtime = showtimes
+            var showtime = await showtimes
                 .Include(s => s.Movie)
                 .Include(s => s.Hall)
                 .ThenInclude(h => h.Theater)
-                .FirstOrDefault(x => x.Id == id);
+                .FirstOrDefaultAsync(x => x.Id == id);
 
             if (showtime == null)
             {
                 return NotFound();
             }
 
+            // Check if the current user is a manager and manages this theater
+            if (User.IsInRole(UserRoleNames.Manager) && !User.IsInRole(UserRoleNames.Admin))
+            {
+                var currentUser = await userManager.GetUserAsync(User);
+                if (currentUser == null || showtime.Hall.Theater.ManagerId != currentUser.Id)
+                {
+                    return Forbid();
+                }
+            }
+
+            // Check if tickets have been sold
+            var ticketCount = await tickets.CountAsync(t => t.ShowtimeId == id);
+            if (ticketCount > 0)
+            {
+                return BadRequest("Cannot update a showtime with sold tickets");
+            }
+
             // Calculate end time based on movie duration
             var endTime = dto.StartTime.AddMinutes(showtime.Movie.Duration);
 
             // Check if hall is already booked for this time (excluding current showtime)
-            var conflictingShowtime = showtimes
+            var conflictingShowtime = await showtimes
                 .Where(s => s.HallId == showtime.HallId && s.Id != id)
                 .Where(s => (dto.StartTime >= s.StartTime && dto.StartTime < s.EndTime) ||
                           (endTime > s.StartTime && endTime <= s.EndTime) ||
                           (dto.StartTime <= s.StartTime && endTime >= s.EndTime))
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (conflictingShowtime != null)
             {
@@ -185,7 +252,7 @@ namespace Selu383.SP25.P03.Api.Controllers
             showtime.TicketPrice = dto.TicketPrice;
             showtime.Is3D = dto.Is3D;
 
-            dataContext.SaveChanges();
+            await dataContext.SaveChangesAsync();
 
             var result = new ShowtimeDto
             {
@@ -195,37 +262,50 @@ namespace Selu383.SP25.P03.Api.Controllers
                 HallId = showtime.HallId,
                 HallNumber = showtime.Hall.HallNumber,
                 TheaterId = showtime.Hall.TheaterId,
-                //TheaterName = showtime.Hall.Theater.Name,
+                TheaterName = showtime.Hall.Theater.Name, 
                 StartTime = showtime.StartTime,
                 EndTime = showtime.EndTime,
                 Price = showtime.TicketPrice,
                 Is3D = showtime.Is3D,
-                AvailableSeats = showtime.Hall.Capacity - tickets.Count(t => t.ShowtimeId == showtime.Id)
+                AvailableSeats = showtime.Hall.Capacity - await tickets.CountAsync(t => t.ShowtimeId == showtime.Id)
             };
 
             return Ok(result);
         }
 
-        [HttpDelete]
-        [Route("{id}")]
-        [Authorize(Roles = UserRoleNames.Admin + "," )]
-        public ActionResult DeleteShowtime(int id)
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<ActionResult> DeleteShowtime(int id)
         {
-            var showtime = showtimes.Find(id);
+            var showtime = await showtimes
+                .Include(s => s.Hall)
+                .ThenInclude(h => h.Theater)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
             if (showtime == null)
             {
                 return NotFound();
             }
 
+            // Check if the current user is a manager and manages this theater
+            if (User.IsInRole(UserRoleNames.Manager) && !User.IsInRole(UserRoleNames.Admin))
+            {
+                var currentUser = await userManager.GetUserAsync(User);
+                if (currentUser == null || showtime.Hall.Theater.ManagerId != currentUser.Id)
+                {
+                    return Forbid();
+                }
+            }
+
             // Check if tickets have been sold
-            var ticketCount = tickets.Count(t => t.ShowtimeId == id);
+            var ticketCount = await tickets.CountAsync(t => t.ShowtimeId == id);
             if (ticketCount > 0)
             {
                 return BadRequest("Cannot delete a showtime with sold tickets");
             }
 
             showtimes.Remove(showtime);
-            dataContext.SaveChanges();
+            await dataContext.SaveChangesAsync();
 
             return Ok();
         }
@@ -252,7 +332,7 @@ namespace Selu383.SP25.P03.Api.Controllers
                     HallId = s.HallId,
                     HallNumber = s.Hall.HallNumber,
                     TheaterId = s.Hall.TheaterId,
-                    //TheaterName = s.Hall.Theater.Name,
+                    TheaterName = s.Hall.Theater.Name, 
                     StartTime = s.StartTime,
                     EndTime = s.EndTime,
                     Price = s.TicketPrice,

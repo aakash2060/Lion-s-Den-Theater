@@ -4,7 +4,7 @@
     {
         public int Id { get; set; }
         public int ShowtimeId { get; set; }
-        //public string UserId { get; set; }
+        public int UserId { get; set; }
         public DateTime PurchaseDate { get; set; }
         public string SeatNumber { get; set; }
         public decimal Price { get; set; }

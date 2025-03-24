@@ -1,21 +1,26 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.P03.Api.Data;
 using Selu383.SP25.P03.Api.Features.Movies;
 using Selu383.SP25.P03.Api.Features.Theaters;
+using Selu383.SP25.P03.Api.Features.Users;
+using System.Threading.Tasks;
 
 namespace Selu383.SP25.P03.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/movies")]
     [ApiController]
     public class MoviesController : ControllerBase
     {
         private readonly DataContext _context;
+        private readonly UserManager<User> _userManager;
 
-        public MoviesController(DataContext context)
+        public MoviesController(DataContext context, UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: api/Movies
@@ -64,21 +69,23 @@ namespace Selu383.SP25.P03.Api.Controllers
                 PosterUrl = movie.PosterUrl,
                 ReleaseDate = movie.ReleaseDate,
                 Genre = movie.Genre,
-                Showtimes = movie.Showtimes.Select(s => new ShowtimeDto
-                {
-                    Id = s.Id,
-                    MovieId = s.MovieId,
-                    MovieTitle = movie.Title,
-                    HallId = s.HallId,
-                    HallNumber = s.Hall.HallNumber,
-                    TheaterId = s.Hall.TheaterId,
-                    //TheaterName = s.Hall.Theater.Name,
-                    StartTime = s.StartTime,
-                    EndTime = s.EndTime,
-                    Price = s.TicketPrice,
-                    Is3D = s.Is3D,
-                    AvailableSeats = s.Hall.Capacity - _context.Tickets.Count(t => t.ShowtimeId == s.Id)
-                }).ToList()
+                Showtimes = movie.Showtimes
+                    .Where(s => s.StartTime > DateTime.UtcNow) // Only include future showtimes
+                    .Select(s => new ShowtimeDto
+                    {
+                        Id = s.Id,
+                        MovieId = s.MovieId,
+                        MovieTitle = movie.Title,
+                        HallId = s.HallId,
+                        HallNumber = s.Hall.HallNumber,
+                        TheaterId = s.Hall.TheaterId,
+                        TheaterName = s.Hall.Theater.Name, 
+                        StartTime = s.StartTime,
+                        EndTime = s.EndTime,
+                        Price = s.TicketPrice,
+                        Is3D = s.Is3D,
+                        AvailableSeats = s.Hall.Capacity - _context.Tickets.Count(t => t.ShowtimeId == s.Id)
+                    }).ToList()
             };
         }
 
@@ -87,13 +94,22 @@ namespace Selu383.SP25.P03.Api.Controllers
         [Authorize(Roles = "Admin,Manager")]
         public async Task<ActionResult<MovieDto>> CreateMovie(CreateMovieDto dto)
         {
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(dto.Title) ||
+                string.IsNullOrWhiteSpace(dto.Genre) ||
+                string.IsNullOrWhiteSpace(dto.PosterUrl) ||
+                dto.Duration <= 0)
+            {
+                return BadRequest("Missing required fields or invalid data");
+            }
+
             var movie = new Movie
             {
                 Title = dto.Title,
-                Description = dto.Description,
-                Director = dto.Director,
+                Description = dto.Description ?? "",
+                Director = dto.Director ?? "Unknown",
                 Duration = dto.Duration,
-                Rating = dto.Rating,
+                Rating = dto.Rating ?? "NR",
                 PosterUrl = dto.PosterUrl,
                 ReleaseDate = dto.ReleaseDate,
                 Genre = dto.Genre
@@ -130,11 +146,30 @@ namespace Selu383.SP25.P03.Api.Controllers
                 return NotFound();
             }
 
+            // Check if this movie has any showtimes
+            bool hasShowtimes = await _context.Set<Showtime>()
+                .AnyAsync(s => s.MovieId == id);
+
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(dto.Title) ||
+                string.IsNullOrWhiteSpace(dto.Genre) ||
+                string.IsNullOrWhiteSpace(dto.PosterUrl) ||
+                dto.Duration <= 0)
+            {
+                return BadRequest("Missing required fields or invalid data");
+            }
+
+            // If the movie has showtimes, don't allow changing the duration
+            if (hasShowtimes && dto.Duration != movie.Duration)
+            {
+                return BadRequest("Cannot change movie duration when showtimes exist");
+            }
+
             movie.Title = dto.Title;
-            movie.Description = dto.Description;
-            movie.Director = dto.Director;
+            movie.Description = dto.Description ?? "";
+            movie.Director = dto.Director ?? "Unknown";
             movie.Duration = dto.Duration;
-            movie.Rating = dto.Rating;
+            movie.Rating = dto.Rating ?? "NR";
             movie.PosterUrl = dto.PosterUrl;
             movie.ReleaseDate = dto.ReleaseDate;
             movie.Genre = dto.Genre;
@@ -167,6 +202,15 @@ namespace Selu383.SP25.P03.Api.Controllers
             if (movie == null)
             {
                 return NotFound();
+            }
+
+            // Check if movie has any showtimes
+            bool hasShowtimes = await _context.Set<Showtime>()
+                .AnyAsync(s => s.MovieId == id);
+
+            if (hasShowtimes)
+            {
+                return BadRequest("Cannot delete a movie with scheduled showtimes");
             }
 
             _context.Movies.Remove(movie);
