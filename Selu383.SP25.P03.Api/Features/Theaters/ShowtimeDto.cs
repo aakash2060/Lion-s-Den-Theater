@@ -8,7 +8,7 @@
         public int HallId { get; set; }
         public int HallNumber { get; set; }
         public int TheaterId { get; set; }
-        //public string TheaterName { get; set; }
+        public string TheaterName { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public decimal Price { get; set; }

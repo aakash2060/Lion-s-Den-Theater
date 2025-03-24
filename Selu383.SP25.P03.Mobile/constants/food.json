@@ -1,0 +1,56 @@
+ [
+    {
+      "title": "Pizza",
+      "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "description": "Delicious cheese pizza with pepperoni",
+      "price": "$40"
+    },
+    {
+      "title": "Burger",
+      "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1998&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "description": "Juicy beef burger with lettuce and tomato",
+      "price": "$50"
+    },
+    {
+      "title": "Sushi",
+      "image": "https://images.toopa.com/303275_800pxsushiandmakifeast.jpg",
+      "description": "Fresh sushi with salmon and avocado",
+      "price": "$40"
+    },
+    
+    {
+        "title": "Combo Meal",
+        "image": "https://juicerpricing.com/hs-fs/hubfs/Double-cheeseburger-meal-NEW-1.png?width=490&height=429&name=Double-cheeseburger-meal-NEW-1.png",
+        "description": "Combo",
+        "price": "$50"
+
+    },
+    {
+        "title": "Popcorn Bucket",
+        "image": "https://th.bing.com/th/id/OIP.xnd9yfXQCAHeWEOi9LgEEwAAAA?rs=1&pid=ImgDetMain",
+        "description": "Large popcorn bucket",
+        "price": "$8"
+      },
+      
+      {
+        "title": "French Fries",
+        "image": "https://static.fanpage.it/wp-content/uploads/sites/22/2020/09/iStock-618214356.jpg",
+        "description": "Crispy golden fries",
+        "price": "$5"
+      },
+      {
+        "title": "Veggie Burger",
+        "image": "https://sweetsimplevegan.com/wp-content/uploads/2023/02/Black_Bean_Burgers_5_Ingredients_sweet_simple_vegan_6.jpg",
+        "description": "Delicious veggie patty with fresh vegetables",
+        "price": "$12"
+      },
+      {
+        "title": "Soda",
+        "image": "https://www.webstaurantstore.com/images/products/large/473808/1928112.jpg",
+        "description": "Chilled soft drink",
+        "price": "$2"
+      }
+      
+   
+    
+  ]

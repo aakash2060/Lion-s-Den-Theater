@@ -1,8 +1,11 @@
 import MovieCarousel from "../Components/MovieCarousel";
 import MovieCard from "../Components/MovieCard";
 import movies from "../constants/movies.json";
+import {useNavigate} from "react-router-dom";
 
 const Home = () => {
+
+    const navigate = useNavigate();
     // Filter movies into categories
     const nowShowing = movies.filter(movie => new Date(movie.release_date) <= new Date());
     const comingSoon = movies.filter(movie => new Date(movie.release_date) > new Date());
@@ -82,11 +85,18 @@ const Home = () => {
                 </div>
             </section>
 
-            {/* Exclusive Offers & Membership */}
-            <section className="bg-gradient-to-r from-red-600 to-pink-600 p-10 text-center mt-16">
-                <h2 className="text-3xl font-bold">🎟️ Get early access, discounts, and more with Lion’s Den Plus.</h2>
+           {/* Exclusive Offers & Membership */}
+           <section className="bg-[#7c0000] p-10 text-center mt-16">
+                <h2 className="text-3xl font-bold">Get early access, discounts, and more with Lion’s Den Plus.</h2>
                 <p className="mt-2">Unlock unlimited movies and exclusive perks.</p>
-                <button className="mt-4 px-6 py-2 bg-white text-red-600 font-bold rounded-md">Join Now</button>
+
+                {/* Fixed Join Now Button */}
+                <button
+                    onClick={() => navigate("/register")} 
+                    className="mt-4 px-6 py-2 bg-white text-red-600 font-bold rounded-md hover:bg-red-100 transition duration-300"
+                >
+                    Join Now
+                </button>
             </section>
         </div>
     );

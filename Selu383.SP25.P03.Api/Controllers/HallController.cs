@@ -5,6 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.P03.Api.Data;
 using Selu383.SP25.P03.Api.Features.Theaters;
 using Selu383.SP25.P03.Api.Features.Users;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Selu383.SP25.P03.Api.Controllers
 {
@@ -26,16 +29,17 @@ namespace Selu383.SP25.P03.Api.Controllers
         }
 
         [HttpGet]
-        public IQueryable<HallDto> GetAllHalls()
+        public async Task<IActionResult> GetAllHalls()
         {
-            return GetHallDtos(halls);
+            var hallDtos = await GetHallDtos(halls).ToListAsync();
+            return Ok(hallDtos);
         }
 
         [HttpGet]
         [Route("{id}")]
-        public ActionResult<HallDto> GetHallById(int id)
+        public async Task<ActionResult<HallDto>> GetHallById(int id)
         {
-            var result = GetHallDtos(halls.Where(x => x.Id == id)).FirstOrDefault();
+            var result = await GetHallDtos(halls.Where(x => x.Id == id)).FirstOrDefaultAsync();
             if (result == null)
             {
                 return NotFound();
@@ -46,9 +50,16 @@ namespace Selu383.SP25.P03.Api.Controllers
 
         [HttpGet]
         [Route("theater/{theaterId}")]
-        public IQueryable<HallDto> GetHallsByTheater(int theaterId)
+        public async Task<IActionResult> GetHallsByTheater(int theaterId)
         {
-            return GetHallDtos(halls.Where(x => x.TheaterId == theaterId));
+            var theater = await theaters.FindAsync(theaterId);
+            if (theater == null)
+            {
+                return NotFound("Theater not found");
+            }
+
+            var hallDtos = await GetHallDtos(halls.Where(x => x.TheaterId == theaterId)).ToListAsync();
+            return Ok(hallDtos);
         }
 
         [HttpPost]
@@ -57,11 +68,14 @@ namespace Selu383.SP25.P03.Api.Controllers
         {
             if (IsInvalid(dto))
             {
-                return BadRequest();
+                return BadRequest("Invalid hall data");
             }
 
             // Verify that the theater exists
-            var theater = await theaters.FindAsync(dto.TheaterId);
+            var theater = await theaters
+                .Include(t => t.Manager)
+                .FirstOrDefaultAsync(t => t.Id == dto.TheaterId);
+
             if (theater == null)
             {
                 return BadRequest("Theater not found");
@@ -71,7 +85,7 @@ namespace Selu383.SP25.P03.Api.Controllers
             if (User.IsInRole(UserRoleNames.Manager) && !User.IsInRole(UserRoleNames.Admin))
             {
                 var currentUser = await userManager.GetUserAsync(User);
-                if (theater.ManagerId != currentUser.Id)
+                if (currentUser == null || theater.ManagerId != currentUser.Id)
                 {
                     return Forbid();
                 }
@@ -91,23 +105,18 @@ namespace Selu383.SP25.P03.Api.Controllers
                 HallNumber = dto.HallNumber,
                 TheaterId = dto.TheaterId,
                 Capacity = dto.Capacity,
-                ScreenType = dto.ScreenType
+                ScreenType = dto.ScreenType ?? "Standard" // Default to Standard if not specified
             };
 
             halls.Add(hall);
             await dataContext.SaveChangesAsync();
-
-            // Load the theater name for the response
-            await dataContext.Entry(hall)
-                .Reference(h => h.Theater)
-                .LoadAsync();
 
             var result = new HallDto
             {
                 Id = hall.Id,
                 HallNumber = hall.HallNumber,
                 TheaterId = hall.TheaterId,
-                //TheaterName = hall.Theater?.Name,
+                TheaterNumber = theater.Id, // Setting TheaterNumber based on Theater ID
                 Capacity = hall.Capacity,
                 ScreenType = hall.ScreenType
             };
@@ -117,7 +126,7 @@ namespace Selu383.SP25.P03.Api.Controllers
 
         [HttpPut]
         [Route("{id}")]
-        [Authorize(Roles = UserRoleNames.Admin + "," + UserRoleNames.Manager)]
+        [Authorize]
         public async Task<ActionResult<HallDto>> UpdateHall(int id, UpdateHallDto dto)
         {
             var hall = await halls
@@ -130,13 +139,18 @@ namespace Selu383.SP25.P03.Api.Controllers
             }
 
             // If user is a manager, verify they manage this theater
-            if (User.IsInRole(UserRoleNames.Manager) && !User.IsInRole(UserRoleNames.Admin))
+            var currentUser = await userManager.GetUserAsync(User);
+            if (currentUser == null)
             {
-                var currentUser = await userManager.GetUserAsync(User);
-                if (hall.Theater.ManagerId != currentUser.Id)
-                {
-                    return Forbid();
-                }
+                return Unauthorized();
+            }
+
+            bool isAdmin = User.IsInRole(UserRoleNames.Admin);
+            bool isManager = User.IsInRole(UserRoleNames.Manager);
+
+            if (!isAdmin && (!isManager || hall.Theater.ManagerId != currentUser.Id))
+            {
+                return Forbid();
             }
 
             // Check if the hall number is being changed and if it would conflict
@@ -152,7 +166,7 @@ namespace Selu383.SP25.P03.Api.Controllers
             }
 
             // Check if there are any active showtimes
-            var hasActiveShowtimes = await dataContext.Showtimes
+            var hasActiveShowtimes = await dataContext.Set<Showtime>()
                 .AnyAsync(s => s.HallId == id && s.StartTime > DateTime.UtcNow);
 
             // If there are active showtimes, don't allow capacity reduction
@@ -163,7 +177,7 @@ namespace Selu383.SP25.P03.Api.Controllers
 
             hall.HallNumber = dto.HallNumber;
             hall.Capacity = dto.Capacity;
-            hall.ScreenType = dto.ScreenType;
+            hall.ScreenType = dto.ScreenType ?? hall.ScreenType;
 
             await dataContext.SaveChangesAsync();
 
@@ -172,7 +186,7 @@ namespace Selu383.SP25.P03.Api.Controllers
                 Id = hall.Id,
                 HallNumber = hall.HallNumber,
                 TheaterId = hall.TheaterId,
-                //TheaterName = hall.Theater?.Name,
+                TheaterNumber = hall.Theater.Id,
                 Capacity = hall.Capacity,
                 ScreenType = hall.ScreenType
             };
@@ -182,7 +196,7 @@ namespace Selu383.SP25.P03.Api.Controllers
 
         [HttpDelete]
         [Route("{id}")]
-        [Authorize(Roles = UserRoleNames.Admin + "," + UserRoleNames.Manager)]
+        [Authorize]
         public async Task<ActionResult> DeleteHall(int id)
         {
             var hall = await halls
@@ -195,17 +209,22 @@ namespace Selu383.SP25.P03.Api.Controllers
             }
 
             // If user is a manager, verify they manage this theater
-            if (User.IsInRole(UserRoleNames.Manager) && !User.IsInRole(UserRoleNames.Admin))
+            var currentUser = await userManager.GetUserAsync(User);
+            if (currentUser == null)
             {
-                var currentUser = await userManager.GetUserAsync(User);
-                if (hall.Theater.ManagerId != currentUser.Id)
-                {
-                    return Forbid();
-                }
+                return Unauthorized();
+            }
+
+            bool isAdmin = User.IsInRole(UserRoleNames.Admin);
+            bool isManager = User.IsInRole(UserRoleNames.Manager);
+
+            if (!isAdmin && (!isManager || hall.Theater.ManagerId != currentUser.Id))
+            {
+                return Forbid();
             }
 
             // Check if there are any showtimes for this hall
-            var hasShowtimes = await dataContext.Showtimes
+            var hasShowtimes = await dataContext.Set<Showtime>()
                 .AnyAsync(s => s.HallId == id);
 
             if (hasShowtimes)
@@ -236,7 +255,7 @@ namespace Selu383.SP25.P03.Api.Controllers
                     Id = h.Id,
                     HallNumber = h.HallNumber,
                     TheaterId = h.TheaterId,
-                    //TheaterName = h.Theater.Name,
+                    TheaterNumber = h.Theater.Id, 
                     Capacity = h.Capacity,
                     ScreenType = h.ScreenType
                 });
