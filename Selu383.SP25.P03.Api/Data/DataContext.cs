@@ -21,6 +21,10 @@ namespace Selu383.SP25.P03.Api.Data
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<Hall> Halls { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<FoodMenu> FoodMenus { get; set; }
+        public DbSet<FoodItem> FoodItems { get; set; }
+        public DbSet<FoodMenuItem> FoodMenuItems { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -50,6 +54,19 @@ namespace Selu383.SP25.P03.Api.Data
             builder.Entity<Showtime>()
                 .Property(t => t.TicketPrice)
                 .HasPrecision(18, 2);
+
+            builder.Entity<FoodMenuItem>()
+                .HasKey(fm => new { fm.FoodMenuId, fm.FoodItemId });
+
+            builder.Entity<FoodMenuItem>()
+                .HasOne(fm => fm.FoodMenu)
+                .WithMany(m => m.FoodMenuItems)
+                .HasForeignKey(fm => fm.FoodMenuId);
+
+            builder.Entity<FoodMenuItem>()
+                .HasOne(fm => fm.FoodItem)
+                .WithMany()
+                .HasForeignKey(fm => fm.FoodItemId);
 
         }
     }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Selu383.SP25.P03.Api.Data;
 
@@ -11,9 +12,11 @@ using Selu383.SP25.P03.Api.Data;
 namespace Selu383.SP25.P03.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250324193420_foodMenu")]
+    partial class foodMenu
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,10 +34,6 @@ namespace Selu383.SP25.P03.Api.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImgUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -356,6 +355,9 @@ namespace Selu383.SP25.P03.Api.Migrations
                     b.Property<bool>("IsCheckedIn")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsChkeckedIn")
+                        .HasColumnType("bit");
+
                     b.Property<decimal>("Price")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -437,14 +439,6 @@ namespace Selu383.SP25.P03.Api.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -576,7 +570,7 @@ namespace Selu383.SP25.P03.Api.Migrations
             modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Theaters.Hall", b =>
                 {
                     b.HasOne("Selu383.SP25.P03.Api.Features.Theaters.Theater", "Theater")
-                        .WithMany("Halls")
+                        .WithMany()
                         .HasForeignKey("TheaterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -668,11 +662,6 @@ namespace Selu383.SP25.P03.Api.Migrations
             modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Theaters.Showtime", b =>
                 {
                     b.Navigation("Tickets");
-                });
-
-            modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Theaters.Theater", b =>
-                {
-                    b.Navigation("Halls");
                 });
 
             modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Users.Role", b =>

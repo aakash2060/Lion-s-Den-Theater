@@ -9,10 +9,9 @@ namespace Selu383.SP25.P03.Api.Data
         {
             using (var context = new DataContext(serviceProvider.GetRequiredService<DbContextOptions<DataContext>>()))
             {
-                // Look for any theaters.
                 if (context.Theaters.Any())
                 {
-                    return;   // DB has been seeded
+                    return;
                 }
                 context.Theaters.AddRange(
                     new Theater
