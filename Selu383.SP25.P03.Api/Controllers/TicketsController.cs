@@ -5,7 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.P03.Api.Data;
 using Selu383.SP25.P03.Api.Features.Theaters;
 using Selu383.SP25.P03.Api.Features.Users;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Selu383.SP25.P03.Api.Controllers
 {
@@ -16,57 +20,126 @@ namespace Selu383.SP25.P03.Api.Controllers
         private readonly DbSet<Ticket> tickets;
         private readonly DbSet<Showtime> showtimes;
         private readonly DataContext dataContext;
-        //private readonly UserManager<User> userManager;
+        private readonly UserManager<User> userManager;
 
-        public TicketsController(DataContext dataContext)
+        public TicketsController(DataContext dataContext, UserManager<User> userManager)
         {
             this.dataContext = dataContext;
             tickets = dataContext.Set<Ticket>();
             showtimes = dataContext.Set<Showtime>();
-            //this.userManager = userManager;
+            this.userManager = userManager;
+        }
+
+        // Helper method to get the current user ID
+        private async Task<int> GetCurrentUserId()
+        {
+            var user = await userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                throw new InvalidOperationException("User not found");
+            }
+            return user.Id;
         }
 
         [HttpGet]
         [Authorize]
         public async Task<ActionResult<IEnumerable<TicketDto>>> GetTickets()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var isAdmin = User.IsInRole(UserRoleNames.Admin);
-
-            var query = tickets
-                .Include(t => t.Showtime)
-                .ThenInclude(s => s.Movie)
-                .Include(t => t.Showtime)
-                .ThenInclude(s => s.Hall)
-                .ThenInclude(h => h.Theater)
-                .AsQueryable();
-
-            // If not admin, only show user's tickets
-            if (!isAdmin)
+            try
             {
-                //query = query.Where(t => t.UserId == userId);
-            }
+                var userId = await GetCurrentUserId();
+                var isAdmin = User.IsInRole(UserRoleNames.Admin);
+                var isManager = User.IsInRole(UserRoleNames.Manager);
 
-            var result = await query
-                .Select(t => new TicketDto
+                var query = tickets
+                    .Include(t => t.Showtime)
+                    .ThenInclude(s => s.Movie)
+                    .Include(t => t.Showtime)
+                    .ThenInclude(s => s.Hall)
+                    .ThenInclude(h => h.Theater)
+                    .AsQueryable();
+
+                // Filter by user role
+                if (!isAdmin)
                 {
-                    Id = t.Id,
-                    ShowtimeId = t.ShowtimeId,
-                    //UserId = t.UserId,
-                    PurchaseDate = t.PurchaseDate,
-                    SeatNumber = t.SeatNumber,
-                    Price = t.Price,
-                    IsCheckedIn = t.IsCheckedIn,
-                    TicketType = t.TicketType,
-                    ConfirmationNumber = t.ConfirmationNumber,
-                    MovieTitle = t.Showtime.Movie.Title,
-                    TheaterName = t.Showtime.Hall.Theater.Name,
-                    HallNumber = t.Showtime.Hall.HallNumber,
-                    ShowtimeStart = t.Showtime.StartTime
-                })
-                .ToListAsync();
+                    if (isManager)
+                    {
+                        // Managers can see tickets for their theaters
+                        query = query.Where(t => t.Showtime.Hall.Theater.ManagerId == userId);
+                    }
+                    else
+                    {
+                        // Regular users can only see their own tickets
+                        query = query.Where(t => t.UserId == userId);
+                    }
+                }
 
-            return Ok(result);
+                var result = await query
+                    .Select(t => new TicketDto
+                    {
+                        Id = t.Id,
+                        ShowtimeId = t.ShowtimeId,
+                        UserId = t.UserId,
+                        PurchaseDate = t.PurchaseDate,
+                        SeatNumber = t.SeatNumber,
+                        Price = t.Price,
+                        IsCheckedIn = t.IsCheckedIn,
+                        TicketType = t.TicketType,
+                        ConfirmationNumber = t.ConfirmationNumber,
+                        MovieTitle = t.Showtime.Movie.Title,
+                        TheaterName = t.Showtime.Hall.Theater.Name,
+                        HallNumber = t.Showtime.Hall.HallNumber,
+                        ShowtimeStart = t.Showtime.StartTime
+                    })
+                    .ToListAsync();
+
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+        }
+
+        [HttpGet("user")]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<TicketDto>>> GetUserTickets()
+        {
+            try
+            {
+                var userId = await GetCurrentUserId();
+
+                var result = await tickets
+                    .Include(t => t.Showtime)
+                    .ThenInclude(s => s.Movie)
+                    .Include(t => t.Showtime)
+                    .ThenInclude(s => s.Hall)
+                    .ThenInclude(h => h.Theater)
+                    .Where(t => t.UserId == userId)
+                    .Select(t => new TicketDto
+                    {
+                        Id = t.Id,
+                        ShowtimeId = t.ShowtimeId,
+                        UserId = t.UserId,
+                        PurchaseDate = t.PurchaseDate,
+                        SeatNumber = t.SeatNumber,
+                        Price = t.Price,
+                        IsCheckedIn = t.IsCheckedIn,
+                        TicketType = t.TicketType,
+                        ConfirmationNumber = t.ConfirmationNumber,
+                        MovieTitle = t.Showtime.Movie.Title,
+                        TheaterName = t.Showtime.Hall.Theater.Name,
+                        HallNumber = t.Showtime.Hall.HallNumber,
+                        ShowtimeStart = t.Showtime.StartTime
+                    })
+                    .ToListAsync();
+
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
         }
 
         [HttpGet]
@@ -74,49 +147,67 @@ namespace Selu383.SP25.P03.Api.Controllers
         [Authorize]
         public async Task<ActionResult<TicketDetailDto>> GetTicket(int id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var isAdmin = User.IsInRole(UserRoleNames.Admin) || User.IsInRole(UserRoleNames.Manager);
-
-            var ticket = await tickets
-                .Include(t => t.Showtime)
-                .ThenInclude(s => s.Movie)
-                .Include(t => t.Showtime)
-                .ThenInclude(s => s.Hall)
-                .ThenInclude(h => h.Theater)
-                .FirstOrDefaultAsync(t => t.Id == id);
-
-            if (ticket == null)
+            try
             {
-                return NotFound();
+                var userId = await GetCurrentUserId();
+                var isAdmin = User.IsInRole(UserRoleNames.Admin);
+                var isManager = User.IsInRole(UserRoleNames.Manager);
+
+                var ticket = await tickets
+                    .Include(t => t.Showtime)
+                    .ThenInclude(s => s.Movie)
+                    .Include(t => t.Showtime)
+                    .ThenInclude(s => s.Hall)
+                    .ThenInclude(h => h.Theater)
+                    .FirstOrDefaultAsync(t => t.Id == id);
+
+                if (ticket == null)
+                {
+                    return NotFound();
+                }
+
+                // If not admin and not owner, check if manager of this theater
+                if (!isAdmin && ticket.UserId != userId)
+                {
+                    if (isManager)
+                    {
+                        if (ticket.Showtime.Hall.Theater.ManagerId != userId)
+                        {
+                            return Forbid();
+                        }
+                    }
+                    else
+                    {
+                        return Forbid();
+                    }
+                }
+
+                var result = new TicketDetailDto
+                {
+                    Id = ticket.Id,
+                    ShowtimeId = ticket.ShowtimeId,
+                    UserId = ticket.UserId,
+                    PurchaseDate = ticket.PurchaseDate,
+                    SeatNumber = ticket.SeatNumber,
+                    Price = ticket.Price,
+                    IsCheckedIn = ticket.IsCheckedIn,
+                    TicketType = ticket.TicketType,
+                    ConfirmationNumber = ticket.ConfirmationNumber,
+                    MovieTitle = ticket.Showtime.Movie.Title,
+                    MoviePoster = ticket.Showtime.Movie.PosterUrl,
+                    TheaterName = ticket.Showtime.Hall.Theater.Name,
+                    HallNumber = ticket.Showtime.Hall.HallNumber,
+                    ShowtimeStart = ticket.Showtime.StartTime,
+                    ShowtimeEnd = ticket.Showtime.EndTime,
+                    Is3D = ticket.Showtime.Is3D,
+                };
+
+                return Ok(result);
             }
-
-            // If not admin and not owner, forbid access
-            //if (!isAdmin && ticket.UserId != userId)
-            //{
-            //    return Forbid();
-            //}
-
-            var result = new TicketDetailDto
+            catch (InvalidOperationException ex)
             {
-                Id = ticket.Id,
-                ShowtimeId = ticket.ShowtimeId,
-                //UserId = ticket.UserId,
-                PurchaseDate = ticket.PurchaseDate,
-                SeatNumber = ticket.SeatNumber,
-                Price = ticket.Price,
-                IsCheckedIn = ticket.IsCheckedIn,
-                TicketType = ticket.TicketType,
-                ConfirmationNumber = ticket.ConfirmationNumber,
-                MovieTitle = ticket.Showtime.Movie.Title,
-                MoviePoster = ticket.Showtime.Movie.PosterUrl,
-                TheaterName = ticket.Showtime.Hall.Theater.Name,
-                HallNumber = ticket.Showtime.Hall.HallNumber,
-                ShowtimeStart = ticket.Showtime.StartTime,
-                ShowtimeEnd = ticket.Showtime.EndTime,
-                Is3D = ticket.Showtime.Is3D,
-            };
-
-            return Ok(result);
+                return Unauthorized(ex.Message);
+            }
         }
 
         [HttpPost]
@@ -125,112 +216,146 @@ namespace Selu383.SP25.P03.Api.Controllers
         {
             if (IsInvalid(dto))
             {
-                return BadRequest();
+                return BadRequest("Invalid ticket data");
             }
 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            // Check if showtime exists
-            var showtime = await showtimes
-                .Include(s => s.Movie)
-                .Include(s => s.Hall)
-                .ThenInclude(h => h.Theater)
-                .FirstOrDefaultAsync(s => s.Id == dto.ShowtimeId);
-
-            if (showtime == null)
+            try
             {
-                return BadRequest("Showtime not found");
-            }
+                var userId = await GetCurrentUserId();
 
-            // Check if showtime is in the past
-            if (showtime.StartTime < DateTime.UtcNow)
-            {
-                return BadRequest("Cannot purchase tickets for past showtimes");
-            }
+                // Check if showtime exists
+                var showtime = await showtimes
+                    .Include(s => s.Movie)
+                    .Include(s => s.Hall)
+                    .ThenInclude(h => h.Theater)
+                    .FirstOrDefaultAsync(s => s.Id == dto.ShowtimeId);
 
-            // Check if sold out
-            if (showtime.IsSoldOut)
-            {
-                return BadRequest("This showtime is sold out");
-            }
-
-            // Check for available seats
-            var ticketCount = await tickets.CountAsync(t => t.ShowtimeId == dto.ShowtimeId);
-            if (ticketCount >= showtime.Hall.Capacity)
-            {
-                showtime.IsSoldOut = true;
-                await dataContext.SaveChangesAsync();
-                return BadRequest("This showtime is sold out");
-            }
-
-            // Check if seat is already taken
-            if (!string.IsNullOrEmpty(dto.SeatNumber))
-            {
-                var seatTaken = await tickets
-                    .AnyAsync(t => t.ShowtimeId == dto.ShowtimeId && t.SeatNumber == dto.SeatNumber);
-
-                if (seatTaken)
+                if (showtime == null)
                 {
-                    return BadRequest("This seat is already taken");
+                    return BadRequest("Showtime not found");
                 }
+
+                // Check if showtime is in the past
+                if (showtime.StartTime < DateTime.UtcNow)
+                {
+                    return BadRequest("Cannot purchase tickets for past showtimes");
+                }
+
+                // Check for available seats
+                var ticketCount = await tickets.CountAsync(t => t.ShowtimeId == dto.ShowtimeId);
+                if (ticketCount >= showtime.Hall.Capacity)
+                {
+                    // Update the IsSoldOut flag if needed
+                    if (!showtime.IsSoldOut)
+                    {
+                        showtime.IsSoldOut = true;
+                        await dataContext.SaveChangesAsync();
+                    }
+                    return BadRequest("This showtime is sold out");
+                }
+
+                // Check if seat is already taken
+                if (!string.IsNullOrEmpty(dto.SeatNumber))
+                {
+                    var seatTaken = await tickets
+                        .AnyAsync(t => t.ShowtimeId == dto.ShowtimeId && t.SeatNumber == dto.SeatNumber);
+
+                    if (seatTaken)
+                    {
+                        return BadRequest("This seat is already taken");
+                    }
+                }
+
+                // Generate confirmation code
+                var confirmationNumber = GenerateConfirmationCode();
+
+                var ticket = new Ticket
+                {
+                    ShowtimeId = dto.ShowtimeId,
+                    UserId = userId,
+                    PurchaseDate = DateTime.UtcNow,
+                    SeatNumber = dto.SeatNumber,
+                    Price = showtime.TicketPrice,
+                    TicketType = dto.TicketType,
+                    ConfirmationNumber = confirmationNumber
+                };
+
+                tickets.Add(ticket);
+                await dataContext.SaveChangesAsync();
+
+                // Check if this was the last available seat
+                if (ticketCount + 1 >= showtime.Hall.Capacity && !showtime.IsSoldOut)
+                {
+                    showtime.IsSoldOut = true;
+                    await dataContext.SaveChangesAsync();
+                }
+
+                var result = new TicketDto
+                {
+                    Id = ticket.Id,
+                    ShowtimeId = ticket.ShowtimeId,
+                    UserId = ticket.UserId,
+                    PurchaseDate = ticket.PurchaseDate,
+                    SeatNumber = ticket.SeatNumber,
+                    Price = ticket.Price,
+                    IsCheckedIn = ticket.IsCheckedIn,
+                    TicketType = ticket.TicketType,
+                    ConfirmationNumber = ticket.ConfirmationNumber,
+                    MovieTitle = showtime.Movie.Title,
+                    TheaterName = showtime.Hall.Theater.Name,
+                    HallNumber = showtime.Hall.HallNumber,
+                    ShowtimeStart = showtime.StartTime
+                };
+
+                return CreatedAtAction(nameof(GetTicket), new { id = result.Id }, result);
             }
-
-            // Generate confirmation code
-            var confirmationNumber = GenerateConfirmationCode();
-
-            var ticket = new Ticket
+            catch (InvalidOperationException ex)
             {
-                ShowtimeId = dto.ShowtimeId,
-                //UserId = userId,
-                PurchaseDate = DateTime.UtcNow,
-                SeatNumber = dto.SeatNumber,
-                Price = showtime.TicketPrice,
-                TicketType = dto.TicketType,
-                ConfirmationNumber = confirmationNumber
-            };
-
-            tickets.Add(ticket);
-            await dataContext.SaveChangesAsync();
-
-            var result = new TicketDto
-            {
-                Id = ticket.Id,
-                ShowtimeId = ticket.ShowtimeId,
-                //UserId = ticket.UserId,
-                PurchaseDate = ticket.PurchaseDate,
-                SeatNumber = ticket.SeatNumber,
-                Price = ticket.Price,
-                IsCheckedIn = ticket.IsCheckedIn,
-                TicketType = ticket.TicketType,
-                ConfirmationNumber = ticket.ConfirmationNumber,
-                MovieTitle = showtime.Movie.Title,
-                TheaterName = showtime.Hall.Theater.Name,
-                HallNumber = showtime.Hall.HallNumber,
-                ShowtimeStart = showtime.StartTime
-            };
-
-            return CreatedAtAction(nameof(GetTicket), new { id = result.Id }, result);
+                return Unauthorized(ex.Message);
+            }
         }
 
         [HttpPut]
         [Route("{id}/checkin")]
-        [Authorize(Roles = UserRoleNames.Admin)]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> CheckInTicket(int id)
         {
-            var ticket = await tickets.FindAsync(id);
-            if (ticket == null)
+            try
             {
-                return NotFound();
-            }
+                var userId = await GetCurrentUserId();
+                var ticket = await tickets
+                    .Include(t => t.Showtime)
+                    .ThenInclude(s => s.Hall)
+                    .ThenInclude(h => h.Theater)
+                    .FirstOrDefaultAsync(t => t.Id == id);
 
-            // Only check in if not already checked in
-            if (!ticket.IsCheckedIn)
+                if (ticket == null)
+                {
+                    return NotFound();
+                }
+
+                // If manager, check if they manage this theater
+                if (User.IsInRole(UserRoleNames.Manager) && !User.IsInRole(UserRoleNames.Admin))
+                {
+                    if (ticket.Showtime.Hall.Theater.ManagerId != userId)
+                    {
+                        return Forbid();
+                    }
+                }
+
+                // Only check in if not already checked in
+                if (!ticket.IsCheckedIn)
+                {
+                    ticket.IsCheckedIn = true;
+                    await dataContext.SaveChangesAsync();
+                }
+
+                return Ok();
+            }
+            catch (InvalidOperationException ex)
             {
-                ticket.IsCheckedIn = true;
-                await dataContext.SaveChangesAsync();
+                return Unauthorized(ex.Message);
             }
-
-            return Ok();
         }
 
         [HttpDelete]
@@ -238,40 +363,67 @@ namespace Selu383.SP25.P03.Api.Controllers
         [Authorize]
         public async Task<IActionResult> CancelTicket(int id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var isAdmin = User.IsInRole(UserRoleNames.Admin) ;
-
-            var ticket = await tickets
-                .Include(t => t.Showtime)
-                .FirstOrDefaultAsync(t => t.Id == id);
-
-            if (ticket == null)
+            try
             {
-                return NotFound();
+                var userId = await GetCurrentUserId();
+                var isAdmin = User.IsInRole(UserRoleNames.Admin);
+                var isManager = User.IsInRole(UserRoleNames.Manager);
+
+                var ticket = await tickets
+                    .Include(t => t.Showtime)
+                    .ThenInclude(s => s.Hall)
+                    .ThenInclude(h => h.Theater)
+                    .FirstOrDefaultAsync(t => t.Id == id);
+
+                if (ticket == null)
+                {
+                    return NotFound();
+                }
+
+                // If not admin and not owner, check if manager of this theater
+                if (!isAdmin && ticket.UserId != userId)
+                {
+                    if (isManager)
+                    {
+                        if (ticket.Showtime.Hall.Theater.ManagerId != userId)
+                        {
+                            return Forbid();
+                        }
+                    }
+                    else
+                    {
+                        return Forbid();
+                    }
+                }
+
+                // Check if showtime is in the past or within 1 hour
+                if (ticket.Showtime.StartTime <= DateTime.UtcNow.AddHours(1))
+                {
+                    return BadRequest("Cannot cancel tickets within 1 hour of showtime");
+                }
+
+                // Check if already checked in
+                if (ticket.IsCheckedIn)
+                {
+                    return BadRequest("Cannot cancel tickets that have been checked in");
+                }
+
+                tickets.Remove(ticket);
+
+                // Update the sold out status if removing this ticket makes seats available
+                if (ticket.Showtime.IsSoldOut)
+                {
+                    ticket.Showtime.IsSoldOut = false;
+                }
+
+                await dataContext.SaveChangesAsync();
+
+                return Ok();
             }
-
-            // If not admin and not owner, forbid access
-            //if (!isAdmin && ticket.UserId != userId)
-            //{
-            //    return Forbid();
-            //}
-
-            // Check if showtime is in the past or within 1 hour
-            if (ticket.Showtime.StartTime <= DateTime.UtcNow.AddHours(1))
+            catch (InvalidOperationException ex)
             {
-                return BadRequest("Cannot cancel tickets within 1 hour of showtime");
+                return Unauthorized(ex.Message);
             }
-
-            // Check if already checked in
-            if (ticket.IsCheckedIn)
-            {
-                return BadRequest("Cannot cancel tickets that have been checked in");
-            }
-
-            tickets.Remove(ticket);
-            await dataContext.SaveChangesAsync();
-
-            return Ok();
         }
 
         private bool IsInvalid(PurchaseTicketDto dto)
