@@ -10,7 +10,7 @@ public class FoodItem
     public string Description { get; set; }
 
     [Required, Range(0, 1000)]
-    public decimal Price { get; set; }
+    public float Price { get; set; }
 
     public int StockQuantity { get; set; }
 }

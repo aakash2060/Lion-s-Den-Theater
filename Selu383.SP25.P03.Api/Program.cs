@@ -95,41 +95,41 @@ namespace Selu383.SP25.P03.Api
                 SeedMovies.Initialize(scope.ServiceProvider);
                 //SeedReviews.Initialize(scope.ServiceProvider);
 
-            }
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
-            app.UseHttpsRedirection();
-
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseEndpoints(x =>
-               {
-                   x.MapControllers();
-               });
-            app.UseStaticFiles();
-
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSpa(x =>
+                // Configure the HTTP request pipeline.
+                if (app.Environment.IsDevelopment())
                 {
-                    x.UseProxyToSpaDevelopmentServer("http://localhost:5173");
-                });
-            }
-            else
-            {
-                app.MapFallbackToFile("/index.html");
-            }
+                    app.UseSwagger();
+                    app.UseSwaggerUI();
+                }
 
-            app.Run();
+                app.UseHttpsRedirection();
+
+                app.UseRouting();
+
+                app.UseAuthentication();
+                app.UseAuthorization();
+
+                app.UseEndpoints(x =>
+                   {
+                       x.MapControllers();
+                   });
+                app.UseStaticFiles();
+
+                if (app.Environment.IsDevelopment())
+                {
+                    app.UseSpa(x =>
+                    {
+                        x.UseProxyToSpaDevelopmentServer("http://localhost:5173");
+                    });
+                }
+                else
+                {
+                    app.MapFallbackToFile("/index.html");
+                }
+
+                app.Run();
+            }
         }
     }
 }
