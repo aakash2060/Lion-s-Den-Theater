@@ -94,7 +94,7 @@ namespace Selu383.SP25.P03.Api
                 await SeedUsers.Initialize(scope.ServiceProvider);
                 SeedMovies.Initialize(scope.ServiceProvider);
                 SeedFoodData.Initialize(scope.ServiceProvider);
-                //SeedReviews.Initialize(scope.ServiceProvider);
+                //SeedReviews.Initialize(scope.ServiceProvider); c
 
 
                 // Configure the HTTP request pipeline.
