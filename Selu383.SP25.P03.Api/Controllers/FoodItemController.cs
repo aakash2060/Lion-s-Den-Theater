@@ -70,6 +70,7 @@ namespace Selu383.SP25.P03.Api.Controllers
             existingItem.Description = item.Description;
             existingItem.Price = item.Price;
             existingItem.StockQuantity = item.StockQuantity;
+            existingItem.ImgUrl = item.ImgUrl;
 
             _context.FoodItems.Update(existingItem);
             await _context.SaveChangesAsync();

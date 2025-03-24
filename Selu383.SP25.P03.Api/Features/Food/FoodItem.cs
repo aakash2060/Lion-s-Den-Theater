@@ -12,5 +12,7 @@ public class FoodItem
     [Required, Range(0, 1000)]
     public float Price { get; set; }
 
+    public string ImgUrl { get; set; }
+
     public int StockQuantity { get; set; }
 }
