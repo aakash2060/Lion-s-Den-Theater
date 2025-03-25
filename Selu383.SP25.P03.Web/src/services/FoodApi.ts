@@ -1,5 +1,5 @@
 export const fetchFoodMenus = async () => {
-    const response = await fetch('https://localhost:7027/api/foodmenu');
+    const response = await fetch('/api/foodmenu');
     if (!response.ok) {
       throw new Error('Failed to fetch food menus');
     }
@@ -7,7 +7,7 @@ export const fetchFoodMenus = async () => {
   };
   
   export const fetchFoodItems = async () => {
-    const response = await fetch('https://localhost:7027/api/fooditem');
+    const response = await fetch('/api/fooditem');
     if (!response.ok) {
       throw new Error('Failed to fetch food items');
     }
