@@ -8,6 +8,7 @@ using Selu383.SP25.P03.Api.Features.Users;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using EmailService;
 
 namespace Selu383.SP25.P03.Api.Controllers
 {
@@ -15,23 +16,24 @@ namespace Selu383.SP25.P03.Api.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly UserManager<User> userManager;
+                private readonly UserManager<User> userManager;
         private readonly RoleManager<Role> roleManager;
         private readonly DataContext dataContext;
-        private readonly IEmailSender emailSender;
+        private readonly EmailService.IEmailSender emailSender;
         private DbSet<Role> roles;
 
         public UsersController(
             RoleManager<Role> roleManager,
             UserManager<User> userManager,
             DataContext dataContext,
-            IEmailSender emailSender)
+            EmailService.IEmailSender emailSender)
         {
             this.roleManager = roleManager;
             this.userManager = userManager;
             this.dataContext = dataContext;
             this.emailSender = emailSender;
             roles = dataContext.Set<Role>();
+
         }
 
         [HttpPost]
@@ -103,9 +105,8 @@ namespace Selu383.SP25.P03.Api.Controllers
                 return BadRequest();
 
             var user = await userManager.FindByEmailAsync(forgotPassword.Email!);
-
             if (user == null)
-                return NotFound();
+                return NotFound("User not found.");
 
             var token = await userManager.GeneratePasswordResetTokenAsync(user);
             var param = new Dictionary<string, string?>
@@ -119,10 +120,11 @@ namespace Selu383.SP25.P03.Api.Controllers
             var subject = "Password Reset Request";
             var body = $"<p>Please click the following link to reset your password: <a href='{callback}'>Reset Password</a></p>";
 
-            await emailSender.SendEmailAsync(forgotPassword.Email!, subject, body);
+            var message = new Message(new[] { forgotPassword.Email! }, subject, body);
+
+            await emailSender.SendEmailAsync(message);
 
             return Ok("Password reset email sent.");
         }
-
     }
 }

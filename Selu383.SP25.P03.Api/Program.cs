@@ -24,7 +24,9 @@ namespace Selu383.SP25.P03.Api
                 .GetSection("EmailConfiguration")
                 .Get<EmailConfiguration>();
             builder.Services.AddSingleton(emailConfig);
-            builder.Services.AddTransient<EmailService.IEmailSender, EmailService.EmailSender>(); //scoped ==> transient
+            builder.Services.AddTransient<EmailService.IEmailSender, EmailService.EmailSender>();
+            //scoped ==> transient
+
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
