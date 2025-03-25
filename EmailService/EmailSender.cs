@@ -1,7 +1,6 @@
 ﻿using MailKit.Net.Smtp;
 using MimeKit;
-using System.Net.Mail;
-
+using System.Threading.Tasks;
 
 namespace EmailService
 {
@@ -14,42 +13,41 @@ namespace EmailService
             this.configuration = configuration;
         }
 
-        public void SendEmail(Message message)
+        public async Task SendEmailAsync(Message message)
         {
             var emailMessage = CreateEmailMessage(message);
-            Send(emailMessage);
+            await SendAsync(emailMessage);
         }
 
         private MimeMessage CreateEmailMessage(Message message)
         {
             var emailMessage = new MimeMessage();
-            emailMessage.From.Add(new MailboxAddress("email", configuration.From));
+            emailMessage.From.Add(new MailboxAddress("Support", configuration.From));
             emailMessage.To.AddRange(message.To);
             emailMessage.Subject = message.Subject;
-            emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Text) { Text = message.Content };
+            emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html) { Text = message.Content };
 
             return emailMessage;
         }
 
-        private void Send(MimeMessage mailMessage)
+        private async Task SendAsync(MimeMessage mailMessage)
         {
-            using (var client = new MailKit.Net.Smtp.SmtpClient())
+            using (var client = new SmtpClient())
             {
                 try
                 {
-                    client.Connect(configuration.SmtpServer, configuration.Port, true);
-                    client.AuthenticationMechanisms.Remove("XOAUTH2");
-                    client.Authenticate(configuration.UserName, configuration.Password);
-
-                    client.Send(mailMessage);
+                    await client.ConnectAsync(configuration.SmtpServer, configuration.Port, MailKit.Security.SecureSocketOptions.StartTls);
+                    await client.AuthenticateAsync(configuration.UserName, configuration.Password);
+                    await client.SendAsync(mailMessage);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Console.WriteLine($"Email sending failed: {ex.Message}");
                     throw;
                 }
                 finally
                 {
-                    client.Disconnect(true);
+                    await client.DisconnectAsync(true);
                     client.Dispose();
                 }
             }
