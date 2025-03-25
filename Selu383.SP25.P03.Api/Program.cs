@@ -24,7 +24,7 @@ namespace Selu383.SP25.P03.Api
                 .GetSection("EmailConfiguration")
                 .Get<EmailConfiguration>();
             builder.Services.AddSingleton(emailConfig);
-            builder.Services.AddScoped<EmailService.IEmailSender, EmailService.EmailSender>();
+            builder.Services.AddTransient<EmailService.IEmailSender, EmailService.EmailSender>(); //scoped ==> transient
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -91,9 +91,10 @@ namespace Selu383.SP25.P03.Api
 
 
                 SeedMovies.Initialize(scope.ServiceProvider);
-                //SeedReviews.Initialize(scope.ServiceProvider);
+                SeedFoodData.Initialize(scope.ServiceProvider);
+                //SeedReviews.Initialize(scope.ServiceProvider); c
 
-            }
+
 
             if (app.Environment.IsDevelopment())
             {
@@ -113,19 +114,20 @@ namespace Selu383.SP25.P03.Api
 
             app.UseStaticFiles();
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSpa(x =>
+                if (app.Environment.IsDevelopment())
                 {
-                    x.UseProxyToSpaDevelopmentServer("http://localhost:5173");
-                });
-            }
-            else
-            {
-                app.MapFallbackToFile("/index.html");
-            }
+                    app.UseSpa(x =>
+                    {
+                        x.UseProxyToSpaDevelopmentServer("http://localhost:5173");
+                    });
+                }
+                else
+                {
+                    app.MapFallbackToFile("/index.html");
+                }
 
-            app.Run();
+                app.Run();
+            }
         }
     }
 }
