@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { movieService } from "../services/api";
+import { MovieDetails } from "../Data/MovieInterfaces";
 
 // Temporary trailer mappings until backend supports trailers
 const trailerMappings: Record<number, string> = {
@@ -32,19 +33,7 @@ const getYoutubeId = (url: string): string | null => {
   return match ? match[1] : null;
 };
 
-// Define the movie interface to match your API
-interface MovieDetails {
-  id: number;
-  title: string;
-  description: string;
-  director: string;
-  duration: number;
-  rating: string;
-  genre: string;
-  posterUrl: string;
-  releaseDate: string;
-  showtimes?: any[]; // Add the showtimes property if your API returns it
-}
+
 
 const MovieDescriptionPage = () => {
   const { id } = useParams<{ id: string }>();

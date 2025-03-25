@@ -1,6 +1,5 @@
 import { Showtime } from "./ShowtimeInterfaces";
 
-// Defining the Movie type based on your API response
 export interface Movie {
     id: number;
     title: string;

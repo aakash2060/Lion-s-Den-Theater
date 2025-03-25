@@ -50,7 +50,7 @@ namespace Selu383.SP25.P03.Api.Data
                         Rating = "PG-13",
                         Genre = "Sci-Fi",
                         PosterUrl = "https://m.media-amazon.com/images/I/71s3cEqEZTL._AC_UF894,1000_QL80_.jpg",
-                        ReleaseDate = new DateTime(2022, 12, 16)
+                        ReleaseDate = new DateTime(2025, 12, 16)
                     },
                     new Movie
                     {
@@ -61,7 +61,7 @@ namespace Selu383.SP25.P03.Api.Data
                         Rating = "PG-13",
                         Genre = "Action",
                         PosterUrl = "https://m.media-amazon.com/images/M/MV5BMmU5NGJlMzAtMGNmOC00YjJjLTgyMzUtNjAyYmE4Njg5YWMyXkEyXkFqcGc@._V1_SL1024_.jpg",
-                        ReleaseDate = new DateTime(2022, 3, 4)
+                        ReleaseDate = new DateTime(2025, 9, 4)
                     },
                     new Movie
                     {
@@ -94,7 +94,7 @@ namespace Selu383.SP25.P03.Api.Data
                         Rating = "R",
                         Genre = "Sci-Fi",
                         PosterUrl = "https://upload.wikimedia.org/wikipedia/en/1/1e/Everything_Everywhere_All_at_Once.jpg",
-                        ReleaseDate = new DateTime(2022, 3, 11)
+                        ReleaseDate = new DateTime(2025, 6, 11)
                     },
                     new Movie
                     {
@@ -105,7 +105,7 @@ namespace Selu383.SP25.P03.Api.Data
                         Rating = "PG-13",
                         Genre = "Action",
                         PosterUrl = "https://upload.wikimedia.org/wikipedia/en/thumb/1/13/Top_Gun_Maverick_Poster.jpg/220px-Top_Gun_Maverick_Poster.jpg",
-                        ReleaseDate = new DateTime(2022, 5, 27)
+                        ReleaseDate = new DateTime(2025, 5, 27)
                     },
                     new Movie
                     {
@@ -149,7 +149,7 @@ namespace Selu383.SP25.P03.Api.Data
                         Rating = "R",
                         Genre = "Drama",
                         PosterUrl = "https://upload.wikimedia.org/wikipedia/en/5/53/Parasite_%282019_film%29.png",
-                        ReleaseDate = new DateTime(2019, 5, 30)
+                        ReleaseDate = new DateTime(2025, 5, 30)
                     },
                     new Movie
                     {
