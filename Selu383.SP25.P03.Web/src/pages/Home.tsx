@@ -1,14 +1,38 @@
 import MovieCarousel from "../Components/MovieCarousel";
+import { useState, useEffect } from "react";
 import MovieCard from "../Components/MovieCard";
-import movies from "../constants/movies.json";
 import {useNavigate} from "react-router-dom";
+import {movieService} from "../services/api";
+import {Movie} from "../Data/MovieInterfaces";
 
 const Home = () => {
-
+    
     const navigate = useNavigate();
+    const [movies, setMovies] = useState<Movie[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchMovies = async () => {
+            try {
+                setLoading(true);
+                const data = await movieService.getAll();
+                setMovies(data);
+                setError(null);
+            }   catch (err) {
+                console.error("Failed to fetch movies:", err);
+                setError("Failed to load movies. Please try again later.")
+            }   finally {
+                setLoading(false);
+            }
+        };
+        fetchMovies();
+},[]);
+ 
+    
     // Filter movies into categories
-    const nowShowing = movies.filter(movie => new Date(movie.release_date) <= new Date());
-    const comingSoon = movies.filter(movie => new Date(movie.release_date) > new Date());
+    const nowShowing = movies.filter(movie => new Date(movie.releaseDate) <= new Date());
+    const comingSoon = movies.filter(movie => new Date(movie.releaseDate) > new Date());
     const topRated = [...movies]
         .filter(movie => movie.rating) // Ensure rating exists
         .sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating)) // Sort by rating (highest first)
@@ -43,9 +67,25 @@ const Home = () => {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-                    {nowShowing.map((movie, index) => (
-                        <MovieCard key={index} {...movie} />
-                    ))}
+                    {nowShowing.length > 0 ? (
+                        nowShowing.map((movie) => (
+                            <MovieCard
+                            key={movie.id}
+                            id={movie.id}
+                            title={movie.title}
+                            posterUrl={movie.posterUrl}
+                            releaseDate={movie.releaseDate}
+                            genre={movie.genre}
+                            rating={movie.rating}
+                            />
+                        ))
+                    ) : (
+                        <div className="col-span-full text-center py-10">
+                            No movies currently Showing
+                        </div>    
+                    )
+                    }
+
                 </div>
             </section>
 
@@ -61,9 +101,24 @@ const Home = () => {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-                    {comingSoon.map((movie, index) => (
-                        <MovieCard key={index} {...movie} />
-                    ))}
+                {comingSoon.length > 0 ? (
+                        comingSoon.map((movie) => (
+                            <MovieCard
+                            key={movie.id}
+                            id={movie.id}
+                            title={movie.title}
+                            posterUrl={movie.posterUrl}
+                            releaseDate={movie.releaseDate}
+                            genre={movie.genre}
+                            rating={movie.rating}
+                            />
+                        ))
+                    ) : (
+                        <div className="col-span-full text-center py-10">
+                            No Upcoming movies Scheduled
+                        </div>    
+                    )
+                    }
                 </div>
             </section>
 
@@ -79,9 +134,23 @@ const Home = () => {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-                    {topRated.map((movie, index) => (
-                        <MovieCard key={index} {...movie} />
-                    ))}
+                {topRated.length > 0 ? (
+            topRated.map((movie) => (
+              <MovieCard 
+                key={movie.id} 
+                id={movie.id}
+                title={movie.title}
+                posterUrl={movie.posterUrl}
+                releaseDate={movie.releaseDate}
+                genre={movie.genre}
+                rating={movie.rating}
+              />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-10">
+              No rated movies available
+            </div>
+          )}
                 </div>
             </section>
 
