@@ -42,7 +42,7 @@ const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies: propMovies }) => 
 
     fetchMovies();
   }, [propMovies]);
-
+  
   if (loading || movies.length === 0) {
     return (
       <div className="w-full h-[600px] bg-gray-900 flex items-center justify-center">
@@ -79,7 +79,11 @@ const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies: propMovies }) => 
                   {movie.title}
                 </h2>
                 <p className="text-gray-300 mt-2 text-lg opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition duration-700 delay-100">
-                  📅 {new Date(movie.releaseDate).toLocaleDateString()} • ⭐ {movie.rating || "N/A"}
+                  📅 {new Date(movie.releaseDate).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric"
+                  })} • ⭐ {movie.rating || "N/A"}
                 </p>
                 <p className="text-gray-400 mt-2 text-lg max-w-2xl opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition duration-700 delay-200">
                   {movie.description}
