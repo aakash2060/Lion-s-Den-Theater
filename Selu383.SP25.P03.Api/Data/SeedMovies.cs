@@ -118,7 +118,6 @@ namespace Selu383.SP25.P03.Api.Data
                         PosterUrl = "https://upload.wikimedia.org/wikipedia/en/3/3b/Black_Panther_Wakanda_Forever_poster.jpg",
                         ReleaseDate = new DateTime(2022, 11, 11)
                     },
-                    // New movies added below
                     new Movie
                     {
                         Title = "The Shawshank Redemption",
