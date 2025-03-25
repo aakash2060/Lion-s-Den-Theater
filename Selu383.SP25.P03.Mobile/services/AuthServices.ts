@@ -1,6 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage'
-const api_url = ' http://mastiff-kind-redfish.ngrok-free.app';
+const api_url = 'https://aef7-147-174-75-103.ngrok-free.app';  // Use https one from ngrok here and http in .env file
 
 interface LoginCredentials{
     username: string,
@@ -10,7 +10,7 @@ interface LoginCredentials{
 class AuthServices{
     async login(credentials:LoginCredentials){
         try{
-            const response = await axios.post(`${api_url}/authentication/login`, credentials,{
+            const response = await axios.post(`${api_url}/api/authentication/login`, credentials,{
                 withCredentials:true,
                 headers: {
                     "Content-Type": "application/json",

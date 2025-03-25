@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { View, TextInput, Text, TouchableOpacity } from 'react-native';
 import { AuthContext } from '@/context/AuthContext';
+import { Link } from 'expo-router';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -75,10 +76,12 @@ export default function Login() {
       </TouchableOpacity>
 
       <View className="mt-4 flex-row justify-center">
-        <Text className="text-gray-400">Don't have an account? </Text>
-        <TouchableOpacity>
-          <Text className="text-white font-bold">Sign Up</Text>
-        </TouchableOpacity>
+        <Text className="text-red-400">Don't have an account? </Text>
+        <Link href="/(auth)/register" asChild>
+  <TouchableOpacity>
+    <Text className="text-red-400">Register</Text>
+  </TouchableOpacity>
+</Link>
       </View>
     </View>
   );
