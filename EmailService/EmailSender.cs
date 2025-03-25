@@ -1,55 +1,46 @@
-﻿using MailKit.Net.Smtp;
-using MimeKit;
-using System.Threading.Tasks;
+﻿using System.Net;
+using System.Net.Mail;
+using Microsoft.Extensions.Options;
 
 namespace EmailService
 {
     public class EmailSender : IEmailSender
     {
-        private readonly EmailConfiguration configuration;
+        private readonly EmailConfiguration _emailSettings;
 
-        public EmailSender(EmailConfiguration configuration)
+        public EmailSender(IOptions<EmailConfiguration> emailSettings)
         {
-            this.configuration = configuration;
+            _emailSettings = emailSettings.Value ?? throw new ArgumentNullException(nameof(emailSettings));
         }
 
         public async Task SendEmailAsync(Message message)
         {
-            var emailMessage = CreateEmailMessage(message);
-            await SendAsync(emailMessage);
-        }
-
-        private MimeMessage CreateEmailMessage(Message message)
-        {
-            var emailMessage = new MimeMessage();
-            emailMessage.From.Add(new MailboxAddress("Support", configuration.From));
-            emailMessage.To.AddRange(message.To);
-            emailMessage.Subject = message.Subject;
-            emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Html) { Text = message.Content };
-
-            return emailMessage;
-        }
-
-        private async Task SendAsync(MimeMessage mailMessage)
-        {
-            using (var client = new SmtpClient())
+            using var client = new SmtpClient(_emailSettings.SmtpServer, _emailSettings.Port)
             {
-                try
-                {
-                    await client.ConnectAsync(configuration.SmtpServer, configuration.Port, MailKit.Security.SecureSocketOptions.StartTls);
-                    await client.AuthenticateAsync(configuration.UserName, configuration.Password);
-                    await client.SendAsync(mailMessage);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Email sending failed: {ex.Message}");
-                    throw;
-                }
-                finally
-                {
-                    await client.DisconnectAsync(true);
-                    client.Dispose();
-                }
+                Credentials = new NetworkCredential(_emailSettings.Username, _emailSettings.Password),
+                EnableSsl = _emailSettings.UseSSL
+            };
+
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress(_emailSettings.FromEmail, _emailSettings.FromName),
+                Subject = message.Subject,
+                Body = message.Content,
+                IsBodyHtml = true
+            };
+
+            foreach (var recipient in message.To)
+            {
+                mailMessage.To.Add(recipient);
+            }
+
+            try
+            {
+                await client.SendMailAsync(mailMessage);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Error sending email.", ex);
             }
         }
     }
