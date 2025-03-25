@@ -12,5 +12,6 @@ namespace Selu383.SP25.P03.Api.Features.Theaters
         public int SeatCount { get; set; }
         public int? ManagerId { get; set; }
         public virtual User? Manager { get; set; }
+        public ICollection<Hall> Halls { get; set; }
     }
 }

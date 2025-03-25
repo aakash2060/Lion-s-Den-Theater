@@ -1,5 +1,6 @@
-
+using EmailService;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.P03.Api.Data;
 using Selu383.SP25.P03.Api.Features.Payment;
@@ -14,23 +15,29 @@ namespace Selu383.SP25.P03.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             builder.Services.AddDbContext<DataContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DataContext") ?? throw new InvalidOperationException("Connection string 'DataContext' not found.")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DataContext")
+                    ?? throw new InvalidOperationException("Connection string 'DataContext' not found.")));
+
+            //Email Config
+            var emailConfig = builder.Configuration
+                .GetSection("EmailConfiguration")
+                .Get<EmailConfiguration>();
+            builder.Services.AddSingleton(emailConfig);
+            builder.Services.AddTransient<EmailService.IEmailSender, EmailService.EmailSender>();
+            //scoped ==> transient
 
             builder.Services.AddControllers();
-
-            // Add Swagger services
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddIdentity<User, Role>()
                 .AddEntityFrameworkStores<DataContext>()
                 .AddDefaultTokenProviders();
+            builder.Services.Configure<DataProtectionTokenProviderOptions>(opt => opt.TokenLifespan = TimeSpan.FromSeconds(120));       //token expires in 120 seconds
 
             builder.Services.Configure<IdentityOptions>(options =>
             {
-                // Password settings.
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
                 options.Password.RequireNonAlphanumeric = true;
@@ -38,22 +45,24 @@ namespace Selu383.SP25.P03.Api
                 options.Password.RequiredLength = 6;
                 options.Password.RequiredUniqueChars = 1;
 
-                // Lockout settings.
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                 options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.AllowedForNewUsers = true;
 
-                // User settings.
                 options.User.AllowedUserNameCharacters =
-                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
                 options.User.RequireUniqueEmail = false;
             });
 
             builder.Services.ConfigureApplicationCookie(options =>
             {
-                // Cookie settings
                 options.Cookie.HttpOnly = true;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.Name = "AuthCookie";
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+                options.SlidingExpiration = true;
+
                 options.Events.OnRedirectToLogin = context =>
                 {
                     context.Response.StatusCode = 401;
@@ -65,11 +74,9 @@ namespace Selu383.SP25.P03.Api
                     context.Response.StatusCode = 403;
                     return Task.CompletedTask;
                 };
-
-                options.SlidingExpiration = true;
             });
 
-            //Stripe config
+
             var stripeSettings = builder.Configuration.GetSection("Stripe");
             builder.Services.Configure<StripeSettings>(stripeSettings);
             StripeConfiguration.ApiKey = stripeSettings["SecretKey"];
@@ -83,11 +90,14 @@ namespace Selu383.SP25.P03.Api
                 SeedTheaters.Initialize(scope.ServiceProvider);
                 await SeedRoles.Initialize(scope.ServiceProvider);
                 await SeedUsers.Initialize(scope.ServiceProvider);
-                //SeedReviews.Initialize(scope.ServiceProvider);
 
-            }
 
-            // Configure the HTTP request pipeline.
+                SeedMovies.Initialize(scope.ServiceProvider);
+                SeedFoodData.Initialize(scope.ServiceProvider);
+                //SeedReviews.Initialize(scope.ServiceProvider); c
+
+
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -95,31 +105,31 @@ namespace Selu383.SP25.P03.Api
             }
 
             app.UseHttpsRedirection();
-
             app.UseRouting();
-
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(x =>
-               {
-                   x.MapControllers();
-               });
+            {
+                x.MapControllers();
+            });
+
             app.UseStaticFiles();
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSpa(x =>
+                if (app.Environment.IsDevelopment())
                 {
-                    x.UseProxyToSpaDevelopmentServer("http://localhost:5173");
-                });
-            }
-            else
-            {
-                app.MapFallbackToFile("/index.html");
-            }
+                    app.UseSpa(x =>
+                    {
+                        x.UseProxyToSpaDevelopmentServer("http://localhost:5173");
+                    });
+                }
+                else
+                {
+                    app.MapFallbackToFile("/index.html");
+                }
 
-            app.Run();
+                app.Run();
+            }
         }
     }
 }
