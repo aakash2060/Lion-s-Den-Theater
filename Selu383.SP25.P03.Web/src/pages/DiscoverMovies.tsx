@@ -2,19 +2,7 @@ import { useState, useEffect } from "react";
 import MovieCard from "../Components/MovieCard";
 import QRCard from "../Components/QRCard";
 import { movieService } from "../services/api";
-
-// Define the API Movie interface (same as in Home.tsx)
-interface Movie {
-  id: number;
-  title: string;
-  description: string;
-  director: string;
-  duration: number;
-  rating: string;
-  genre: string;
-  posterUrl: string;
-  releaseDate: string;
-}
+import { Movie} from '../Data/MovieInterfaces'
 
 const DiscoverMovies = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -137,8 +125,8 @@ const DiscoverMovies = () => {
             <MovieCard
               id={movie.id}
               title={movie.title}
-              poster_url={movie.posterUrl}
-              release_date={movie.releaseDate}
+              posterUrl={movie.posterUrl}
+              releaseDate={movie.releaseDate}
               genre={movie.genre}
               rating={movie.rating}
             />

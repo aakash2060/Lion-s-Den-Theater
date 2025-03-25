@@ -5,9 +5,25 @@ import { movieService } from "../services/api";
 
 // Temporary trailer mappings until backend supports trailers
 const trailerMappings: Record<number, string> = {
-  1: "https://www.youtube.com/watch?v=KZ-ktTJjMYE",
-  2: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-  // Add more mappings as needed
+  1: "https://www.youtube.com/watch?v=YoHD9XEInc0", // Inception
+  2: "https://www.youtube.com/watch?v=eOrNdBpGMv8", // The Avengers
+  3: "https://www.youtube.com/watch?v=d9MyW72ELq0", // Avatar: The Way of Water
+  4: "https://www.youtube.com/watch?v=mqqft2x_Aa4", // The Batman
+  5: "https://www.youtube.com/watch?v=JfVOs4VSpmA", // Spider-Man: No Way Home
+  6: "https://www.youtube.com/watch?v=8g18jFHCLXk", // Dune
+  7: "https://www.youtube.com/watch?v=wxN1T1uxQ2g", // Everything Everywhere All at Once
+  8: "https://www.youtube.com/watch?v=giXco2jaZ_4", // Top Gun: Maverick
+  9: "https://www.youtube.com/watch?v=_Z3QKkl1WyM", // Black Panther: Wakanda Forever
+  10: "https://www.youtube.com/watch?v=PLl99DlL6b4", // The Shawshank Redemption
+  11: "https://www.youtube.com/watch?v=V75dMMIW2B4", // The Lord of the Rings: The Fellowship of the Ring
+  12: "https://www.youtube.com/watch?v=5xH0HfJHsaY", // Parasite
+  13: "https://www.youtube.com/watch?v=zSWdZVtXT7E", // Interstellar
+  14: "https://www.youtube.com/watch?v=EXeTwQWrcwY", // The Dark Knight
+  15: "https://www.youtube.com/watch?v=ByXuk9QqQkk", // Spirited Away
+  16: "https://www.youtube.com/watch?v=vKQi3bBA1y8", // The Matrix
+  17: "https://www.youtube.com/watch?v=s7EdQ4FqbhY", // Pulp Fiction
+  18: "https://www.youtube.com/watch?v=xlnPHQ3TLX8", // Coco
+  19: "https://www.youtube.com/watch?v=DzfpyUB60YY"  // Get Out
 };
 
 // Helper function to extract YouTube ID
@@ -36,6 +52,10 @@ const MovieDescriptionPage = () => {
   const [movie, setMovie] = useState<MovieDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     const fetchMovieDetails = async () => {
@@ -86,7 +106,7 @@ const MovieDescriptionPage = () => {
           <div className="w-full max-w-screen-2xl aspect-video">
             <iframe
               className="w-full h-full border-none rounded-none"
-              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0`}
+              src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&controls=1&modestbranding=1&rel=0`}
               title={`${movie.title} Trailer`}
               allow="autoplay; encrypted-media"
               allowFullScreen

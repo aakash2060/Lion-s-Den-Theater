@@ -3,19 +3,7 @@ import { useState, useEffect } from "react";
 import MovieCard from "../Components/MovieCard";
 import {useNavigate} from "react-router-dom";
 import {movieService} from "../services/api";
-
-// Define the Movie type based on your API response
-interface Movie {
-    id: number;
-    title: string;
-    description: string;
-    director: string;
-    duration: number;
-    rating: string;
-    genre: string;
-    posterUrl: string;
-    releaseDate: string; // ISO date string
-  }
+import {Movie} from "../Data/MovieInterfaces";
 
 const Home = () => {
     
@@ -85,8 +73,8 @@ const Home = () => {
                             key={movie.id}
                             id={movie.id}
                             title={movie.title}
-                            poster_url={movie.posterUrl}
-                            release_date={movie.releaseDate}
+                            posterUrl={movie.posterUrl}
+                            releaseDate={movie.releaseDate}
                             genre={movie.genre}
                             rating={movie.rating}
                             />
@@ -119,8 +107,8 @@ const Home = () => {
                             key={movie.id}
                             id={movie.id}
                             title={movie.title}
-                            poster_url={movie.posterUrl}
-                            release_date={movie.releaseDate}
+                            posterUrl={movie.posterUrl}
+                            releaseDate={movie.releaseDate}
                             genre={movie.genre}
                             rating={movie.rating}
                             />
@@ -152,8 +140,8 @@ const Home = () => {
                 key={movie.id} 
                 id={movie.id}
                 title={movie.title}
-                poster_url={movie.posterUrl}
-                release_date={movie.releaseDate}
+                posterUrl={movie.posterUrl}
+                releaseDate={movie.releaseDate}
                 genre={movie.genre}
                 rating={movie.rating}
               />

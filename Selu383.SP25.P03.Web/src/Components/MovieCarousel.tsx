@@ -4,19 +4,7 @@ import "swiper/swiper-bundle.css";
 import { useState, useEffect } from "react";
 import { movieService } from "../services/api";
 import { useNavigate } from "react-router-dom";
-
-// Define the Movie interface to match your API
-interface Movie {
-  id: number;
-  title: string;
-  description: string;
-  director: string;
-  duration: number;
-  rating: string;
-  genre: string;
-  posterUrl: string;
-  releaseDate: string;
-}
+import {Movie} from "../Data/MovieInterfaces";
 
 // Props interface with optional movies param
 interface MovieCarouselProps {

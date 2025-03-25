@@ -1,14 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
-interface MovieProps {
-  id: number;
-  title: string;
-  poster_url: string;
-  release_date: string;
-  genre: string;
-  rating?: string;
-}
+import { MovieProps } from "../Data/MovieInterfaces";
 
 const genreColors: { [key: string]: string } = {
   Action: "border-red-600 shadow-red-500",
@@ -24,13 +16,13 @@ const genreColors: { [key: string]: string } = {
 };
 
 const MovieCard: React.FC<MovieProps> = ({
-  id, title, poster_url, release_date, genre, rating
+  id, title, posterUrl, releaseDate, genre, rating
 }) => {
   const borderClass = genre ? genreColors[genre] || genreColors["Default"] : genreColors["Default"];
   const movieUrl = `/movie/${id}`;
 
   // Format the date nicely
-  const formattedDate = new Date(release_date).toLocaleDateString(undefined, {
+  const formattedDate = new Date(releaseDate).toLocaleDateString('en-US', {
     year: 'numeric', 
     month: 'short', 
     day: 'numeric'
@@ -44,7 +36,7 @@ const MovieCard: React.FC<MovieProps> = ({
         {/* Movie Image */}
         <img
           className="w-full h-80 object-cover transition-opacity duration-500 group-hover:opacity-80"
-          src={poster_url}
+          src={posterUrl}
           alt={title}
           onError={(e) => {
             e.currentTarget.src = "/images/placeholder-poster.jpg"; // Fallback image
