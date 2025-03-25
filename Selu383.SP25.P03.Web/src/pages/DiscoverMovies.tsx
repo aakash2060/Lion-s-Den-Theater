@@ -130,6 +130,11 @@ const DiscoverMovies = () => {
               genre={movie.genre}
               rating={movie.rating}
             />
+            {hoveredMovie === movie.title && (
+              <div className="absolute top-0 left-0 bg-gray-900 text-white p-2 rounded-md">
+                {movie.title}
+              </div>
+            )}
           </div>
         ))}
       </div>
