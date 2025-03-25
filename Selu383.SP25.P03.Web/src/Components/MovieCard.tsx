@@ -2,17 +2,12 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 interface MovieProps {
-  name: string;
-  duration: string;
+  id: number;
+  title: string;
+  poster_url: string;
   release_date: string;
-  image: string;
+  genre: string;
   rating?: string;
-  category?: string;
-  director?: string;
-  cast?: string[];
-  rottenTomatoes?: string;
-  streamingOn?: string[];
-  trailer?: string;
 }
 
 const genreColors: { [key: string]: string } = {
@@ -29,19 +24,17 @@ const genreColors: { [key: string]: string } = {
 };
 
 const MovieCard: React.FC<MovieProps> = ({
-  name,
-  duration,
-  release_date,
-  image,
-  rating,
-  category,
-  director,
-  cast,
-  rottenTomatoes,
-  trailer,
+  id, title, poster_url, release_date, genre, rating
 }) => {
-  const borderClass = category ? genreColors[category] || genreColors["Default"] : genreColors["Default"];
-  const movieUrl = `/movie-description/${encodeURIComponent(name)}`;
+  const borderClass = genre ? genreColors[genre] || genreColors["Default"] : genreColors["Default"];
+  const movieUrl = `/movie/${id}`;
+
+  // Format the date nicely
+  const formattedDate = new Date(release_date).toLocaleDateString(undefined, {
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric'
+  });
 
   return (
     <Link to={movieUrl}>
@@ -51,35 +44,27 @@ const MovieCard: React.FC<MovieProps> = ({
         {/* Movie Image */}
         <img
           className="w-full h-80 object-cover transition-opacity duration-500 group-hover:opacity-80"
-          src={image}
-          alt={name}
+          src={poster_url}
+          alt={title}
+          onError={(e) => {
+            e.currentTarget.src = "/images/placeholder-poster.jpg"; // Fallback image
+          }}
         />
 
         {/* Overlay on hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black opacity-0 group-hover:opacity-100 transition duration-500"></div>
 
-        {/* Movie Details on Hover */}
+        {/* Movie Details on Hover - simplified with only the props we have */}
         <div className="absolute inset-0 flex flex-col justify-end p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
-          <h5 className="text-xl font-bold text-white mb-1">{name}</h5>
-          <p className="text-sm text-gray-300">⏳ {duration} | 📅 {release_date}</p>
-          <p className="text-sm text-yellow-400">⭐ {rating || "N/A"} | 🍅 {rottenTomatoes || "N/A"}%</p>
-          <p className="text-sm text-gray-400 mt-1">🎬 {director || "Director Unknown"}</p>
-          <p className="text-sm text-gray-400">🎭 {cast ? cast.join(", ") : "Cast Unknown"}</p>
+          <h5 className="text-xl font-bold text-white mb-1">{title}</h5>
+          <p className="text-sm text-gray-300">📅 {formattedDate}</p>
+          <p className="text-sm text-yellow-400">⭐ {rating || "N/A"}</p>
+          <p className="text-sm text-gray-400 mt-1">{genre}</p>
 
           <div className="flex gap-2 mt-3">
-            <button className="flex-1 bg-primary hover:bg-red-600 text-white font-semibold py-2 rounded-md transition duration-300">
+            <button className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-md transition duration-300">
               👀 View Details
             </button>
-            {trailer && (
-              <a
-                href={trailer}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-center font-semibold py-2 rounded-md transition duration-300"
-              >
-                ▶ Trailer
-              </a>
-            )}
           </div>
         </div>
       </div>

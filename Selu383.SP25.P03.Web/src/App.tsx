@@ -25,6 +25,11 @@ const App = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/profile" element={<Profile />} />
+              
+              {/* Update the route to use ID parameter */}
+              <Route path="/movie/:id" element={<MovieDescriptionPage />} />
+              
+              {/* Keep the old route temporarily for backward compatibility */}
               <Route path="/movie-description/:movieName" element={<MovieDescriptionPage />} />
             </Routes>
           </main>
