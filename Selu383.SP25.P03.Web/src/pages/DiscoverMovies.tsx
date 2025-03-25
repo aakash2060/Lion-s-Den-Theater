@@ -1,37 +1,78 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MovieCard from "../Components/MovieCard";
-import movies from "../constants/movies.json";
 import QRCard from "../Components/QRCard";
+import { movieService } from "../services/api";
+import { Movie} from '../Data/MovieInterfaces'
 
 const DiscoverMovies = () => {
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState("All");
-  const [sortOption, setSortOption] = useState("rating"); // Default sorting
+  const [sortOption, setSortOption] = useState("rating");
   const [hoveredMovie, setHoveredMovie] = useState<string | null>(null);
+
+  // Fetch movies from API
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        setLoading(true);
+        const data = await movieService.getAll();
+        setMovies(data);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch movies:", err);
+        setError("Failed to load movies. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMovies();
+  }, []);
+
+  // Determine movie status based on releaseDate
+  const getMovieStatus = (releaseDate: string) => {
+    return new Date(releaseDate) <= new Date() ? "now_showing" : "upcoming";
+  };
 
   // Filtering Movies (By Genre & Status)
   const filteredMovies =
     filter === "All"
       ? movies
       : movies.filter(
-          (movie) => movie.category === filter || movie.status === filter
+          (movie) => movie.genre === filter || getMovieStatus(movie.releaseDate) === filter
         );
 
   // Sorting Movies
   const sortedMovies = [...filteredMovies].sort((a, b) => {
     if (sortOption === "rating") {
-      return parseFloat(b.rating) - parseFloat(a.rating); // Highest rated first
+      return parseFloat(b.rating || "0") - parseFloat(a.rating || "0"); // Highest rated first
     }
     if (sortOption === "duration") {
-      return (
-        parseInt(b.duration.replace(/\D/g, "")) -
-        parseInt(a.duration.replace(/\D/g, ""))
-      ); // Longest movie first
+      return b.duration - a.duration; // Longest movie first
     }
     if (sortOption === "alphabetical") {
-      return a.name.localeCompare(b.name); // A → Z sorting
+      return a.title.localeCompare(b.title); // A → Z sorting
     }
     return 0;
   });
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-xl">Loading movies...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-xl text-red-500">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-8 py-6">
@@ -54,10 +95,10 @@ const DiscoverMovies = () => {
           <option value="All">All Movies</option>
           <option value="now_showing">Now Showing</option>
           <option value="upcoming">Upcoming</option>
-          <option value="Action">Action</option>
-          <option value="Sci-Fi">Sci-Fi</option>
-          <option value="Drama">Drama</option>
-          <option value="Animation">Animation</option>
+          {/* Dynamically populate genre options based on available genres */}
+          {Array.from(new Set(movies.map(movie => movie.genre))).map(genre => (
+            <option key={genre} value={genre}>{genre}</option>
+          ))}
         </select>
 
         {/* Sorting Options */}
@@ -73,16 +114,22 @@ const DiscoverMovies = () => {
       </div>
 
       {/* Movie Grid */}
-      <div className="grid grid-cols-5 gap-6 mt-6">
-        {sortedMovies.map((movie, i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-6">
+        {sortedMovies.map((movie) => (
           <div
-            key={i}
+            key={movie.id}
             className="relative"
-            onMouseEnter={() => setHoveredMovie(movie.name)}
+            onMouseEnter={() => setHoveredMovie(movie.title)}
             onMouseLeave={() => setHoveredMovie(null)}
           >
-            <MovieCard {...movie} />
-            {hoveredMovie === movie.name }
+            <MovieCard
+              id={movie.id}
+              title={movie.title}
+              posterUrl={movie.posterUrl}
+              releaseDate={movie.releaseDate}
+              genre={movie.genre}
+              rating={movie.rating}
+            />
           </div>
         ))}
       </div>
