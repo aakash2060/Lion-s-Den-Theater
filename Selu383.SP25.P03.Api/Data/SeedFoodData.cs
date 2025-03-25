@@ -19,12 +19,12 @@ namespace Selu383.SP25.P03.Api.Data
                 var foodItems = new List<FoodItem>
                 {
                     // Popcorn & Snacks
-                    new FoodItem { Name = "Popcorn", Description = "Classic buttery popcorn", Price = 5.99f, StockQuantity = 50, ImgUrl = "https://images.unsplash.com/photo-1587248724531-d6a6d2af1a5b" },
-                    new FoodItem { Name = "Nachos with Cheese", Description = "Tortilla chips with cheese", Price = 6.99f, StockQuantity = 30, ImgUrl = "https://images.unsplash.com/photo-1594007654729-407eedc4be63" },
-                    new FoodItem { Name = "Pretzel with Cheese", Description = "Soft pretzel with cheese", Price = 5.49f, StockQuantity = 15, ImgUrl = "https://images.unsplash.com/photo-1560787313-5dff3307e257" },
+                    new FoodItem { Name = "Popcorn", Description = "Classic buttery popcorn", Price = 5.99f, StockQuantity = 50, ImgUrl = "https://www.momjunction.com/wp-content/uploads/2015/05/Ranch-Style-Popcorn.jpg" },
+                    new FoodItem { Name = "Nachos with Cheese", Description = "Tortilla chips with cheese", Price = 6.99f, StockQuantity = 30, ImgUrl = "https://www.momjunction.com/wp-content/uploads/2015/05/Ranch-Style-Popcorn.jpg" },
+                    new FoodItem { Name = "Pretzel with Cheese", Description = "Soft pretzel with cheese", Price = 5.49f, StockQuantity = 15, ImgUrl = "https://www.platingsandpairings.com/wp-content/uploads/2020/01/pretzel-bites-14.jpg" },
                     
                     // Drinks
-                    new FoodItem { Name = "Large Soda", Description = "Refreshing soft drink", Price = 4.49f, StockQuantity = 40, ImgUrl = "https://images.unsplash.com/photo-1626228140000-98ab338b3e29" },
+                    new FoodItem { Name = "Large Soda", Description = "Refreshing soft drink", Price = 4.49f, StockQuantity = 40, ImgUrl = "https://static01.nyt.com/images/2012/09/06/opinion/video-opdoc-neistat-soda/video-opdoc-neistat-soda-articleLarge.jpg" },
                     new FoodItem { Name = "Coffee", Description = "Hot brewed coffee", Price = 2.99f, StockQuantity = 20, ImgUrl = "https://images.unsplash.com/photo-1498804103079-a6351b050096" },
                     new FoodItem { Name = "Slushie", Description = "Icy fruit-flavored drink", Price = 4.99f, StockQuantity = 30, ImgUrl = "https://images.unsplash.com/photo-1622794818187-79a1b93911c2" },
 
