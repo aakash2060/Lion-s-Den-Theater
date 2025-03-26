@@ -2,6 +2,7 @@ import { View, Text, TextInput, Pressable, Image, TouchableOpacity } from 'react
 import axios from 'axios';
 import { useRouter, Link } from 'expo-router';
 import React, { useState } from 'react';
+import { BASE_URL } from '@/constants/baseUrl';
 
 function Register() {
     const router = useRouter();
@@ -12,6 +13,7 @@ function Register() {
     const [password, setPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
     const [error, setError] = useState("")
+   
 
     const onSubmit = async () => {
         setError("");
@@ -20,18 +22,30 @@ function Register() {
             return;
         }
         try {
-            await axios.post("https://aef7-147-174-75-103.ngrok-free.app/api/users", {
+            const clientUri = BASE_URL;
+             await axios.post(`${BASE_URL}/api/users`, {
                 firstName, 
                 lastName, 
                 email,
                 username, 
                 password, 
-                roles: ['User']
-            }, { withCredentials: true });
+                roles: ['User'],
+                clientUri,
+            }, {
+                withCredentials: true,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
             router.push('/login');
         } catch (e) {
+            if (axios.isAxiosError(e)) {
+                setError(e.response?.data?.message || "Registration failed");
+            } else {
+                setError("An unexpected error occurred");
+            }
             console.error("Registration Failed", e);
-            setError("Registration Failed!");
         }
     }
 
