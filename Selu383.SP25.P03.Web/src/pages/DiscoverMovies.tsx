@@ -4,6 +4,7 @@ import QRCard from "../Components/QRCard";
 import { movieService } from "../services/api";
 import { Movie} from '../Data/MovieInterfaces'
 
+
 const DiscoverMovies = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
