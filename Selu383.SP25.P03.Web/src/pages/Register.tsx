@@ -10,35 +10,57 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // For loading state
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
+    // Password match validation
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      setLoading(false);
       return;
     }
 
     try {
-      await axios.post(
-        "https://localhost:7027/api/users",
+      // Construct the ClientUri dynamically (for example, the current page URL or a predefined URL)
+      const clientUri = window.location.origin; // or any other URI you want to send
+
+      // API call for registration
+      const response = await axios.post(
+        "/api/users",
         {
           firstName,
           lastName,
           userName: username,
           email,
           password,
-          roles: ["User"],
+          roles: ["User"], // Default role, can be customized
+          clientUri, // Add clientUri here
         },
         { withCredentials: true }
       );
 
+      // Redirect to login after successful registration
       navigate("/login");
     } catch (err) {
-      console.error(err);
-      setError("Registration failed. Please try again.");
+      // Handle errors from the backend
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 400) {
+          setError("Registration failed. Please check the form and try again.");
+        } else if (err.response?.data?.includes("Email is already taken")) {
+          setError("Email is already in use. Please try another one.");
+        } else {
+          setError("Something went wrong. Please try again later.");
+        }
+      } else {
+        setError("An unexpected error occurred.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -108,8 +130,9 @@ const Register = () => {
           <button
             type="submit"
             className="w-full bg-red-600 hover:bg-red-500 transition-all py-2 mt-4 rounded-md text-white font-semibold"
+            disabled={loading} // Disable button while loading
           >
-            Register
+            {loading ? "Registering..." : "Register"}
           </button>
         </form>
 
