@@ -30,7 +30,7 @@ const Register = () => {
       const clientUri = window.location.origin; // or any other URI you want to send
 
       // API call for registration
-      const response = await axios.post(
+       await axios.post(
         "/api/users",
         {
           firstName,
