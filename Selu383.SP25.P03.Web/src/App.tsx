@@ -10,6 +10,8 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import MovieDescriptionPage from "./pages/MovieDescription";
 import "./index.css";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const App = () => {
   return (
@@ -26,6 +28,9 @@ const App = () => {
               <Route path="/register" element={<Register />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/movie-description/:movieName" element={<MovieDescriptionPage />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+
             </Routes>
           </main>
           <Footer />
