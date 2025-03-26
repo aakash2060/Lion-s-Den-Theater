@@ -21,7 +21,7 @@ const ForgotPassword = () => {
         { withCredentials: true }
       );
       setMessage(response.data);
-      setTimeout(() => navigate("/reset-password", { state: { email } }), 1000);
+      setTimeout(() => navigate("/reset-password", { state: { email } }), 500);
     } catch (err) {
       setError("Error sending password reset email. Please try again.");
     }
