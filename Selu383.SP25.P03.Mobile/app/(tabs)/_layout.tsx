@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 import React from 'react';
 import { Platform, View } from 'react-native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -10,11 +10,11 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-
+ 
   return (
     <View className="flex-1 bg-black">
       {/* Navbar always on top */}
-      <Navbar />
+      <Navbar/>
 
      
       <Tabs

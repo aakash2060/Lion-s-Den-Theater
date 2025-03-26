@@ -15,24 +15,27 @@ namespace Selu383.SP25.P03.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Configure Database
             builder.Services.AddDbContext<DataContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DataContext")
                     ?? throw new InvalidOperationException("Connection string 'DataContext' not found.")));
 
-            //Email Config
-            var emailConfig = builder.Configuration
-                .GetSection("EmailConfiguration")
-                .Get<EmailConfiguration>();
-            builder.Services.AddSingleton(emailConfig);
-            builder.Services.AddScoped<EmailService.IEmailSender, EmailService.EmailSender>();
+            // Email Service Configuration
+            builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection("EmailConfiguration"));
+            builder.Services.AddTransient<EmailService.IEmailSender, EmailService.EmailSender>();
+
+            // Controllers & Swagger
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            // Identity configuration
             builder.Services.AddIdentity<User, Role>()
                 .AddEntityFrameworkStores<DataContext>()
                 .AddDefaultTokenProviders();
-            builder.Services.Configure<DataProtectionTokenProviderOptions>(opt => opt.TokenLifespan = TimeSpan.FromSeconds(120));       //token expires in 120 seconds
+
+            builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
+                opt.TokenLifespan = TimeSpan.FromSeconds(120)); // Token expiration set to 120 seconds
 
             builder.Services.Configure<IdentityOptions>(options =>
             {
@@ -74,13 +77,14 @@ namespace Selu383.SP25.P03.Api
                 };
             });
 
-
+            // Stripe Settings
             var stripeSettings = builder.Configuration.GetSection("Stripe");
             builder.Services.Configure<StripeSettings>(stripeSettings);
             StripeConfiguration.ApiKey = stripeSettings["SecretKey"];
 
             var app = builder.Build();
 
+            // Database migration and seeding
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<DataContext>();
@@ -88,13 +92,11 @@ namespace Selu383.SP25.P03.Api
                 SeedTheaters.Initialize(scope.ServiceProvider);
                 await SeedRoles.Initialize(scope.ServiceProvider);
                 await SeedUsers.Initialize(scope.ServiceProvider);
-
-
                 SeedMovies.Initialize(scope.ServiceProvider);
-                //SeedReviews.Initialize(scope.ServiceProvider);
-
+                SeedFoodData.Initialize(scope.ServiceProvider);
             }
 
+            // Swagger Setup
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -111,8 +113,10 @@ namespace Selu383.SP25.P03.Api
                 x.MapControllers();
             });
 
+            // Static files
             app.UseStaticFiles();
 
+            // SPA (Single Page Application) setup for development environment
             if (app.Environment.IsDevelopment())
             {
                 app.UseSpa(x =>
@@ -125,6 +129,7 @@ namespace Selu383.SP25.P03.Api
                 app.MapFallbackToFile("/index.html");
             }
 
+            // Run the app
             app.Run();
         }
     }

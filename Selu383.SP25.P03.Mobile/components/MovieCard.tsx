@@ -5,9 +5,10 @@ interface MovieProps {
     name: string;
     image: string;
     duration?: string;
+    releaseDate: string
 }
 
-const MovieCard: React.FC<MovieProps> = ({ name, image, duration }) => {
+const MovieCard: React.FC<MovieProps> = ({ name, image, duration, releaseDate }) => {
     // Calculate the width based on screen size (48% of screen width minus padding)
     const screenWidth = Dimensions.get('window').width;
     const cardWidth = (screenWidth - 48) / 2; // 48px accounts for outer padding and gap

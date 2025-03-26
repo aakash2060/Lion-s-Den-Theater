@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // 
   const fetchUser = async () => {
     try {
-      const response = await axios.get("https://localhost:7027/api/authentication/me", {
+      const response = await axios.get("/api/authentication/me", {
         withCredentials: true, //
       });
       setUser(response.data); 
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      await axios.post("https://localhost:7027/api/authentication/logout", {}, { withCredentials: true });
+      await axios.post("/api/authentication/logout", {}, { withCredentials: true });
       setUser(null);
     } catch (error) {
       console.error("Logout failed:", error);

@@ -1,14 +1,89 @@
-import React, { useState } from "react";
-import { View, Text, FlatList, ScrollView, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, FlatList, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import MovieCard from "../../components/MovieCard";
-import movies from "../../constants/movies.json";
+import axios from "axios";
+import { BASE_URL } from "@/constants/baseUrl";
+
+
+
+interface Movie {
+    id: number;
+    title: string; 
+    description: string;
+    posterUrl: string;
+    releaseDate: string;  
+    
+}
 
 const Home = () => {
     const [activeTab, setActiveTab] = useState("NOW PLAYING");
-    
-    const nowShowing = movies.filter(movie => new Date(movie.release_date) <= new Date());
-    const comingSoon = movies.filter(movie => new Date(movie.release_date) > new Date());
-    
+    const [movies, setMovies] = useState<Movie[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [filteredMovies, setFilteredMovies] = useState<Movie[]>([]);
+    const [error, setError] = useState<string | null>(null);
+
+    // Fetch movies from API
+    useEffect(() => {
+        const fetchMovies = async () => {
+            try {
+                setLoading(true);
+                const response = await axios.get(`${BASE_URL}/api/movies`);
+                setMovies(response.data);
+                setError(null);
+            } catch (err) {
+                console.error("Failed to fetch movies:", err);
+                setError("Failed to load movies. Please try again.");
+                setMovies([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMovies();
+    }, []);
+
+    // handle search
+    const handleSearch = (query: string) => {
+        if (!query.trim()) {
+            setFilteredMovies(movies);
+            return;
+        }
+        
+        
+        const filtered = movies.filter(movie => 
+            movie.title.toLowerCase().includes(query.toLowerCase()) ||
+            movie.description.toLowerCase().includes(query.toLowerCase())
+        );
+        
+        setFilteredMovies(filtered);
+    };
+
+    // Filter movies based on active tab
+    const nowShowing = movies.filter(movie => new Date(movie.releaseDate) <= new Date());
+    const comingSoon = movies.filter(movie => new Date(movie.releaseDate) > new Date());
+
+    if (loading) {
+        return (
+            <View className="bg-black flex-1 justify-center items-center">
+                <ActivityIndicator size="large" color="#3b82f6" />
+            </View>
+        );
+    }
+
+    if (error) {
+        return (
+            <View className="bg-black flex-1 justify-center items-center">
+                <Text className="text-white text-lg">{error}</Text>
+                <TouchableOpacity 
+                    className="mt-4 bg-blue-500 px-4 py-2 rounded"
+                    onPress={() => window.location.reload()}
+                >
+                    <Text className="text-white">Retry</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
     return (
         <View className="bg-black flex-1">
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -31,44 +106,62 @@ const Home = () => {
                     </TouchableOpacity>
                 </View>
                 
-                {/* Now Playing Section - 2-column Grid */}
+                {/* Now Playing Section */}
                 {activeTab === "NOW PLAYING" && (
                     <FlatList
                         data={nowShowing}
-                        keyExtractor={(item) => item.name}
+                        keyExtractor={(item) => item.id.toString()}
                         numColumns={2}
                         scrollEnabled={false}
                         columnWrapperStyle={{
-                            gap: 10, // Reduce spacing between cards
+                            gap: 10,
                             paddingHorizontal: 16,
                             marginTop: 16
                         }}
-                        renderItem={({ item }) => <MovieCard {...item} />}
+                        renderItem={({ item }) => (
+                            <MovieCard 
+                                name={item.title}  
+                                image={item.posterUrl}
+                                releaseDate={item.releaseDate}
+                                
+                            />
+                        )}
                         contentContainerStyle={{ paddingBottom: 20 }}
+                        ListEmptyComponent={
+                            <Text className="text-white text-center mt-10">No movies currently playing</Text>
+                        }
                     />
                 )}
                 
-                {/* Coming Soon Section - Horizontal Scroll */}
-                {/* <SectionHeader title="Coming Soon" />
-                <FlatList
-                    horizontal
-                    data={comingSoon}
-                    keyExtractor={(item) => item.name}
-                    renderItem={({ item }) => <MovieCard {...item} />}
-                    contentContainerStyle={{ paddingHorizontal: 16 }}
-                    showsHorizontalScrollIndicator={false}
-                /> */}
+                {/* Coming Soon Section */}
+                {activeTab === "COMING SOON" && (
+                    <FlatList
+                        data={comingSoon}
+                        keyExtractor={(item) => item.id.toString()}
+                        numColumns={2}
+                        scrollEnabled={false}
+                        columnWrapperStyle={{
+                            gap: 10,
+                            paddingHorizontal: 16,
+                            marginTop: 16
+                        }}
+                        renderItem={({ item }) => (
+                            <MovieCard 
+                                name={item.title}  
+                                image={item.posterUrl}
+                                releaseDate={item.releaseDate}
+                               
+                            />
+                        )}
+                        contentContainerStyle={{ paddingBottom: 20 }}
+                        ListEmptyComponent={
+                            <Text className="text-white text-center mt-10">No upcoming movies</Text>
+                        }
+                    />
+                )}
             </ScrollView>
         </View>
     );
 };
-
-// Section Header Component
-const SectionHeader = ({ title }: { title: string }) => (
-    <View className="mt-6 px-5">
-        <Text className="text-lg font-semibold text-white">{title}</Text>
-        <View className="h-0.5 bg-gray-700 w-full mt-2" />
-    </View>
-);
 
 export default Home;

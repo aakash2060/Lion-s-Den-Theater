@@ -22,6 +22,71 @@ namespace Selu383.SP25.P03.Api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("FoodItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImgUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<float>("Price")
+                        .HasColumnType("real");
+
+                    b.Property<int>("StockQuantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FoodItems");
+                });
+
+            modelBuilder.Entity("FoodMenu", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FoodMenus");
+                });
+
+            modelBuilder.Entity("FoodMenuItem", b =>
+                {
+                    b.Property<int>("FoodMenuId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FoodItemId")
+                        .HasColumnType("int");
+
+                    b.HasKey("FoodMenuId", "FoodItemId");
+
+                    b.HasIndex("FoodItemId");
+
+                    b.ToTable("FoodMenuItems");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.Property<int>("Id")
@@ -110,7 +175,6 @@ namespace Selu383.SP25.P03.Api.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-
             modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Movies.Movie", b =>
                 {
                     b.Property<int>("Id")
@@ -118,7 +182,7 @@ namespace Selu383.SP25.P03.Api.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-                   
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -153,6 +217,31 @@ namespace Selu383.SP25.P03.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Movies");
+                });
+
+            modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Reviews.Review", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("review")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Theaters.Hall", b =>
@@ -220,32 +309,6 @@ namespace Selu383.SP25.P03.Api.Migrations
                     b.HasIndex("MovieId");
 
                     b.ToTable("Showtimes");
-                  });
-                  
-            modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Reviews.Review", b =>
-
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Rating")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("review")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Theaters.Theater", b =>
@@ -291,9 +354,6 @@ namespace Selu383.SP25.P03.Api.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsCheckedIn")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsChkeckedIn")
                         .HasColumnType("bit");
 
                     b.Property<decimal>("Price")
@@ -447,6 +507,25 @@ namespace Selu383.SP25.P03.Api.Migrations
                     b.ToTable("AspNetUserRoles", (string)null);
                 });
 
+            modelBuilder.Entity("FoodMenuItem", b =>
+                {
+                    b.HasOne("FoodItem", "FoodItem")
+                        .WithMany()
+                        .HasForeignKey("FoodItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FoodMenu", "FoodMenu")
+                        .WithMany("FoodMenuItems")
+                        .HasForeignKey("FoodMenuId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FoodItem");
+
+                    b.Navigation("FoodMenu");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.HasOne("Selu383.SP25.P03.Api.Features.Users.Role", null)
@@ -483,10 +562,21 @@ namespace Selu383.SP25.P03.Api.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Reviews.Review", b =>
+                {
+                    b.HasOne("Selu383.SP25.P03.Api.Features.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Theaters.Hall", b =>
                 {
                     b.HasOne("Selu383.SP25.P03.Api.Features.Theaters.Theater", "Theater")
-                        .WithMany()
+                        .WithMany("Halls")
                         .HasForeignKey("TheaterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -511,19 +601,6 @@ namespace Selu383.SP25.P03.Api.Migrations
                     b.Navigation("Hall");
 
                     b.Navigation("Movie");
-                    
-                    });
-
-            modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Reviews.Review", b =>
-                {
-                    b.HasOne("Selu383.SP25.P03.Api.Features.Users.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-
                 });
 
             modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Theaters.Theater", b =>
@@ -573,6 +650,11 @@ namespace Selu383.SP25.P03.Api.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("FoodMenu", b =>
+                {
+                    b.Navigation("FoodMenuItems");
+                });
+
             modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Movies.Movie", b =>
                 {
                     b.Navigation("Showtimes");
@@ -586,6 +668,11 @@ namespace Selu383.SP25.P03.Api.Migrations
             modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Theaters.Showtime", b =>
                 {
                     b.Navigation("Tickets");
+                });
+
+            modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Theaters.Theater", b =>
+                {
+                    b.Navigation("Halls");
                 });
 
             modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Users.Role", b =>
