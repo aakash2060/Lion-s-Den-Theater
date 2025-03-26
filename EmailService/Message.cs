@@ -1,20 +1,16 @@
-﻿using MimeKit;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace EmailService
+﻿namespace EmailService
 {
     public class Message
     {
-        public List<MailboxAddress> To { get; }
+        public string[] To { get; }
         public string Subject { get; }
         public string Content { get; }
 
-        public Message(IEnumerable<string> to, string subject, string content)
+        public Message(string[] to, string subject, string content)
         {
-            To = to.Select(email => new MailboxAddress(email, email)).ToList();
-            Subject = subject;
-            Content = content;
+            To = to ?? throw new ArgumentNullException(nameof(to));
+            Subject = subject ?? throw new ArgumentNullException(nameof(subject));
+            Content = content ?? throw new ArgumentNullException(nameof(content));
         }
     }
 }

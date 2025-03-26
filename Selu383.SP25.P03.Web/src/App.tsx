@@ -12,6 +12,8 @@ import Profile from "./pages/Profile";
 import MovieDescriptionPage from "./pages/MovieDescription";
 import SearchResults from "./pages/SearchResult";
 import "./index.css";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const App = () => {
   return (
@@ -35,6 +37,9 @@ const App = () => {
               
               {/* Keep the old route temporarily for backward compatibility */}
               <Route path="/movie-description/:movieName" element={<MovieDescriptionPage />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+
             </Routes>
           </main>
           <Footer />

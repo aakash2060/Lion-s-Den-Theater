@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.P03.Api.Data;
 using Selu383.SP25.P03.Api.Features.Recovery;
 using Selu383.SP25.P03.Api.Features.Users;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using EmailService;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Selu383.SP25.P03.Api.Controllers
 {
@@ -16,7 +16,7 @@ namespace Selu383.SP25.P03.Api.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-                private readonly UserManager<User> userManager;
+        private readonly UserManager<User> userManager;
         private readonly RoleManager<Role> roleManager;
         private readonly DataContext dataContext;
         private readonly EmailService.IEmailSender emailSender;
@@ -33,7 +33,6 @@ namespace Selu383.SP25.P03.Api.Controllers
             this.dataContext = dataContext;
             this.emailSender = emailSender;
             roles = dataContext.Set<Role>();
-
         }
 
         [HttpPost]
@@ -61,6 +60,12 @@ namespace Selu383.SP25.P03.Api.Controllers
                 return BadRequest("Username is already taken.");
             }
 
+            // Validate password strength
+            if (!IsValidPassword(dto.Password))
+            {
+                return BadRequest("Password must be at least 8 characters long, contain an uppercase letter, a number, and a special character.");
+            }
+
             // Create the new user
             var newUser = new User
             {
@@ -75,6 +80,28 @@ namespace Selu383.SP25.P03.Api.Controllers
             if (!result.Succeeded)
             {
                 return BadRequest(result.Errors);
+            }
+
+            // Generate email confirmation token
+            var emailConfirmationToken = await userManager.GenerateEmailConfirmationTokenAsync(newUser);
+
+            // Encode the token for added security
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailConfirmationToken));
+
+            // Send the confirmation token in an email (instead of a link)
+            var subject = "Email Confirmation Request";
+            var body = $"<p>Thank you for registering! Your email confirmation token is: <strong>{encodedToken}</strong></p>";
+
+            var message = new Message(new[] { dto.Email }, subject, body);
+
+            // Send the email with the token
+            try
+            {
+                await emailSender.SendEmailAsync(message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error sending email: {ex.Message}");
             }
 
             // Assign roles if provided
@@ -98,33 +125,110 @@ namespace Selu383.SP25.P03.Api.Controllers
             };
         }
 
+        // Forgot Password
         [HttpPost("forgotpassword")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPassword)
         {
             if (!ModelState.IsValid)
-                return BadRequest();
+                return BadRequest("Invalid request.");
 
             var user = await userManager.FindByEmailAsync(forgotPassword.Email!);
             if (user == null)
                 return NotFound("User not found.");
 
-            var token = await userManager.GeneratePasswordResetTokenAsync(user);
-            var param = new Dictionary<string, string?>
+            try
             {
-                {"token", token},
-                {"email", forgotPassword.Email!}
-            };
+                // Generate password reset token
+                var token = await userManager.GeneratePasswordResetTokenAsync(user);
 
-            var callback = QueryHelpers.AddQueryString(forgotPassword.ClientUri!, param);
+                // Encode the token for added security
+                var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-            var subject = "Password Reset Request";
-            var body = $"<p>Please click the following link to reset your password: <a href='{callback}'>Reset Password</a></p>";
+                // Send the reset token in an email (instead of a clickable link)
+                var subject = "Password Reset Request";
+                var body = $"<p>We received a request to reset your password. Your password reset token is: <strong>{encodedToken}</strong></p>";
 
-            var message = new Message(new[] { forgotPassword.Email! }, subject, body);
+                var message = new Message(new[] { forgotPassword.Email! }, subject, body);
 
-            await emailSender.SendEmailAsync(message);
+                // Send the email with the token
+                await emailSender.SendEmailAsync(message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error sending email: {ex.Message}");
+            }
 
             return Ok("Password reset email sent.");
+        }
+
+        // Reset Password
+        [HttpPost("resetpassword")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPassword)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("Invalid password reset request.");
+
+            var user = await userManager.FindByEmailAsync(resetPassword.Email);
+            if (user == null)
+                return BadRequest("User not found.");
+
+            try
+            {
+                var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(resetPassword.Token));
+                var result = await userManager.ResetPasswordAsync(user, decodedToken, resetPassword.NewPassword);
+
+                if (!result.Succeeded)
+                {
+                    return BadRequest("Password reset failed.");
+                }
+
+                return Ok("Password has been reset successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error processing password reset: {ex.Message}");
+            }
+        }
+
+        // Confirm Email
+        [HttpGet("confirmemail")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            if (userId == null || token == null)
+            {
+                return BadRequest("Invalid email confirmation request.");
+            }
+
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            try
+            {
+                var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(token));
+                var result = await userManager.ConfirmEmailAsync(user, decodedToken);
+
+                if (!result.Succeeded)
+                {
+                    return BadRequest("Email confirmation failed.");
+                }
+
+                return Ok("Email confirmed successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error confirming email: {ex.Message}");
+            }
+        }
+
+        // Helper method to validate password strength
+        private bool IsValidPassword(string password)
+        {
+            // Password should be at least 8 characters long, contain an uppercase letter, a number, and a special character
+            var regex = new Regex(@"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$");
+            return regex.IsMatch(password);
         }
     }
 }
