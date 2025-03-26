@@ -1,9 +1,16 @@
+import { useRouter } from "expo-router";
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const Navbar = () => {
+    const router = useRouter();
+    
+    const handleNavigateToLogin = () => {
+        (router as any).navigate('/(auth)/login'); 
+    };
+
     return (
         <SafeAreaView>
             <View style={{
@@ -26,7 +33,11 @@ const Navbar = () => {
                     <TouchableOpacity style={{ marginHorizontal: 10 }}>
                         <Icon name="envelope" size={25} color="white" />
                     </TouchableOpacity>
-                    <TouchableOpacity style={{ marginHorizontal: 10 }}>
+                    
+                    <TouchableOpacity 
+                        style={{ marginHorizontal: 10 }}
+                        onPress={handleNavigateToLogin}
+                    >
                         <Icon name="user" size={25} color="white" />
                     </TouchableOpacity>
                 </View>
