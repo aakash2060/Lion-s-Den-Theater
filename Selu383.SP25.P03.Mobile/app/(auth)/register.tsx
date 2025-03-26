@@ -1,6 +1,6 @@
-import { View, Text, TextInput, Pressable, Image } from 'react-native';
+import { View, Text, TextInput, Pressable, Image, TouchableOpacity } from 'react-native';
 import axios from 'axios';
-import { useRouter } from 'expo-router';
+import { useRouter, Link } from 'expo-router';
 import React, { useState } from 'react';
 
 function Register() {
@@ -120,11 +120,11 @@ function Register() {
                     <Text className="text-gray-400">
                         Already have an account?{' '}
                     </Text>
-                    <Pressable onPress={() => router.push('/(auth)/login')}>
-                        <Text className="text-red-400 hover:text-red-500">
-                            Login
-                        </Text>
-                    </Pressable>
+                    <Link href = "/(auth)/login" asChild>
+                    <TouchableOpacity>
+                        <Text className='text-red-400'>Login</Text>
+                    </TouchableOpacity>
+                    </Link>
                 </View>
             </View>
         </View>

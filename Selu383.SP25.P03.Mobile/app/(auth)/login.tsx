@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { View, TextInput, Text, TouchableOpacity } from 'react-native';
 import { AuthContext } from '@/context/AuthContext';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -9,6 +9,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const auth = useContext(AuthContext);
+  const router = useRouter()
 
   if (!auth) {
     return null;
@@ -20,6 +21,8 @@ export default function Login() {
       setError('');
       await auth.signin(username, password);
       console.log('Login successful');
+      router.push('/profile')
+      console.log(auth)
     } catch (e) {
       console.error('Login Failed', e);
       setError('Invalid username or password');
