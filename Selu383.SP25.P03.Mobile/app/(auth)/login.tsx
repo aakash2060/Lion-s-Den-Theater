@@ -11,9 +11,11 @@ export default function Login() {
   const auth = useContext(AuthContext);
   const router = useRouter()
 
-  if (!auth) {
+  if (!auth)  {
     return null;
   }
+
+  
 
   const handleLogin = async () => {
     try {

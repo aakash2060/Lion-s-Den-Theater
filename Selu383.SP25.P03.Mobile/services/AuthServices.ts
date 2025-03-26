@@ -1,65 +1,91 @@
 import axios from 'axios';
-const api_url = 'https://45b7-209-205-139-199.ngrok-free.app';  // Use https one from ngrok here and http in .env file
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '@/constants/baseUrl';
 
-interface LoginCredentials{
+// const api_url = 'https://b377-209-205-139-199.ngrok-free.app'; // using from .env
+
+interface LoginCredentials {
     username: string,
     password: string
 }
 
-class AuthServices{
-    async login(credentials: LoginCredentials) {
+interface LoginResponse {
+    user?: any;
+    token?: string;
+}
+
+class AuthServices {
+    private axiosInstance = axios.create({
+        baseURL: `${BASE_URL}/api`, 
+        withCredentials: true,
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+    });
+
+    async login(credentials: LoginCredentials): Promise<LoginResponse> {
         try {
-            const response = await axios.post(`${api_url}/api/authentication/login`, credentials, {
-                withCredentials: true,
+            const response = await this.axiosInstance.post('/authentication/login', credentials);
+            
+            // More flexible response checking
+            const userData = response.data?.user || response.data;
+            if (!userData) {
+                throw new Error("Authentication succeeded but no user data received");
+            }
+            
+            return { user: userData };
+        } catch (error) {
+            console.error("Login Failed:", error);
+            throw error;
+        }
+    }
+    
+    async logout(): Promise<void> {
+        try {
+            await this.axiosInstance.post('/authentication/logout');
+            // Clear any stored tokens
+            await AsyncStorage.removeItem('auth_token');
+        } catch (error) {
+            console.error("Logout failed:", error);
+            throw error;
+        }
+    }
+    
+    async getCurrentUser(): Promise<any> {
+        try {
+            // First check if we have a token
+            const token = await AsyncStorage.getItem('auth_token');
+            if (!token) return null; // No token means no logged-in user
+            
+            const response = await this.axiosInstance.get('/authentication/me', {
                 headers: {
-                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${token}`
                 }
             });
-
-            // Ensure response data contains a user object
-            if (response.data && response.data.user) {
-                return response.data; // Return the entire response containing user
-            } else {
-                throw new Error("User not found in response.");
-            }
-        } catch (e) {
-            console.error("Login Failed:", e);
-            throw e;  // Ensure errors are propagated correctly
-        }
-    }
- 
-    
-    async logout() {
-        try {
-            await axios.post(`${api_url}/authentication/logout`, {}, { withCredentials: true });
-        } catch (e) {
-            console.error("Logout failed:", e);
-        }
-    }
-    
-    async getCurrentUser() {
-        try {
-            const response = await axios.get(`${api_url}/api/authentication/me`, { withCredentials: true });
-            console.log("Fetched user from /me:", response.data);
+            
             return response.data;
         } catch (error) {
-            console.error("Error fetching user from /me:", error);
+            if (axios.isAxiosError(error) && error.response?.status === 401) {
+                await AsyncStorage.removeItem('auth_token');
+                return null;
+            }
+            console.error("Error fetching user:", error);
             return null;
         }
     }
-    
 
-      async isAuthenticated() {
+    async isAuthenticated(): Promise<boolean> {
         try {
-            const response = await axios.get(`${api_url}/authentication/me`, { withCredentials: true });
-            console.log("Auth check response:", response.status);
-            return response.status === 200;
-        } catch (e) {
-            console.error("Auth check failed:", e);
+            const token = await AsyncStorage.getItem('auth_token');
+            if (!token) return false;
+            
+            await this.axiosInstance.head('/authentication/validate-token');
+            return true;
+        } catch (error) {
             return false;
         }
     }
-    
 }
-export default AuthServices;
 
+export default AuthServices;

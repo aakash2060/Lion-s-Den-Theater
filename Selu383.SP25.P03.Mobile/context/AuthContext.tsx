@@ -6,9 +6,11 @@ const authServices = new AuthServices();
 
 interface AuthType {
     isAuthenticated: boolean;
-    signin: (username: string, password: string) => Promise<void>;
+    isLoading: boolean;
+    signin: (username: string, password: string) => Promise<boolean>;
     signout: () => Promise<void>;
     user: any;
+    error: string | null;
 }
 
 export const AuthContext = createContext<AuthType | undefined>(undefined);
@@ -19,64 +21,94 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [user, setUser] = useState<any>(null);
+    const [error, setError] = useState<string | null>(null);
 
-    // ✅ Fetch user on app start
+    // Fetch user on app start
     useEffect(() => {
-        const fetchUser = async () => {
+        const initializeAuth = async () => {
+            setIsLoading(true);
             try {
-                const response = await authServices.getCurrentUser();
-                if (response) {
-                    console.log("Fetched user:", response);
-                    setUser(response);
+                const userData = await authServices.getCurrentUser();
+                if (userData) {
+                    setUser(userData);
                     setIsAuthenticated(true);
-                    await AsyncStorage.setItem("user", JSON.stringify(response));
+                    await AsyncStorage.setItem("user", JSON.stringify(userData));
                 } else {
-                    console.log("No user found, setting state to null");
-                    setUser(null);
-                    setIsAuthenticated(false);
+                    await clearAuthState();
                 }
             } catch (error) {
-                console.error("Error fetching user:", error);
-                setUser(null);
-                setIsAuthenticated(false);
+                console.error("Initial auth check failed:", error);
+                await clearAuthState();
+                setError("Failed to initialize authentication");
+            } finally {
+                setIsLoading(false);
             }
         };
 
-        fetchUser();
+        initializeAuth();
     }, []);
 
-    // Sign in function
-    const signin = async (username: string, password: string) => {
-        try {
-            const response = await authServices.login({ username, password });
+    const clearAuthState = async () => {
+        await AsyncStorage.removeItem("user");
+        setUser(null);
+        setIsAuthenticated(false);
+    };
 
-            if (response.user) {
-                console.log("User logged in:", response.user);
-                await AsyncStorage.setItem("user", JSON.stringify(response.user));
-                setUser(response.user);
-                setIsAuthenticated(true);
+    // Sign in function
+    const signin = async (username: string, password: string): Promise<boolean> => {
+        setIsLoading(true);
+        setError(null);
+        
+        try {
+            // Clear any previous auth state
+            await clearAuthState();
+            
+            const response = await authServices.login({ username, password });
+            const userData = response?.user || response;
+            
+            if (!userData) {
+                throw new Error("Login succeeded but no user data received");
             }
-        } catch (error) {
+            
+            await AsyncStorage.setItem("user", JSON.stringify(userData));
+            setUser(userData);
+            setIsAuthenticated(true);
+            return true;
+        } catch (error: any) {
             console.error("Login failed:", error);
+            setError(error.message || "Login failed. Please check your credentials.");
+            await clearAuthState();
+            return false;
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    // signout
+    // Sign out function
     const signout = async () => {
+        setIsLoading(true);
         try {
             await authServices.logout();
-            await AsyncStorage.removeItem("user");
-            console.log("User logged out, cleared from storage.");
-            setUser(null);
-            setIsAuthenticated(false);
+            await clearAuthState();
         } catch (error) {
             console.error("Logout failed:", error);
+            setError("Logout failed. Please try again.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, signin, signout, user }}>
+        <AuthContext.Provider value={{ 
+            isAuthenticated, 
+            signin, 
+            signout, 
+            user, 
+            isLoading,
+            error 
+        }}>
             {children}
         </AuthContext.Provider>
     );
