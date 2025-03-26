@@ -22,8 +22,12 @@ const Register = () => {
     }
 
     try {
+      // Construct the ClientUri dynamically (for example, the current page URL or a predefined URL)
+      const clientUri = window.location.origin; // or any other URI you want to send
+
+      // API call for registration
       await axios.post(
-        "https://localhost:7027/api/users",
+        "/api/users",
         {
           firstName,
           lastName,
@@ -31,6 +35,7 @@ const Register = () => {
           email,
           password,
           roles: ["User"],
+          clientUri
         },
         { withCredentials: true }
       );
