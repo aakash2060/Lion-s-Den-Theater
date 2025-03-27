@@ -137,7 +137,7 @@ namespace Selu383.SP25.P03.Api.Data
                         Duration = 178,
                         Rating = "PG-13",
                         Genre = "Fantasy",
-                        PosterUrl = "https://upload.wikimedia.org/wikipedia/en/8/8a/The_Lord_of_the_Rings_The_Fellowship_of_the_Ring_%282001%29.jpg",
+                        PosterUrl = "https://upload.wikimedia.org/wikipedia/en/f/fb/Lord_Rings_Fellowship_Ring.jpg",
                         ReleaseDate = new DateTime(2001, 12, 19)
                     },
                     new Movie
