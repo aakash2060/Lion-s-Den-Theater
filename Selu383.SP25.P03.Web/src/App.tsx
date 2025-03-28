@@ -14,6 +14,7 @@ import SearchResults from "./pages/SearchResult";
 import "./index.css";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const App = () => {
   return (
@@ -39,6 +40,7 @@ const App = () => {
               <Route path="/movie-description/:movieName" element={<MovieDescriptionPage />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
             </Routes>
           </main>
