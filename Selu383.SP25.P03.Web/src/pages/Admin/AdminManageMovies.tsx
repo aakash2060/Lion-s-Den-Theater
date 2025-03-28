@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { movieService } from "../services/api"; // use your existing service
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { movieService } from "../../services/api"; 
 
 interface Movie {
   id: number;
@@ -16,6 +17,7 @@ interface Movie {
 const AdminManageMovies = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -43,7 +45,15 @@ const AdminManageMovies = () => {
 
   return (
     <div className="p-8 text-white min-h-screen bg-gradient-to-b from-gray-900 to-black">
-      <h1 className="text-4xl font-bold mb-6">🎬 Manage Movies</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-4xl font-bold">🎬 Manage Movies</h1>
+        <button
+          onClick={() => navigate("/admin-add-movie")}
+          className="bg-red-600 hover:bg-red-500 text-white px-5 py-2 rounded shadow-lg"
+        >
+          ➕ Add New Movie
+        </button>
+      </div>
 
       {loading ? (
         <div className="text-center text-gray-400">Loading movies...</div>

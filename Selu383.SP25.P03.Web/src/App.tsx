@@ -14,9 +14,10 @@ import SearchResults from "./pages/SearchResult";
 import "./index.css";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminUsers from "./pages/AdminUsers"; 
-import AdminManageMovies from "./pages/AdminManageMovies"; 
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AdminUsers from "./pages/Admin/AdminUsers"; 
+import AdminManageMovies from "./pages/Admin/AdminManageMovies"; 
+import AdminAddMovie from "./pages/Admin/AdminAddMovie";
 
 
 const App = () => {
@@ -46,6 +47,7 @@ const App = () => {
               <Route path="/admin-dashboard" element={<AdminDashboard />} />
               <Route path="/admin-users" element={<AdminUsers />} />
               <Route path="/admin-manage-movies" element={<AdminManageMovies />} />
+              <Route path="/admin-add-movie" element={<AdminAddMovie />} />
 
 
             </Routes>
