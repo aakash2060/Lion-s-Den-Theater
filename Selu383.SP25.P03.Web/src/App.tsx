@@ -15,6 +15,9 @@ import "./index.css";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsers from "./pages/AdminUsers"; 
+import AdminManageMovies from "./pages/AdminManageMovies"; 
+
 
 const App = () => {
   return (
@@ -41,6 +44,9 @@ const App = () => {
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/admin-dashboard" element={<AdminDashboard />} />
+              <Route path="/admin-users" element={<AdminUsers />} />
+              <Route path="/admin-manage-movies" element={<AdminManageMovies />} />
+
 
             </Routes>
           </main>

@@ -1,5 +1,6 @@
 import { FaChartBar, FaUsers, FaFilm, FaCog } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const AdminDashboard = () => {
   return (
@@ -32,9 +33,9 @@ const AdminDashboard = () => {
             <h2 className="text-2xl font-bold">Manage Users</h2>
           </div>
           <p className="text-gray-300">View and manage registered users.</p>
-          <button className="mt-4 bg-blue-600 hover:bg-blue-700 transition px-4 py-2 rounded text-sm font-medium">
-            View Users
-          </button>
+          <Link to="/admin-users">
+  <button className="btn bg-red-600 hover:bg-red-700">View Users</button>
+</Link>
         </motion.div>
 
         {/* Movie Management */}
@@ -47,9 +48,12 @@ const AdminDashboard = () => {
             <h2 className="text-2xl font-bold">Manage Movies</h2>
           </div>
           <p className="text-gray-300">Add, edit, or remove movies from the site.</p>
-          <button className="mt-4 bg-red-600 hover:bg-red-700 transition px-4 py-2 rounded text-sm font-medium">
-            Manage Movies
-          </button>
+          <Link to="/admin-manage-movies">
+  <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
+    Manage Movies
+  </button>
+</Link>
+
         </motion.div>
 
         {/* Settings */}
