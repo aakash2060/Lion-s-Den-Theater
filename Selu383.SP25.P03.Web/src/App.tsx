@@ -18,6 +18,7 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminUsers from "./pages/Admin/AdminUsers"; 
 import AdminManageMovies from "./pages/Admin/AdminManageMovies"; 
 import AdminAddMovie from "./pages/Admin/AdminAddMovie";
+import AdminEditMovie from "./pages/Admin/AdminEditMovie";
 
 
 const App = () => {
@@ -44,10 +45,15 @@ const App = () => {
               <Route path="/movie-description/:movieName" element={<MovieDescriptionPage />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              
+              
+             
               <Route path="/admin-dashboard" element={<AdminDashboard />} />
               <Route path="/admin-users" element={<AdminUsers />} />
               <Route path="/admin-manage-movies" element={<AdminManageMovies />} />
               <Route path="/admin-add-movie" element={<AdminAddMovie />} />
+              <Route path="/admin/edit-movie/:id" element={<AdminEditMovie />} />
+
 
 
             </Routes>

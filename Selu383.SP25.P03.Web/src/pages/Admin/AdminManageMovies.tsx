@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { movieService } from "../../services/api"; 
+import { movieService } from "../../services/api";
 
 interface Movie {
   id: number;
@@ -17,6 +17,9 @@ interface Movie {
 const AdminManageMovies = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [selectedMovieId, setSelectedMovieId] = useState<number | null>(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -79,18 +82,55 @@ const AdminManageMovies = () => {
               <p className="text-sm mt-1 line-clamp-3">{movie.description}</p>
 
               <div className="flex justify-between mt-auto pt-4">
-                <button className="bg-yellow-600 px-4 py-2 rounded hover:bg-yellow-500">
+                <button
+                  onClick={() => navigate(`/admin/edit-movie/${movie.id}`)}
+                  className="bg-yellow-600 px-4 py-2 rounded hover:bg-yellow-500 text-white"
+                >
                   Edit
                 </button>
                 <button
-                  className="bg-red-600 px-4 py-2 rounded hover:bg-red-500"
-                  onClick={() => handleDelete(movie.id)}
+                  className="bg-red-600 px-4 py-2 rounded hover:bg-red-500 text-white"
+                  onClick={() => {
+                    setSelectedMovieId(movie.id);
+                    setShowConfirm(true);
+                  }}
                 >
                   Delete
                 </button>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white text-black p-6 rounded-lg shadow-lg w-full max-w-sm">
+            <h2 className="text-lg font-semibold mb-4">Are you sure?</h2>
+            <p className="text-sm text-gray-700 mb-4">
+              This action cannot be undone. The movie will be permanently deleted.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  if (selectedMovieId !== null) {
+                    handleDelete(selectedMovieId);
+                    setShowConfirm(false);
+                  }
+                }}
+                className="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded"
+              >
+                Yes, Delete
+              </button>
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
