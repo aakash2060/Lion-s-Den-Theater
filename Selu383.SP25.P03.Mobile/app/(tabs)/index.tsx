@@ -99,9 +99,9 @@ const Home = () => {
                             COMING SOON
                         </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setActiveTab("ON DEMAND")}>
-                        <Text className={`${activeTab === "ON DEMAND" ? "text-blue-400" : "text-gray-400"} text-lg font-bold`}>
-                            ON DEMAND
+                    <TouchableOpacity onPress={() => setActiveTab("Featured")}>
+                        <Text className={`${activeTab === "Featured" ? "text-blue-400" : "text-gray-400"} text-lg font-bold`}>
+                           Featured
                         </Text>
                     </TouchableOpacity>
                 </View>

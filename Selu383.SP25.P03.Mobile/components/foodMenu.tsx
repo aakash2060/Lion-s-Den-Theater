@@ -1,36 +1,42 @@
-import React, { useState } from "react";
+import React, { useState } from "react"; 
 import { View, Text, Image, TouchableOpacity, FlatList, Dimensions } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
-import foodData from "../constants/food.json";
 
 interface FoodProps {
-  title: string;
-  image: string;
+  id: number;
+  name: string;
+  imgUrl: string;
   price: string;
+  description: string;
+  stockQuantity: string;
 }
 
-const FoodMenu = () => {
-  const [favorites, setFavorites] = useState<{ [key: string]: boolean }>({});
+interface FoodMenuProps {
+  foodItems: FoodProps[];
+}
+
+const FoodMenu: React.FC<FoodMenuProps> = ({ foodItems }) => {
+  const [favorites, setFavorites] = useState<{ [key: number]: boolean }>({});
 
   const screenWidth = Dimensions.get("window").width;
   const cardWidth = (screenWidth - 48) / 2; // Adjusted width for two columns with spacing
 
-  const toggleFavorite = (title: string) => {
+  const toggleFavorite = (id: number) => {
     setFavorites((prev) => ({
       ...prev,
-      [title]: !prev[title],
+      [id]: !prev[id],
     }));
   };
 
   const renderFoodItem = ({ item }: { item: FoodProps }) => {
-    const isFavorite = favorites[item.title] || false;
+    const isFavorite = favorites[item.id] || false;
 
     return (
       <View style={{ width: cardWidth, alignItems: "center", marginBottom: 12 }}>
         {/* Image + Favorite Icon */}
         <View className="relative">
           <Image
-            source={{ uri: item.image }}
+            source={{ uri: item.imgUrl }}
             style={{
               width: cardWidth,
               height: cardWidth * 0.75,
@@ -40,22 +46,25 @@ const FoodMenu = () => {
           />
           <TouchableOpacity
             className="absolute top-2 right-2"
-            onPress={() => toggleFavorite(item.title)}
+            onPress={() => toggleFavorite(item.id)}
           >
             <Icon name={isFavorite ? "heart" : "hearto"} size={20} color="#FF5F5F" />
           </TouchableOpacity>
         </View>
 
-        <Text className="text-base font-semibold text-white mt-2">{item.title}</Text>
+        {/* Food Name */}
+        <Text className="text-base font-semibold text-white mt-2">{item.name}</Text>
+        {/* Food Price */}
+        <Text className="text-sm text-gray-400">${item.price}</Text>
       </View>
     );
   };
 
   return (
     <FlatList
-      data={foodData}
+      data={foodItems}
       renderItem={renderFoodItem}
-      keyExtractor={(item) => item.title}
+      keyExtractor={(item) => item.id.toString()}
       numColumns={2}
       columnWrapperStyle={{ justifyContent: "space-between", paddingHorizontal: 8 }}
       contentContainerStyle={{ paddingBottom: 20 }}
