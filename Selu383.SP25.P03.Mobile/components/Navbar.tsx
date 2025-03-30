@@ -10,12 +10,15 @@ import {
 } from "react-native";
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { AuthContext } from "@/context/AuthContext";
+import { useSearch } from "@/context/SearchContext";
+
 
 interface NavbarProps {
   onSearch?: (query: string) => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
+const Navbar: React.FC = () => {
+
   const router = useRouter();
   const auth = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,21 +32,21 @@ const Navbar: React.FC<NavbarProps> = ({ onSearch }) => {
     } 
   };
 
+  const { setQuery } = useSearch();
+
   const handleSearch = () => {
-    if (onSearch) {
-      onSearch(searchQuery);
-    }
+    setQuery(searchQuery);
+    router.push('/searchresult' as any); 
     Keyboard.dismiss();
   };
-
+  
   const cancelSearch = () => {
     setSearchQuery('');
+    setQuery('');
     setShowSearch(false);
-    if (onSearch) {
-      onSearch('');
-    }
     Keyboard.dismiss();
   };
+  
 
   return (
     <View style={styles.container}>
