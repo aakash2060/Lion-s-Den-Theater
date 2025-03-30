@@ -38,6 +38,7 @@ export default function RootLayout() {
       <Stack screenOptions={{headerShown:false}}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(auth)" /> 
+        <Stack.Screen name='(other)' />
         <Stack.Screen name="index" options={{headerShown:false}} />
         <Stack.Screen name="+not-found" />
       </Stack>

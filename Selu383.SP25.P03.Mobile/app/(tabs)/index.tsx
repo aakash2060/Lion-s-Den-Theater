@@ -3,15 +3,18 @@ import { View, Text, FlatList, ScrollView, TouchableOpacity, ActivityIndicator }
 import MovieCard from "../../components/MovieCard";
 import axios from "axios";
 import { BASE_URL } from "@/constants/baseUrl";
+import { useNavigation, useRouter } from "expo-router";
 
 
 
 interface Movie {
     id: number;
-    title: string; 
+    Title: string; 
     description: string;
     posterUrl: string;
-    releaseDate: string;  
+    releaseDate: string;
+   
+   
     
 }
 
@@ -21,6 +24,8 @@ const Home = () => {
     const [loading, setLoading] = useState(true);
     const [filteredMovies, setFilteredMovies] = useState<Movie[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const navigation = useNavigation()
+    const router = useRouter()
 
     // Fetch movies from API
     useEffect(() => {
@@ -51,7 +56,7 @@ const Home = () => {
         
         
         const filtered = movies.filter(movie => 
-            movie.title.toLowerCase().includes(query.toLowerCase()) ||
+            movie.Title.toLowerCase().includes(query.toLowerCase()) ||
             movie.description.toLowerCase().includes(query.toLowerCase())
         );
         
@@ -120,11 +125,17 @@ const Home = () => {
                         }}
                         renderItem={({ item }) => (
                             <MovieCard 
-                                name={item.title}  
-                                image={item.posterUrl}
-                                releaseDate={item.releaseDate}
-                                
-                            />
+                            Title={item.Title}
+                            PosterUrl={item.posterUrl}
+                            ReleaseDate={item.releaseDate}
+         
+                            onPress={() => {
+                                router.push({
+                                  pathname: "/(other)/movieDetails",
+                                  params: { movie: JSON.stringify(item) }
+                                });
+                              }}
+                        />
                         )}
                         contentContainerStyle={{ paddingBottom: 20 }}
                         ListEmptyComponent={
@@ -147,11 +158,19 @@ const Home = () => {
                         }}
                         renderItem={({ item }) => (
                             <MovieCard 
-                                name={item.title}  
-                                image={item.posterUrl}
-                                releaseDate={item.releaseDate}
+                                Title={item.Title}  
+                                PosterUrl={item.posterUrl}
+                                ReleaseDate={item.releaseDate}
+                                onPress={() => {
+                                    router.push({
+                                      pathname: "/(other)/movieDetails",
+                                      params: { movie: JSON.stringify(item) }
+                                    });
+                                  }}
                                
                             />
+                         
+                                                
                         )}
                         contentContainerStyle={{ paddingBottom: 20 }}
                         ListEmptyComponent={

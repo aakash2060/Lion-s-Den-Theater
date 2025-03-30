@@ -38,7 +38,8 @@ namespace Selu383.SP25.P03.Api.Controllers
                     Rating = m.Rating,
                     PosterUrl = m.PosterUrl,
                     ReleaseDate = m.ReleaseDate,
-                    Genre = m.Genre
+                    Genre = m.Genre,
+                    TrailerId = m.TrailerId,
                 })
                 .ToListAsync();
         }
@@ -69,6 +70,7 @@ namespace Selu383.SP25.P03.Api.Controllers
                 PosterUrl = movie.PosterUrl,
                 ReleaseDate = movie.ReleaseDate,
                 Genre = movie.Genre,
+                TrailerId = movie.TrailerId,
                 Showtimes = movie.Showtimes
                     .Where(s => s.StartTime > DateTime.UtcNow) // Only include future showtimes
                     .Select(s => new ShowtimeDto
@@ -112,6 +114,7 @@ namespace Selu383.SP25.P03.Api.Controllers
                 Rating = dto.Rating ?? "NR",
                 PosterUrl = dto.PosterUrl,
                 ReleaseDate = dto.ReleaseDate,
+                TrailerId = dto.TrailerId,
                 Genre = dto.Genre
             };
 
@@ -131,7 +134,8 @@ namespace Selu383.SP25.P03.Api.Controllers
                     Rating = movie.Rating,
                     PosterUrl = movie.PosterUrl,
                     ReleaseDate = movie.ReleaseDate,
-                    Genre = movie.Genre
+                    Genre = movie.Genre,
+                    TrailerId = movie.TrailerId,
                 });
         }
 
@@ -173,6 +177,7 @@ namespace Selu383.SP25.P03.Api.Controllers
             movie.PosterUrl = dto.PosterUrl;
             movie.ReleaseDate = dto.ReleaseDate;
             movie.Genre = dto.Genre;
+            movie.TrailerId = dto.TrailerId;
 
             try
             {
