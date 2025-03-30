@@ -19,7 +19,9 @@ import AdminUsers from "./pages/Admin/AdminUsers";
 import AdminManageMovies from "./pages/Admin/AdminManageMovies"; 
 import AdminAddMovie from "./pages/Admin/AdminAddMovie";
 import AdminEditMovie from "./pages/Admin/AdminEditMovie";
-
+import AdminManageTheaters from "./pages/Admin/AdminManageTheaters";
+import AdminAddTheater from "./pages/Admin/AdminAddTheater";
+import AdminEditTheater from "./pages/Admin/AdminEditTheater";
 
 const App = () => {
   return (
@@ -53,6 +55,10 @@ const App = () => {
               <Route path="/admin-manage-movies" element={<AdminManageMovies />} />
               <Route path="/admin-add-movie" element={<AdminAddMovie />} />
               <Route path="/admin/edit-movie/:id" element={<AdminEditMovie />} />
+              <Route path="/admin-manage-theaters" element={<AdminManageTheaters />} />
+              <Route path="/admin-add-theater" element={<AdminAddTheater />} />
+              <Route path="/admin/edit-theater/:id" element={<AdminEditTheater />} />
+              
 
 
 

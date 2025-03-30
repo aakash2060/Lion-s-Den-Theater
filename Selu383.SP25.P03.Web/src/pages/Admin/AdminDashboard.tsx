@@ -9,7 +9,7 @@ const AdminDashboard = () => {
 
       {/* Grid Sections */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        {/* Stats Panel */}
+        {/* Site Stats */}
         <motion.div
           whileHover={{ scale: 1.03 }}
           className="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700"
@@ -34,8 +34,10 @@ const AdminDashboard = () => {
           </div>
           <p className="text-gray-300">View and manage registered users.</p>
           <Link to="/admin-users">
-  <button className="btn bg-red-600 hover:bg-red-700">View Users</button>
-</Link>
+            <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 mt-4 rounded">
+              View Users
+            </button>
+          </Link>
         </motion.div>
 
         {/* Movie Management */}
@@ -49,26 +51,27 @@ const AdminDashboard = () => {
           </div>
           <p className="text-gray-300">Add, edit, or remove movies from the site.</p>
           <Link to="/admin-manage-movies">
-  <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">
-    Manage Movies
-  </button>
-</Link>
-
+            <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 mt-4 rounded">
+              Manage Movies
+            </button>
+          </Link>
         </motion.div>
 
-        {/* Settings */}
+        {/* Theater Management */}
         <motion.div
           whileHover={{ scale: 1.03 }}
           className="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700"
         >
           <div className="flex items-center gap-4 mb-4">
             <FaCog className="text-3xl text-green-400" />
-            <h2 className="text-2xl font-bold">Site Settings</h2>
+            <h2 className="text-2xl font-bold">Manage Theaters</h2>
           </div>
-          <p className="text-gray-300">Customize theme, email preferences, and more.</p>
-          <button className="mt-4 bg-green-600 hover:bg-green-700 transition px-4 py-2 rounded text-sm font-medium">
-            Open Settings
-          </button>
+          <p className="text-gray-300">Add, edit, or remove theaters from the system.</p>
+          <Link to="/admin-manage-theaters">
+            <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 mt-4 rounded">
+              Manage Theaters
+            </button>
+          </Link>
         </motion.div>
       </div>
     </div>
