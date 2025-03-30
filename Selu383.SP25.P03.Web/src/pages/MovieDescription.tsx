@@ -3,27 +3,28 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { movieService } from "../services/api";
 import { MovieDetails } from "../Data/MovieInterfaces";
+import { useTheater } from "../context/TheaterContext"; // 🎯 add this
 
 const trailerMappings: Record<number, string> = {
-  1: "https://www.youtube.com/watch?v=YoHD9XEInc0", // Inception
-  2: "https://www.youtube.com/watch?v=eOrNdBpGMv8", // The Avengers
-  3: "https://www.youtube.com/watch?v=d9MyW72ELq0", // Avatar: The Way of Water
-  4: "https://www.youtube.com/watch?v=mqqft2x_Aa4", // The Batman
-  5: "https://www.youtube.com/watch?v=JfVOs4VSpmA", // Spider-Man: No Way Home
-  6: "https://www.youtube.com/watch?v=8g18jFHCLXk", // Dune
-  7: "https://www.youtube.com/watch?v=wxN1T1uxQ2g", // Everything Everywhere All at Once
-  8: "https://www.youtube.com/watch?v=giXco2jaZ_4", // Top Gun: Maverick
-  9: "https://www.youtube.com/watch?v=_Z3QKkl1WyM", // Black Panther: Wakanda Forever
-  10: "https://www.youtube.com/watch?v=PLl99DlL6b4", // The Shawshank Redemption
-  11: "https://www.youtube.com/watch?v=V75dMMIW2B4", // The Lord of the Rings: The Fellowship of the Ring
-  12: "https://www.youtube.com/watch?v=5xH0HfJHsaY", // Parasite
-  13: "https://www.youtube.com/watch?v=zSWdZVtXT7E", // Interstellar
-  14: "https://www.youtube.com/watch?v=EXeTwQWrcwY", // The Dark Knight
-  15: "https://www.youtube.com/watch?v=ByXuk9QqQkk", // Spirited Away
-  16: "https://www.youtube.com/watch?v=vKQi3bBA1y8", // The Matrix
-  17: "https://www.youtube.com/watch?v=s7EdQ4FqbhY", // Pulp Fiction
-  18: "https://www.youtube.com/watch?v=xlnPHQ3TLX8", // Coco
-  19: "https://www.youtube.com/watch?v=DzfpyUB60YY"  // Get Out
+  1: "https://www.youtube.com/watch?v=YoHD9XEInc0",
+  2: "https://www.youtube.com/watch?v=eOrNdBpGMv8",
+  3: "https://www.youtube.com/watch?v=d9MyW72ELq0",
+  4: "https://www.youtube.com/watch?v=mqqft2x_Aa4",
+  5: "https://www.youtube.com/watch?v=JfVOs4VSpmA",
+  6: "https://www.youtube.com/watch?v=8g18jFHCLXk",
+  7: "https://www.youtube.com/watch?v=wxN1T1uxQ2g",
+  8: "https://www.youtube.com/watch?v=giXco2jaZ_4",
+  9: "https://www.youtube.com/watch?v=_Z3QKkl1WyM",
+  10: "https://www.youtube.com/watch?v=PLl99DlL6b4",
+  11: "https://www.youtube.com/watch?v=V75dMMIW2B4",
+  12: "https://www.youtube.com/watch?v=5xH0HfJHsaY",
+  13: "https://www.youtube.com/watch?v=zSWdZVtXT7E",
+  14: "https://www.youtube.com/watch?v=EXeTwQWrcwY",
+  15: "https://www.youtube.com/watch?v=ByXuk9QqQkk",
+  16: "https://www.youtube.com/watch?v=vKQi3bBA1y8",
+  17: "https://www.youtube.com/watch?v=s7EdQ4FqbhY",
+  18: "https://www.youtube.com/watch?v=xlnPHQ3TLX8",
+  19: "https://www.youtube.com/watch?v=DzfpyUB60YY"
 };
 
 const getYoutubeId = (url: string): string | null => {
@@ -39,6 +40,7 @@ const MovieDescriptionPage = () => {
   const [movie, setMovie] = useState<MovieDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { theater } = useTheater(); // 🎯 use selected theater
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -116,7 +118,13 @@ const MovieDescriptionPage = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="bg-red-600 hover:bg-red-700 transition px-8 py-3 rounded-xl text-lg font-semibold shadow-md shadow-red-500"
-            onClick={() => navigate(`#tickets`)}
+            onClick={() => {
+              if (!theater) {
+                alert("Please select a theater before booking.");
+                return;
+              }
+              navigate(`/book/${movie.id}`);
+            }}
           >
             🎟️ Book Now
           </motion.button>
@@ -139,7 +147,7 @@ const MovieDescriptionPage = () => {
         <h2 className="text-xl font-semibold">Director</h2>
         <p className="text-gray-300 mb-4">{movie.director}</p>
 
-        <p className="text-sm text-gray-500 italic">📍 Nearest theater: Feature coming soon</p>
+        <p className="text-sm text-gray-500 italic">📍 Selected Theater: {theater || "None"}</p>
 
         <div className="mt-10">
           <button

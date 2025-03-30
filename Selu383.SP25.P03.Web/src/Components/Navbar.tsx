@@ -1,21 +1,39 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUser, FaSearch, FaBars, FaTimes } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { useSearch } from "../context/SearchContext";
+import { useTheater } from "../context/TheaterContext"; // 🎬 Context
+import { theaterService, Theater } from "../services/api"; // 🎬 API + type
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
+  const [theatersList, setTheatersList] = useState<Theater[]>([]); // 🎬 dynamic theaters
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { setSearchTerm } = useSearch();
+  const { theater, setTheater } = useTheater(); // 🎬 current selected
 
   const navLinks = [
     { id: 1, name: "Discover Movies", path: "/discover-movies" },
     { id: 2, name: "Food & Drinks", path: "/food-drinks" },
   ];
+
+  // 🎬 Fetch theaters on mount
+  useEffect(() => {
+    const fetchTheaters = async () => {
+      try {
+        const data = await theaterService.getAll();
+        setTheatersList(data);
+      } catch (err) {
+        console.error("Failed to load theaters:", err);
+      }
+    };
+
+    fetchTheaters();
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +42,7 @@ const Navbar = () => {
 
     setSearchTerm(trimmed);
     navigate("/search");
-    setSearchInput(""); // optional: clear the input after search
+    setSearchInput("");
   };
 
   return (
@@ -53,9 +71,25 @@ const Navbar = () => {
         ))}
       </div>
 
-      {/* Right Section - Search Bar & Profile */}
+      {/* Right Section - Theater, Search, Profile */}
       <div className="flex items-center space-x-4">
-        {/* Desktop Search Bar */}
+        {/* 🎬 Theater Dropdown */}
+        <div className="hidden md:block">
+          <select
+            value={theater}
+            onChange={(e) => setTheater(e.target.value)}
+            className="bg-gray-800 text-white px-3 py-1 rounded-md border border-gray-600 focus:outline-none"
+          >
+            <option value="">🎬 Select Theater</option>
+            {theatersList.map((t) => (
+              <option key={t.id} value={t.name}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* 🔍 Search Bar */}
         <form
           onSubmit={handleSearch}
           className="relative hidden md:flex items-center bg-gray-800 px-3 py-1 rounded-md border border-gray-600 focus-within:border-primary"
@@ -70,7 +104,7 @@ const Navbar = () => {
           />
         </form>
 
-        {/* Profile Icon */}
+        {/* 👤 Profile Icon */}
         <div className="relative hidden md:block">
           <button
             className="text-xl text-white hover:text-primary transition duration-200"
@@ -105,7 +139,7 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Hamburger Menu - Mobile */}
+        {/* 🍔 Hamburger Menu (Mobile) */}
         <button
           className="text-2xl text-white md:hidden focus:outline-none"
           onClick={() => setMenuOpen(!menuOpen)}
@@ -114,7 +148,7 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      {/* 📱 Mobile Menu Overlay */}
       {menuOpen && (
         <div className="fixed top-0 left-0 w-full h-screen bg-gradient-to-b from-black to-gray-900 backdrop-blur-md flex flex-col items-center justify-center space-y-10 z-40 transition-all duration-300">
           <button
