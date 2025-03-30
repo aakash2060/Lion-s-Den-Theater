@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState } from "react";
 
 interface SearchContextType {
   query: string;
@@ -6,12 +6,14 @@ interface SearchContextType {
 }
 
 export const SearchContext = createContext<SearchContextType>({
-  query: '',
+  query: "",
   setQuery: () => {},
 });
 
-export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [query, setQuery] = useState('');
+export const SearchProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [query, setQuery] = useState("");
 
   return (
     <SearchContext.Provider value={{ query, setQuery }}>
