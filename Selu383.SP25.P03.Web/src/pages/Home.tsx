@@ -134,7 +134,7 @@ const MovieGrid = ({
   movies: Movie[];
   fallback: string;
 }) => (
-  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 auto-rows-fr">
     {movies.length > 0 ? (
       movies.map((movie) => (
         <MovieCard
