@@ -42,8 +42,7 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)" /> 
         <Stack.Screen name="index" options={{headerShown:false}} />
         <Stack.Screen name="+not-found" />
-        <Stack.Screen name="searchresult" />
-        <Stack.Screen name="admin-dashboard" />
+        <Stack.Screen name = "(other)" />
 
       </Stack>
       <StatusBar style="auto" />

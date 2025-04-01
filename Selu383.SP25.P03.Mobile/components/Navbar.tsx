@@ -24,7 +24,7 @@ const Navbar: React.FC = () => {
 
   const handleSearch = () => {
     setQuery(searchQuery.trim());
-    router.push("/searchresult" as any);
+    router.push("/(other)/searchresult" as any);
     Keyboard.dismiss();
   };
 
@@ -129,7 +129,7 @@ const Navbar: React.FC = () => {
             <TouchableOpacity
               onPress={() => {
                 setShowAdminMenu(false);
-                router.push("/admin-dashboard" as any);
+                router.push("/(other)/admin-dashboard" as any);
               }}
             >
               <Text style={styles.menuItem}>Admin Dashboard</Text>

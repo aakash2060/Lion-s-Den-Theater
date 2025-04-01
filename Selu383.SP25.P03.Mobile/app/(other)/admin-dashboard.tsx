@@ -32,6 +32,10 @@ const AdminDashboard = () => {
       label: "Movies",
       description: "Add, update, and delete movies.",
     },
+    {
+        label: "Theaters",
+        description: "Add, update, and delete THeaters"
+    }
   ];
 
   const handleComingSoon = (label: string) => {
