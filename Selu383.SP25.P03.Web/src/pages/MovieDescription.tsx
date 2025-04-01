@@ -124,8 +124,9 @@ const MovieDescriptionPage = () => {
                 alert("Please select a theater before booking.");
                 return;
               }
-              navigate(`/book/${movie.id}`);
+              navigate(`/showtimes/${movie.id}`);
             }}
+            
           >
             🎟️ Book Now
           </motion.button>

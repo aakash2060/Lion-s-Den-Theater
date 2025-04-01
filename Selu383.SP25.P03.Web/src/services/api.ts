@@ -1,13 +1,14 @@
-// src/services/api.ts
 import axios from 'axios';
 
-// Create an axios instance with default config
+// ------------------------
+// Axios Instance
+// ------------------------
 const api = axios.create({
-  baseURL: '/api', // This will use the relative path
-  withCredentials: true, // Important for auth cookies
+  baseURL: '/api',
+  withCredentials: true,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 });
 
 // ------------------------
@@ -57,18 +58,19 @@ export const movieService: MovieService = {
   getAll: async (theater) => {
     let theaterId: string | undefined;
 
-    if (typeof theater === "string") {
+    if (typeof theater === 'string') {
       theaterId = theater;
-    } else if (typeof theater === "object" && theater?.id) {
+    } else if (typeof theater === 'object' && theater?.id) {
       theaterId = theater.id.toString();
     }
 
-    const url = theaterId ? `/movies?theater=${encodeURIComponent(theaterId)}` : "/movies";
+    const url = theaterId ? `/movies?theater=${encodeURIComponent(theaterId)}` : '/movies';
     const response = await api.get(url);
     return response.data;
   },
 
   getById: async (id) => {
+    // Ensure `id` is passed correctly as a number
     const response = await api.get(`/movies/${id}`);
     return response.data;
   },
@@ -94,7 +96,7 @@ export const movieService: MovieService = {
 // ------------------------
 export const theaterService = {
   getAll: async () => {
-    const response = await api.get("/theaters");
+    const response = await api.get('/theaters');
     return response.data;
   },
 
@@ -104,7 +106,7 @@ export const theaterService = {
   },
 
   create: async (theater: TheaterDto) => {
-    const response = await api.post("/theaters", theater);
+    const response = await api.post('/theaters', theater);
     return response.data;
   },
 
@@ -116,7 +118,7 @@ export const theaterService = {
   delete: async (id: number) => {
     const response = await api.delete(`/theaters/${id}`);
     return response.data;
-  },
+  }
 };
 
 export default api;
