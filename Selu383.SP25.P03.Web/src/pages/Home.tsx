@@ -4,11 +4,11 @@ import MovieCard from "../Components/MovieCard";
 import { useNavigate } from "react-router-dom";
 import { movieService } from "../services/api";
 import { Movie } from "../Data/MovieInterfaces";
-import { useTheater } from "../context/TheaterContext"; // 🎬 Import theater context
+import { useTheater } from "../context/TheaterContext";
 
 const Home = () => {
   const navigate = useNavigate();
-  const { theater } = useTheater(); // 🎬 Grab selected theater
+  const { theater } = useTheater();
 
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
@@ -16,10 +16,11 @@ const Home = () => {
 
   useEffect(() => {
     const fetchMovies = async () => {
-      if (!theater) return; // Wait for theater selection
+      if (!theater) return;
+
       try {
         setLoading(true);
-        const data = await movieService.getAll(theater); // 🎯 Filter by theater
+        const data = await movieService.getAll(theater.id.toString()); // ✅ Fix: Use theater ID
         setMovies(data);
         setError(null);
       } catch (err) {
@@ -80,20 +81,19 @@ const Home = () => {
 
       {/* Now Playing */}
       <section id="nowPlaying" className="container mx-auto py-10">
-      <SectionTitle title={`🎬 Now Showing in ${theater}`} />
-
+        <SectionTitle title={`🎬 Now Showing in ${theater.name}`} />
         <MovieGrid movies={nowShowing} fallback="No movies currently showing" />
       </section>
 
       {/* Coming Soon */}
       <section id="comingSoon" className="container mx-auto py-10">
-      <SectionTitle title={`🚀 Coming Soon to ${theater}`} />
+        <SectionTitle title={`🚀 Coming Soon to ${theater.name}`} />
         <MovieGrid movies={comingSoon} fallback="No upcoming movies scheduled" />
       </section>
 
       {/* Top Rated */}
       <section id="topRated" className="container mx-auto py-10">
-      <SectionTitle title={`⭐ Top Rated at ${theater}`} />
+        <SectionTitle title={`⭐ Top Rated at ${theater.name}`} />
         <MovieGrid movies={topRated} fallback="No rated movies available" />
       </section>
 

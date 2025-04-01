@@ -2,9 +2,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { movieService } from "../services/api";
-import { MovieDetails } from "../Data/MovieInterfaces";
-import { useTheater } from "../context/TheaterContext"; // 🎯 add this
+import { Movie } from "../Data/MovieInterfaces";
+import { useTheater } from "../context/TheaterContext";
 
+// 🎥 Trailer mappings
 const trailerMappings: Record<number, string> = {
   1: "https://www.youtube.com/watch?v=YoHD9XEInc0",
   2: "https://www.youtube.com/watch?v=eOrNdBpGMv8",
@@ -24,7 +25,7 @@ const trailerMappings: Record<number, string> = {
   16: "https://www.youtube.com/watch?v=vKQi3bBA1y8",
   17: "https://www.youtube.com/watch?v=s7EdQ4FqbhY",
   18: "https://www.youtube.com/watch?v=xlnPHQ3TLX8",
-  19: "https://www.youtube.com/watch?v=DzfpyUB60YY"
+  19: "https://www.youtube.com/watch?v=DzfpyUB60YY",
 };
 
 const getYoutubeId = (url: string): string | null => {
@@ -37,10 +38,10 @@ const getYoutubeId = (url: string): string | null => {
 const MovieDescriptionPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [movie, setMovie] = useState<MovieDetails | null>(null);
+  const [movie, setMovie] = useState<Movie | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { theater } = useTheater(); // 🎯 use selected theater
+  const { theater, loadingTheater } = useTheater();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -63,10 +64,10 @@ const MovieDescriptionPage = () => {
     fetchMovieDetails();
   }, [id]);
 
-  if (loading) {
+  if (loadingTheater || loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-900 text-white">
-        <div className="text-xl">Loading movie details...</div>
+        <div className="text-xl">⏳ Loading movie & theater info...</div>
       </div>
     );
   }
@@ -135,19 +136,27 @@ const MovieDescriptionPage = () => {
         <div className="flex flex-wrap justify-center gap-4 mb-6">
           <span className="px-3 py-1 bg-red-600 rounded-full text-sm">{movie.genre}</span>
           <span className="px-3 py-1 bg-gray-700 rounded-full text-sm">{movie.duration} min</span>
-          <span className="px-3 py-1 bg-gray-700 rounded-full text-sm">{new Date(movie.releaseDate).getFullYear()}</span>
+          <span className="px-3 py-1 bg-gray-700 rounded-full text-sm">
+            {new Date(movie.releaseDate).getFullYear()}
+          </span>
           {movie.rating && (
-            <span className="px-3 py-1 bg-yellow-600 rounded-full text-sm">Rating: {movie.rating}</span>
+            <span className="px-3 py-1 bg-yellow-600 rounded-full text-sm">
+              Rating: {movie.rating}
+            </span>
           )}
         </div>
 
         <h2 className="text-2xl font-bold mb-2">Description</h2>
-        <p className="text-gray-300 mb-4 leading-relaxed text-lg">{movie.description}</p>
+        <p className="text-gray-300 mb-4 leading-relaxed text-lg">
+          {movie.description || "No description available."}
+        </p>
 
         <h2 className="text-xl font-semibold">Director</h2>
-        <p className="text-gray-300 mb-4">{movie.director}</p>
+        <p className="text-gray-300 mb-4">{movie.director || "Unknown"}</p>
 
-        <p className="text-sm text-gray-500 italic">📍 Selected Theater: {theater || "None"}</p>
+        <p className="text-sm text-gray-500 italic">
+          📍 Selected Theater: {theater?.name || "None"}
+        </p>
 
         <div className="mt-10">
           <button

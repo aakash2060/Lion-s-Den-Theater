@@ -3,25 +3,24 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaUser, FaSearch, FaBars, FaTimes } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { useSearch } from "../context/SearchContext";
-import { useTheater } from "../context/TheaterContext"; // 🎬 Context
-import { theaterService, Theater } from "../services/api"; // 🎬 API + type
+import { useTheater } from "../context/TheaterContext";
+import { theaterService, Theater } from "../services/api";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [searchInput, setSearchInput] = useState("");
-  const [theatersList, setTheatersList] = useState<Theater[]>([]); // 🎬 dynamic theaters
+  const [theatersList, setTheatersList] = useState<Theater[]>([]);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { setSearchTerm } = useSearch();
-  const { theater, setTheater } = useTheater(); // 🎬 current selected
+  const { theater, setTheater } = useTheater();
 
   const navLinks = [
     { id: 1, name: "Discover Movies", path: "/discover-movies" },
     { id: 2, name: "Food & Drinks", path: "/food-drinks" },
   ];
 
-  // 🎬 Fetch theaters on mount
   useEffect(() => {
     const fetchTheaters = async () => {
       try {
@@ -47,7 +46,7 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 w-full bg-black bg-opacity-90 backdrop-blur-md text-white px-8 py-4 flex items-center justify-between shadow-md border-b border-gray-700 z-50">
-      {/* Left Section - Logo */}
+      {/* Logo */}
       <div className="flex items-center space-x-4">
         <img src="/logos.png" alt="Logo" className="h-15 w-auto" />
         <Link
@@ -58,7 +57,7 @@ const Navbar = () => {
         </Link>
       </div>
 
-      {/* Center Section - Desktop Navigation */}
+      {/* Nav Links */}
       <div className="hidden md:flex space-x-16 text-lg font-semibold">
         {navLinks.map(({ id, name, path }) => (
           <Link
@@ -71,25 +70,30 @@ const Navbar = () => {
         ))}
       </div>
 
-      {/* Right Section - Theater, Search, Profile */}
+      {/* Right Actions */}
       <div className="flex items-center space-x-4">
         {/* 🎬 Theater Dropdown */}
         <div className="hidden md:block">
           <select
-            value={theater}
-            onChange={(e) => setTheater(e.target.value)}
+            value={theater?.id.toString() ?? ""}
+            onChange={(e) => {
+              const selected = theatersList.find(
+                (t) => t.id.toString() === e.target.value
+              );
+              if (selected) setTheater(selected);
+            }}
             className="bg-gray-800 text-white px-3 py-1 rounded-md border border-gray-600 focus:outline-none"
           >
-            <option value="">🎬 Select Theater</option>
+            <option value="" disabled hidden>🎬 Select Theater</option>
             {theatersList.map((t) => (
-              <option key={t.id} value={t.name}>
+              <option key={t.id} value={t.id.toString()}>
                 {t.name}
               </option>
             ))}
           </select>
         </div>
 
-        {/* 🔍 Search Bar */}
+        {/* 🔍 Search */}
         <form
           onSubmit={handleSearch}
           className="relative hidden md:flex items-center bg-gray-800 px-3 py-1 rounded-md border border-gray-600 focus-within:border-primary"
@@ -104,7 +108,7 @@ const Navbar = () => {
           />
         </form>
 
-        {/* 👤 Profile Icon */}
+        {/* 👤 Profile */}
         <div className="relative hidden md:block">
           <button
             className="text-xl text-white hover:text-primary transition duration-200"
@@ -119,7 +123,6 @@ const Navbar = () => {
             <FaUser />
           </button>
 
-          {/* Profile Dropdown */}
           {profileMenuOpen && user && (
             <div className="absolute right-0 mt-2 w-40 bg-white text-black rounded-md shadow-lg">
               <Link to="/profile" className="block px-4 py-2 hover:bg-gray-100">
@@ -139,7 +142,7 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* 🍔 Hamburger Menu (Mobile) */}
+        {/* 🍔 Mobile Menu */}
         <button
           className="text-2xl text-white md:hidden focus:outline-none"
           onClick={() => setMenuOpen(!menuOpen)}
@@ -169,7 +172,6 @@ const Navbar = () => {
             </Link>
           ))}
 
-          {/* Mobile Icons */}
           <div className="flex items-center space-x-6 mt-10">
             <FaSearch className="text-3xl text-white cursor-pointer" />
             <FaUser

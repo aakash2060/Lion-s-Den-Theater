@@ -20,7 +20,7 @@ const DiscoverMovies = () => {
       if (!theater) return; // Wait until theater is selected
       try {
         setLoading(true);
-        const data = await movieService.getAll(theater); // 🎯 Fetch based on theater
+        const data = await movieService.getAll(theater.id.toString()); // ✅ FIXED: use theater ID
         setMovies(data);
         setError(null);
       } catch (err) {
