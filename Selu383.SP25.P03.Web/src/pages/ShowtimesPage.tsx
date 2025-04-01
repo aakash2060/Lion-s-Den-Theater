@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,} from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { movieService } from "../services/api";
+import { useTheater } from "../context/TheaterContext"; // Import the hook
 
-// Dummy showtimes data (replace with real API data)
 const dummyShowtimes = [
   { time: "02:30 PM", screen: "Screen 1", seatsAvailable: 42 },
   { time: "05:00 PM", screen: "Screen 1", seatsAvailable: 35 },
@@ -18,8 +18,11 @@ const ShowtimesPage = () => {
   const [loading, setLoading] = useState(true); // State to track loading
   const [error, setError] = useState<string | null>(null); // Error state for failed movie fetch
 
+  // Use the context
+  const { theater, loadingTheater } = useTheater();  // Now `theater` and `loadingTheater` have the correct types
+
   useEffect(() => {
-    console.log("Movie ID from URL:", movieId); // Check if the ID is correct
+    console.log("Movie ID from URL:", movieId);
 
     if (!movieId) {
       setError("Movie ID is missing.");
@@ -27,10 +30,9 @@ const ShowtimesPage = () => {
       return;
     }
 
-    // Fetch movie data using the movieId
     const fetchMovieData = async () => {
       try {
-        const movieData = await movieService.getById(Number(movieId)); // Ensure movieId is passed as a number
+        const movieData = await movieService.getById(Number(movieId));
         setMovie(movieData);
       } catch (err) {
         setError("Failed to load movie data.");
@@ -42,10 +44,10 @@ const ShowtimesPage = () => {
     fetchMovieData();
   }, [movieId]);
 
-  if (loading) {
+  if (loading || loadingTheater) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-900 text-white">
-        <div className="text-xl">Loading showtimes...</div>
+        <div className="text-xl">Loading...</div>
       </div>
     );
   }
@@ -64,7 +66,7 @@ const ShowtimesPage = () => {
         Showtimes for {movie?.title || "Movie Not Found"}
       </h1>
       <p className="text-center text-xl mb-6">
-        Theater: AMC Palace 10 {/* Dynamic theater name can be added here */}
+        Theater: {theater?.name || "Select a Theater"}
       </p>
 
       <div className="space-y-4">

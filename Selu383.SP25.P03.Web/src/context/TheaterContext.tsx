@@ -1,16 +1,10 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
-import { theaterService, Theater } from "../services/api";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { theaterService, Theater } from "../services/api"; // Ensure that theaterService is used
 
 interface TheaterContextType {
   theater: Theater | null;
   setTheater: (theater: Theater) => void;
-  loadingTheater: boolean; // ✅ Added for global loading access
+  loadingTheater: boolean;
 }
 
 const TheaterContext = createContext<TheaterContextType | undefined>(undefined);
@@ -49,7 +43,7 @@ export const TheaterProvider = ({ children }: { children: ReactNode }) => {
   const loadNearestTheater = async () => {
     try {
       console.log("📦 Fetching all theaters...");
-      const theaters: Theater[] = await theaterService.getAll();
+      const theaters: Theater[] = await theaterService.getAll(); // Fetch theaters
 
       if (!navigator.geolocation) {
         console.warn("🚫 Geolocation not supported. Falling back.");
@@ -86,7 +80,6 @@ export const TheaterProvider = ({ children }: { children: ReactNode }) => {
         }
       );
 
-      // 🛟 Safety net fallback after 5 seconds
       setTimeout(() => {
         if (!theater) {
           console.warn("⏰ Timeout fallback triggered...");
@@ -109,11 +102,10 @@ export const TheaterProvider = ({ children }: { children: ReactNode }) => {
 
 export const useTheater = () => {
   const context = useContext(TheaterContext);
-  if (!context) throw new Error("useTheater must be used within Provider");
+  if (!context) throw new Error("useTheater must be used within TheaterProvider");
   return context;
 };
 
-// 🌍 Geocode with fallback + logging
 const geocodeAddress = async (address: string) => {
   try {
     console.log("📦 Geocoding address:", address);
@@ -134,7 +126,6 @@ const geocodeAddress = async (address: string) => {
   }
 };
 
-// 📍 Haversine nearest calculation
 const findNearest = (
   userLat: number,
   userLng: number,
