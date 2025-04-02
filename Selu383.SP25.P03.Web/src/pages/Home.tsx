@@ -2,7 +2,7 @@ import MovieCarousel from "../Components/MovieCarousel";
 import { useState, useEffect } from "react";
 import MovieCard from "../Components/MovieCard";
 import { useNavigate } from "react-router-dom";
-import { movieService } from "../services/api";
+import { movieService } from "../services/MovieApi";
 import { Movie } from "../Data/MovieInterfaces";
 
 const Home = () => {

@@ -2,7 +2,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Navigation, Autoplay } from "swiper/modules";
 import "swiper/swiper-bundle.css";
 import { useState, useEffect } from "react";
-import { movieService } from "../services/api";
+import { movieService } from "../services/MovieApi";
 import { useNavigate } from "react-router-dom";
 import {Movie} from "../Data/MovieInterfaces";
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import MovieCard from "../Components/MovieCard";
 import QRCard from "../Components/QRCard";
-import { movieService } from "../services/api";
+import { movieService } from "../services/MovieApi";
 import { Movie} from '../Data/MovieInterfaces'
 
 

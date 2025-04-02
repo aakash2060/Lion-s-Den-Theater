@@ -14,6 +14,7 @@ import SearchResults from "./pages/SearchResult";
 import "./index.css";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import ShowtimesPage from "./pages/ShowtimesPage";
 
 const App = () => {
   return (
@@ -34,6 +35,8 @@ const App = () => {
               
               {/* Update the route to use ID parameter */}
               <Route path="/movie/:id" element={<MovieDescriptionPage />} />
+              <Route path="/showtimes/:id" element={<ShowtimesPage />} />
+
               
               {/* Keep the old route temporarily for backward compatibility */}
               <Route path="/movie-description/:movieName" element={<MovieDescriptionPage />} />

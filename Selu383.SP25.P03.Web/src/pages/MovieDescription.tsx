@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { movieService } from "../services/api";
+import { movieService } from "../services/MovieApi";
 import { MovieDetails } from "../Data/MovieInterfaces";
 
 // Temporary trailer mappings until backend supports trailers
@@ -35,12 +35,24 @@ const getYoutubeId = (url: string): string | null => {
 
 
 
+
 const MovieDescriptionPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [movie, setMovie] = useState<MovieDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const handleGetTickets = () => {
+    // Scroll to showtimes section if available
+    const showtimesElement = document.getElementById("tickets");
+    if (showtimesElement) {
+      showtimesElement.scrollIntoView({ behavior: "smooth" });
+    } else {
+      // Navigate to booking page or show modal if no showtimes section
+      navigate(`/movie/${movie?.title}/showtimes/${id}`);
+    }
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -179,18 +191,16 @@ const MovieDescriptionPage = () => {
           </div>
         )}
 
-        {!movie.showtimes && (
-          <a href="#tickets">
+        {movie.showtimes && (
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="bg-red-600 hover:bg-red-700 transition px-8 py-4 rounded-xl text-lg font-semibold shadow-red-500 shadow-md"
+              onClick={handleGetTickets}
             >
               🎟️ Get Tickets
             </motion.button>
-          </a>
         )}
-
         <div className="mt-8">
           <button 
             onClick={() => navigate(-1)} 

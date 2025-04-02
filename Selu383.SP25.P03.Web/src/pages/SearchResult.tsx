@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearch } from "../context/SearchContext";
-import { movieService } from "../services/api";
+import { movieService } from "../services/MovieApi";
 import { Movie } from "../Data/MovieInterfaces";
 import MovieCard from "../Components/MovieCard";
 
