@@ -19,6 +19,7 @@ const Navbar = () => {
   const navLinks = [
     { id: 1, name: "Discover Movies", path: "/discover-movies" },
     { id: 2, name: "Food & Drinks", path: "/food-drinks" },
+    { id: 3, name: "Theaters", path: "/theaters" }, // ✅ Added Theaters page
   ];
 
   useEffect(() => {
@@ -84,7 +85,9 @@ const Navbar = () => {
             }}
             className="bg-gray-800 text-white px-3 py-1 rounded-md border border-gray-600 focus:outline-none"
           >
-            <option value="" disabled hidden>🎬 Select Theater</option>
+            <option value="" disabled hidden>
+              🎬 Select Theater
+            </option>
             {theatersList.map((t) => (
               <option key={t.id} value={t.id.toString()}>
                 {t.name}

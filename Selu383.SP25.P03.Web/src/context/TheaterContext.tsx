@@ -11,7 +11,7 @@ const TheaterContext = createContext<TheaterContextType | undefined>(undefined);
 
 export const TheaterProvider = ({ children }: { children: ReactNode }) => {
   const [theater, setTheater] = useState<Theater | null>(null);
-  const [loadingTheater, setLoadingTheater] = useState(true);
+  const [loadingTheater, setLoadingTheater] = useState(true); // Loading state for theater
 
   useEffect(() => {
     const saved = localStorage.getItem("selectedTheater");
@@ -21,7 +21,7 @@ export const TheaterProvider = ({ children }: { children: ReactNode }) => {
         const parsed = JSON.parse(saved);
         if (typeof parsed === "object" && parsed !== null && "id" in parsed) {
           console.log("✅ Using saved theater from localStorage:", parsed.name);
-          setTheater(parsed);
+          setTheater(parsed);  // Use the saved theater from localStorage
           setLoadingTheater(false);
           return;
         }
@@ -31,22 +31,26 @@ export const TheaterProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem("selectedTheater");
     }
 
+    // Only call loadNearestTheater if no saved theater exists
     loadNearestTheater();
-  }, []);
+  }, []); // Only run on initial load
 
   useEffect(() => {
     if (theater) {
-      localStorage.setItem("selectedTheater", JSON.stringify(theater));
+      localStorage.setItem("selectedTheater", JSON.stringify(theater)); // Save theater in localStorage
     }
   }, [theater]);
 
+  // Function to load the nearest theater using geolocation
   const loadNearestTheater = async () => {
     try {
       console.log("📦 Fetching all theaters...");
-      const theaters: Theater[] = await theaterService.getAll(); // Fetch theaters
+      const theaters: Theater[] = await theaterService.getAll(); // Fetch all theaters
 
+      // Check if geolocation is available
       if (!navigator.geolocation) {
         console.warn("🚫 Geolocation not supported. Falling back.");
+        // If no geolocation, just fallback to first theater in list (if no theater set yet)
         setTheater(theaters[0]);
         setLoadingTheater(false);
         return;
@@ -71,25 +75,29 @@ export const TheaterProvider = ({ children }: { children: ReactNode }) => {
           console.log("🎯 Nearest theater found:", nearest.name);
 
           setTheater(nearest);
-          setLoadingTheater(false);
+          setLoadingTheater(false);  // Update loading state when done
         },
         (err) => {
           console.warn("⚠️ Geolocation error:", err.message);
-          setTheater(theaters[0]);
-          setLoadingTheater(false);
+          // Fallback to the first theater in the list only if no theater is already set
+          if (!theater) {
+            setTheater(theaters[0]);
+          }
+          setLoadingTheater(false); // Stop loading when geolocation fails
         }
       );
 
+      // Timeout fallback after 5 seconds if no theater has been set
       setTimeout(() => {
         if (!theater) {
           console.warn("⏰ Timeout fallback triggered...");
-          setTheater(theaters[0]);
+          setTheater(theaters[0]);  // Set first theater if still undefined
           setLoadingTheater(false);
         }
       }, 5000);
     } catch (error) {
       console.error("❌ Failed to fetch theaters or geolocate:", error);
-      setLoadingTheater(false);
+      setLoadingTheater(false); // Stop loading if there is an error
     }
   };
 
@@ -106,6 +114,7 @@ export const useTheater = () => {
   return context;
 };
 
+// Geocode address to get lat/lng
 const geocodeAddress = async (address: string) => {
   try {
     console.log("📦 Geocoding address:", address);
@@ -116,16 +125,18 @@ const geocodeAddress = async (address: string) => {
     );
     const data = await res.json();
     if (!data?.length) throw new Error("No results for address");
+    console.log("Geocoded Coordinates:", data[0].lat, data[0].lon);  // Log coordinates
     return {
       lat: parseFloat(data[0].lat),
       lng: parseFloat(data[0].lon),
     };
   } catch (err) {
     console.error("❌ Geocoding failed for:", address, err);
-    return { lat: 0, lng: 0 }; // fallback coords
+    return { lat: 0, lng: 0 }; // fallback coordinates
   }
 };
 
+// Function to calculate the nearest theater based on distance
 const findNearest = (
   userLat: number,
   userLng: number,
@@ -135,6 +146,7 @@ const findNearest = (
   let minDist = Infinity;
   theaters.forEach((t) => {
     const d = getDistance(userLat, userLng, t.lat, t.lng);
+    console.log(`Distance to ${t.name}: ${d} km`);  // Log distances to each theater
     if (d < minDist) {
       minDist = d;
       closest = t;
@@ -143,8 +155,9 @@ const findNearest = (
   return closest;
 };
 
+// Haversine formula to calculate distance between two coordinates (in km)
 const getDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-  const R = 6371;
+  const R = 6371;  // Radius of the Earth in km
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =

@@ -24,6 +24,7 @@ import AdminAddTheater from "./pages/Admin/AdminAddTheater";
 import AdminEditTheater from "./pages/Admin/AdminEditTheater";
 import TheaterGuard from "./Components/TheaterGuard"; // 🛡️ NEW GUARD
 import ShowtimesPage from "./pages/ShowtimesPage";
+import TheatersPage from "./pages/TheatersPage";
 
 import "./index.css";
 
@@ -50,6 +51,7 @@ const App = () => {
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/showtimes/:movieId" element={<ShowtimesPage />} />
+                    <Route path="/theaters" element={<TheatersPage />} />
                     
                     {/* Admin Routes */}
                     <Route path="/admin-dashboard" element={<AdminDashboard />} />

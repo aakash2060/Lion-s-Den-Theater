@@ -63,7 +63,7 @@ const DiscoverMovies = () => {
   if (!theater) {
     return (
       <div className="flex justify-center items-center h-screen text-white text-xl">
-        🎬 Please select a theater from the top dropdown to see available movies.
+        🎬 Please select a theater from the top dropdown or theater page to see available movies.
       </div>
     );
   }
@@ -89,7 +89,7 @@ const DiscoverMovies = () => {
       <div className="text-center">
         <h1 className="text-4xl font-bold">🎬 Discover Movies</h1>
         <p className="mt-2 text-lg text-gray-400">
-          Find the best movies curated for you!
+          Showing movies at <span className="text-red-400 font-semibold">{theater.name}</span>
         </p>
       </div>
 
