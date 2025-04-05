@@ -33,9 +33,6 @@ const getYoutubeId = (url: string): string | null => {
   return match ? match[1] : null;
 };
 
-
-
-
 const MovieDescriptionPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -44,12 +41,8 @@ const MovieDescriptionPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   const handleGetTickets = () => {
-    // Scroll to showtimes section if available
-    const showtimesElement = document.getElementById("tickets");
-    if (showtimesElement) {
-      showtimesElement.scrollIntoView({ behavior: "smooth" });
-    } else {
-      // Navigate to booking page or show modal if no showtimes section
+    // Always navigate to the dedicated showtimes page
+    if (id) {
       navigate(`/showtimes/${id}`);
     }
   };
@@ -157,50 +150,16 @@ const MovieDescriptionPage = () => {
         <h2 className="text-2xl font-bold mb-2">Director</h2>
         <p className="text-gray-300 mb-8">{movie.director}</p>
 
-        {/* Show showtimes if available */}
-        {movie.showtimes && movie.showtimes.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-4" id="tickets">Available Showtimes</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
-              {movie.showtimes.map(showtime => (
-                <div key={showtime.id} className="bg-gray-800 p-4 rounded-lg text-left">
-                  <p className="font-bold">{showtime.theaterName}</p>
-                  <p className="text-sm">
-                    {new Date(showtime.startTime).toLocaleString(undefined, {
-                      weekday: 'short',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
-                  <p className="text-sm">Hall {showtime.hallNumber} | {showtime.is3D ? '3D' : '2D'}</p>
-                  <p className="text-sm">Price: ${showtime.price.toFixed(2)}</p>
-                  <p className="text-sm mb-2">Available Seats: {showtime.availableSeats}</p>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="bg-red-600 hover:bg-red-700 transition px-4 py-2 rounded-lg text-sm w-full"
-                    onClick={() => navigate(`/booking/${showtime.id}`)}
-                  >
-                    Book Tickets
-                  </motion.button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Ticket button - always show this */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="bg-red-600 hover:bg-red-700 transition px-8 py-4 rounded-xl text-lg font-semibold shadow-red-500 shadow-md"
+          onClick={handleGetTickets}
+        >
+          🎟️ Get Tickets
+        </motion.button>
 
-        {movie.showtimes && (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-red-600 hover:bg-red-700 transition px-8 py-4 rounded-xl text-lg font-semibold shadow-red-500 shadow-md"
-              onClick={handleGetTickets}
-            >
-              🎟️ Get Tickets
-            </motion.button>
-        )}
         <div className="mt-8">
           <button 
             onClick={() => navigate(-1)} 

@@ -17,8 +17,9 @@ const ShowtimesPage = () => {
   const [movie, setMovie] = useState<MovieWithShowtimes | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTheater, setSelectedTheater] = useState<string | null>(null);
+  const [availableDates, setAvailableDates] = useState<Date[]>([]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -46,6 +47,15 @@ const ShowtimesPage = () => {
         
         setMovie(movieWithShowtimes);
         
+        // Extract unique dates
+        const dates = getUniqueDates(showtimesData);
+        setAvailableDates(dates);
+        
+        // Set initial date to first available date
+        if (dates.length > 0) {
+          setSelectedDate(dates[0]);
+        }
+        
         // Set initial selected theater if available
         if (showtimesData && showtimesData.length > 0) {
           const theaters = new Set(showtimesData.map(s => s.theaterName));
@@ -63,26 +73,26 @@ const ShowtimesPage = () => {
     
     fetchData();
   }, [id]);
-// Extract unique dates from showtimes data
-const getUniqueDates = () => {
-  if (!movie || !movie.showtimes) return [];
-  
-  const uniqueDates = new Set(
-    movie.showtimes.map(showtime => {
-      const date = new Date(showtime.startTime);
-      return date.toISOString().split('T')[0]; // Get YYYY-MM-DD format
-    })
-  );
-  
-  return Array.from(uniqueDates)
-    .map(dateString => new Date(dateString))
-    .sort((a, b) => a.getTime() - b.getTime()); // Sort chronologically
-};
-const availableDates = getUniqueDates();
+
+  // Extract unique dates from showtimes data
+  const getUniqueDates = (showtimes: Showtime[] | undefined) => {
+    if (!showtimes || showtimes.length === 0) return [];
+    
+    const uniqueDates = new Set(
+      showtimes.map(showtime => {
+        const date = new Date(showtime.startTime);
+        return date.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+      })
+    );
+    
+    return Array.from(uniqueDates)
+      .map(dateString => new Date(dateString))
+      .sort((a, b) => a.getTime() - b.getTime()); // Sort chronologically
+  };
 
   // Filter showtimes based on selected date and theater
   const getFilteredShowtimes = () => {
-    if (!movie || !movie.showtimes) return [];
+    if (!movie || !movie.showtimes || !selectedDate) return [];
     
     return movie.showtimes.filter(showtime => {
       const showtimeDate = new Date(showtime.startTime);
@@ -110,8 +120,13 @@ const availableDates = getUniqueDates();
 
   // For debugging
   console.log("Current movie state:", movie);
+  console.log("Available dates:", availableDates);
+  console.log("Selected date:", selectedDate);
   console.log("Filtered showtimes:", filteredShowtimes);
   console.log("Unique theaters:", uniqueTheaters);
+
+  // No showtimes for this movie at all
+  const noShowtimesAtAll = movie?.showtimes?.length === 0;
 
   if (loading) {
     return (
@@ -153,104 +168,124 @@ const availableDates = getUniqueDates();
         </div>
       </div>
 
-      {/* Date Selection */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Select Date</h2>
-        <div className="flex overflow-x-auto pb-4 gap-2">
-          {availableDates.map((date, index) => {
-            const isSelected = 
-              date.getDate() === selectedDate.getDate() && 
-              date.getMonth() === selectedDate.getMonth();
-            
-            return (
-              <div 
-                key={index}
-                className={`
-                  flex-shrink-0 cursor-pointer p-3 rounded-lg min-w-20 text-center
-                  ${isSelected ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}
-                `}
-                onClick={() => setSelectedDate(date)}
-              >
-                <div className="text-sm font-bold">
-                  {date.toLocaleDateString('en-US', { weekday: 'short' })}
-                </div>
-                <div className="text-lg font-bold">
-                  {date.getDate()}
-                </div>
-                <div className="text-xs">
-                  {date.toLocaleDateString('en-US', { month: 'short' })}
-                </div>
-              </div>
-            );
-          })}
+      {noShowtimesAtAll ? (
+        <div className="bg-gray-800 p-8 rounded-lg text-center my-12">
+          <h2 className="text-2xl font-bold mb-4">No Showtimes Available</h2>
+          <p className="text-lg mb-6">
+            There are currently no showtimes scheduled for this movie.
+          </p>
+          <button 
+            onClick={() => navigate("/")} 
+            className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-md transition"
+          >
+            Browse Other Movies
+          </button>
         </div>
-      </div>
-
-      {/* Theater Selection (if multiple theaters available) */}
-      {uniqueTheaters.length > 1 && (
-        <div className="mb-8">
-          <h2 className="text-xl font-bold mb-4">Select Theater</h2>
-          <div className="flex flex-wrap gap-3">
-            <div 
-              className={`cursor-pointer px-4 py-2 rounded-lg ${!selectedTheater ? 'bg-red-600' : 'bg-gray-800 hover:bg-gray-700'}`}
-              onClick={() => setSelectedTheater(null)}
-            >
-              All Theaters
+      ) : (
+        <>
+          {/* Date Selection */}
+          {availableDates.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-bold mb-4">Select Date</h2>
+              <div className="flex overflow-x-auto pb-4 gap-2">
+                {availableDates.map((date, index) => {
+                  const isSelected = selectedDate && 
+                    date.getDate() === selectedDate.getDate() && 
+                    date.getMonth() === selectedDate.getMonth();
+                  
+                  return (
+                    <div 
+                      key={index}
+                      className={`
+                        flex-shrink-0 cursor-pointer p-3 rounded-lg min-w-20 text-center
+                        ${isSelected ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}
+                      `}
+                      onClick={() => setSelectedDate(date)}
+                    >
+                      <div className="text-sm font-bold">
+                        {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                      </div>
+                      <div className="text-lg font-bold">
+                        {date.getDate()}
+                      </div>
+                      <div className="text-xs">
+                        {date.toLocaleDateString('en-US', { month: 'short' })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-            {uniqueTheaters.map((theater, index) => (
-              <div 
-                key={index}
-                className={`cursor-pointer px-4 py-2 rounded-lg ${selectedTheater === theater ? 'bg-red-600' : 'bg-gray-800 hover:bg-gray-700'}`}
-                onClick={() => setSelectedTheater(theater)}
-              >
-                {theater}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+          )}
 
-      {/* Showtimes Display */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4">Available Showtimes</h2>
-        
-        {filteredShowtimes.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {filteredShowtimes.map((showtime, index) => {
-              const showtimeDate = new Date(showtime.startTime);
-              return (
-                <motion.div
-                  key={index}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-700 transition duration-300"
-                  onClick={() => navigate(`/booking/${id}/${showtime.id}`)}
+          {/* Theater Selection (if multiple theaters available) */}
+          {uniqueTheaters.length > 1 && (
+            <div className="mb-8">
+              <h2 className="text-xl font-bold mb-4">Select Theater</h2>
+              <div className="flex flex-wrap gap-3">
+                <div 
+                  className={`cursor-pointer px-4 py-2 rounded-lg ${!selectedTheater ? 'bg-red-600' : 'bg-gray-800 hover:bg-gray-700'}`}
+                  onClick={() => setSelectedTheater(null)}
                 >
-                  <div className="text-lg font-bold">
-                    {showtimeDate.toLocaleTimeString('en-US', { 
-                      hour: '2-digit', 
-                      minute: '2-digit',
-                      hour12: true 
-                    })}
+                  All Theaters
+                </div>
+                {uniqueTheaters.map((theater, index) => (
+                  <div 
+                    key={index}
+                    className={`cursor-pointer px-4 py-2 rounded-lg ${selectedTheater === theater ? 'bg-red-600' : 'bg-gray-800 hover:bg-gray-700'}`}
+                    onClick={() => setSelectedTheater(theater)}
+                  >
+                    {theater}
                   </div>
-                  <div className="text-sm text-gray-300">{showtime.theaterName}</div>
-                  <div className="text-sm text-gray-400">{showtime.is3D ? '3D' : '2D'}</div>
-                  <div className="mt-2 text-red-500 font-semibold">
-                    ${showtime.price.toFixed(2)}
-                  </div>
-                </motion.div>
-              );
-            })}
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Showtimes Display */}
+          <div className="mb-8">
+            <h2 className="text-xl font-bold mb-4">Available Showtimes</h2>
+            
+            {filteredShowtimes.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {filteredShowtimes.map((showtime, index) => {
+                  const showtimeDate = new Date(showtime.startTime);
+                  return (
+                    <motion.div
+                      key={index}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-700 transition duration-300"
+                      onClick={() => navigate(`/booking/${id}/${showtime.id}`)}
+                    >
+                      <div className="text-lg font-bold">
+                        {showtimeDate.toLocaleTimeString('en-US', { 
+                          hour: '2-digit', 
+                          minute: '2-digit',
+                          hour12: true 
+                        })}
+                      </div>
+                      <div className="text-sm text-gray-300">{showtime.theaterName}</div>
+                      <div className="text-sm text-gray-400">Hall {showtime.hallNumber}</div>
+                      <div className="text-sm text-gray-400">{showtime.is3D ? '3D' : '2D'}</div>
+                      <div className="mt-2 text-red-500 font-semibold">
+                        ${showtime.price ? showtime.price.toFixed(2) : '0.00'}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="bg-gray-800 p-6 rounded-lg text-center">
+                <p className="text-lg">No showtimes available for this selection.</p>
+                <p className="text-sm text-gray-400 mt-2">
+                  Try selecting a different date or theater.
+                </p>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="bg-gray-800 p-6 rounded-lg text-center">
-            <p className="text-lg">No showtimes available for this selection.</p>
-            <p className="text-sm text-gray-400 mt-2">
-              Try selecting a different date or theater.
-            </p>
-          </div>
-        )}
-      </div>
+        </>
+      )}
 
       {/* Navigation buttons */}
       <div className="flex justify-between mt-8">
