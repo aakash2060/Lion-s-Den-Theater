@@ -1,16 +1,15 @@
-// src/services/api.ts
+
 import axios from 'axios';
 
-// Create an axios instance with default config
+
 const api = axios.create({
-  baseURL: '/api', // This will use the relative path
-  withCredentials: true, // Important for auth cookies
+  baseURL: '/api', 
+  withCredentials: true, 
   headers: {
     'Content-Type': 'application/json'
   }
 });
 
-// Example API functions for movies
 export const movieService = {
   getAll: async () => {
     const response = await api.get('/movies');

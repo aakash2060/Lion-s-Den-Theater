@@ -2,12 +2,19 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { movieService } from "../services/MovieApi";
+import { showtimeService } from "../services/ShowtimeApi";
 import { MovieDetails } from "../Data/MovieInterfaces";
+import { Showtime } from "../Data/ShowtimeInterfaces";
+
+// Interface for movie with showtimes
+interface MovieWithShowtimes extends MovieDetails {
+  showtimes?: Showtime[];
+}
 
 const ShowtimesPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [movie, setMovie] = useState<MovieDetails | null>(null);
+  const [movie, setMovie] = useState<MovieWithShowtimes | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -18,30 +25,43 @@ const ShowtimesPage = () => {
   }, []);
 
   useEffect(() => {
-    const fetchMovieDetails = async () => {
+    const fetchData = async () => {
       if (!id) return;
       
       try {
         setLoading(true);
+        // Get movie details
         const movieData = await movieService.getById(parseInt(id, 10));
-        setMovie(movieData);
+        console.log("Movie data:", movieData);
+        
+        // Get showtimes for this movie
+        const showtimesData = await showtimeService.getByMovieId(parseInt(id, 10));
+        console.log("Showtimes data:", showtimesData);
+        
+        // Combine the data
+        const movieWithShowtimes: MovieWithShowtimes = {
+          ...movieData,
+          showtimes: showtimesData
+        };
+        
+        setMovie(movieWithShowtimes);
         
         // Set initial selected theater if available
-        if (movieData.showtimes && movieData.showtimes.length > 0) {
-          const theaters = new Set(movieData.showtimes.map((s: { theaterName: any; }) => s.theaterName));
+        if (showtimesData && showtimesData.length > 0) {
+          const theaters = new Set(showtimesData.map(s => s.theaterName));
           if (theaters.size > 0) {
-            setSelectedTheater(movieData.showtimes[0].theaterName);
+            setSelectedTheater(showtimesData[0].theaterName);
           }
         }
       } catch (err) {
-        console.error("Error fetching movie details:", err);
-        setError("Failed to load movie details. Please try again later.");
+        console.error("Error fetching data:", err);
+        setError("Failed to load movie details and showtimes. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
     
-    fetchMovieDetails();
+    fetchData();
   }, [id]);
 
   // Generate the next 7 days for date selection
@@ -78,6 +98,11 @@ const ShowtimesPage = () => {
 
   const filteredShowtimes = getFilteredShowtimes();
   const uniqueTheaters = getUniqueTheaters();
+
+  // For debugging
+  console.log("Current movie state:", movie);
+  console.log("Filtered showtimes:", filteredShowtimes);
+  console.log("Unique theaters:", uniqueTheaters);
 
   if (loading) {
     return (
@@ -176,46 +201,47 @@ const ShowtimesPage = () => {
         </div>
       )}
 
-<div className="mb-8">
-  <h2 className="text-xl font-bold mb-4">Available Showtimes</h2>
-  
-  {filteredShowtimes.length > 0 ? (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-      {filteredShowtimes.map((showtime, index) => {
-        const showtimeDate = new Date(showtime.startTime);
-        return (
-          <motion.div
-            key={index}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-700 transition duration-300"
-            onClick={() => navigate(`/booking/${id}/${showtime.id}`)}
-          >
-            <div className="text-lg font-bold">
-              {showtimeDate.toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: true 
-              })}
-            </div>
-            <div className="text-sm text-gray-300">{showtime.theaterName}</div>
-            {/* <div className="text-sm text-gray-400">{showtime.}</div> */}
-            <div className="mt-2 text-red-500 font-semibold">
-              ${showtime.price.toFixed(2)}
-            </div>
-          </motion.div>
-        );
-      })}
-    </div>
-  ) : (
-    <div className="bg-gray-800 p-6 rounded-lg text-center">
-      <p className="text-lg">No showtimes available for this selection.</p>
-      <p className="text-sm text-gray-400 mt-2">
-        Try selecting a different date or theater.
-      </p>
-    </div>
-  )}
-</div>
+      {/* Showtimes Display */}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold mb-4">Available Showtimes</h2>
+        
+        {filteredShowtimes.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {filteredShowtimes.map((showtime, index) => {
+              const showtimeDate = new Date(showtime.startTime);
+              return (
+                <motion.div
+                  key={index}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-700 transition duration-300"
+                  onClick={() => navigate(`/booking/${id}/${showtime.id}`)}
+                >
+                  <div className="text-lg font-bold">
+                    {showtimeDate.toLocaleTimeString('en-US', { 
+                      hour: '2-digit', 
+                      minute: '2-digit',
+                      hour12: true 
+                    })}
+                  </div>
+                  <div className="text-sm text-gray-300">{showtime.theaterName}</div>
+                  <div className="text-sm text-gray-400">{showtime.is3D ? '3D' : '2D'}</div>
+                  <div className="mt-2 text-red-500 font-semibold">
+                    ${showtime.price.toFixed(2)}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="bg-gray-800 p-6 rounded-lg text-center">
+            <p className="text-lg">No showtimes available for this selection.</p>
+            <p className="text-sm text-gray-400 mt-2">
+              Try selecting a different date or theater.
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* Navigation buttons */}
       <div className="flex justify-between mt-8">
