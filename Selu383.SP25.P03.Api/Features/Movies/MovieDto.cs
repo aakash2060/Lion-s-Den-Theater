@@ -14,7 +14,7 @@ namespace Selu383.SP25.P03.Api.Features.Movies
         public string Genre { get; set; }
         public string PosterUrl { get; set; }
         public DateTime ReleaseDate { get; set; }
-
+        public string TrailerId { get; set; }
     }
     public class MovieDetailsDto: MovieDto
     {
@@ -30,6 +30,7 @@ namespace Selu383.SP25.P03.Api.Features.Movies
         public string Genre { get; set; }
         public string PosterUrl { get; set; }
         public DateTime ReleaseDate { get; set; }
+        public string TrailerId { get; set; }
     }
     public class UpdateMovieDto : CreateMovieDto
     {

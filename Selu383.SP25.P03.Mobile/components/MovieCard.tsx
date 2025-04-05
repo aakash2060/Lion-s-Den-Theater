@@ -2,42 +2,40 @@ import React from "react";
 import { View, Text, Image, TouchableOpacity, Dimensions } from "react-native";
 
 interface MovieProps {
-    name: string;
-    image: string;
-    duration?: string;
-    releaseDate: string
+    onPress: ()=> void
+    Title: string;
+    Description?: string;
+    Director?: string;
+    Rating?: string;
+    PosterUrl: string;
+    ReleaseDate?: string;
+    Genre?: string;
+    trailerId?:string
 }
 
-const MovieCard: React.FC<MovieProps> = ({ name, image, duration, releaseDate }) => {
-    // Calculate the width based on screen size (48% of screen width minus padding)
+const MovieCard: React.FC<MovieProps> = ({ Title, PosterUrl, ReleaseDate, onPress }) => {
     const screenWidth = Dimensions.get('window').width;
-    const cardWidth = (screenWidth - 48) / 2; // 48px accounts for outer padding and gap
+    const cardWidth = (screenWidth - 48) / 2;
+    
     
     return (
         <TouchableOpacity 
+            onPress={onPress}
             className="mb-4 rounded-lg overflow-hidden"
             style={{ width: cardWidth }}
             activeOpacity={0.8}
         >
-            <View>
+            <View className="bg-gray-800"> {/* Added background for better contrast */}
                 <Image 
-                    source={{ uri: image }} 
+                    source={{ uri: PosterUrl }} 
                     style={{
                         width: cardWidth,
-                        height: cardWidth * 1.5, // Standard movie poster ratio (2:3)
+                        height: cardWidth * 1.5,
                         borderRadius: 8
                     }}
                     resizeMode="cover" 
                 />
                 
-                <View className="p-2">
-                    <Text className="text-white font-medium text-sm" numberOfLines={1} ellipsizeMode="tail">
-                        {name}
-                    </Text>
-                    {duration && (
-                        <Text className="text-gray-400 text-xs mt-1">{duration}</Text>
-                    )}
-                </View>
             </View>
         </TouchableOpacity>
     );
