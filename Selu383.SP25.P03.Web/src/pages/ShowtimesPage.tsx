@@ -51,9 +51,20 @@ const ShowtimesPage = () => {
         const dates = getUniqueDates(showtimesData);
         setAvailableDates(dates);
         
-        // Set initial date to first available date
+        // Find first date that has showtimes
         if (dates.length > 0) {
-          setSelectedDate(dates[0]);
+          // Find the first date with showtimes
+          const dateWithShowtimes = dates.find(date => {
+            return showtimesData.some(showtime => {
+              const showtimeDate = new Date(showtime.startTime);
+              return showtimeDate.getDate() === date.getDate() && 
+                     showtimeDate.getMonth() === date.getMonth() && 
+                     showtimeDate.getFullYear() === date.getFullYear();
+            });
+          });
+          
+          // Set to first date with showtimes, or first date if none found
+          setSelectedDate(dateWithShowtimes || dates[0]);
         }
         
         // Set initial selected theater if available
@@ -104,6 +115,23 @@ const ShowtimesPage = () => {
       const isSelectedTheater = !selectedTheater || showtime.theaterName === selectedTheater;
       
       return isSameDate && isSelectedTheater;
+    });
+  };
+  
+  // Check if a date has any showtimes for the selected theater
+  const dateHasShowtimes = (date: Date) => {
+    if (!movie || !movie.showtimes) return false;
+    
+    return movie.showtimes.some(showtime => {
+      const showtimeDate = new Date(showtime.startTime);
+      const isSameDate = 
+        showtimeDate.getDate() === date.getDate() && 
+        showtimeDate.getMonth() === date.getMonth() && 
+        showtimeDate.getFullYear() === date.getFullYear();
+      
+      const matchesTheater = !selectedTheater || showtime.theaterName === selectedTheater;
+      
+      return isSameDate && matchesTheater;
     });
   };
 
@@ -188,32 +216,34 @@ const ShowtimesPage = () => {
             <div className="mb-8">
               <h2 className="text-xl font-bold mb-4">Select Date</h2>
               <div className="flex overflow-x-auto pb-4 gap-2">
-                {availableDates.map((date, index) => {
-                  const isSelected = selectedDate && 
-                    date.getDate() === selectedDate.getDate() && 
-                    date.getMonth() === selectedDate.getMonth();
-                  
-                  return (
-                    <div 
-                      key={index}
-                      className={`
-                        flex-shrink-0 cursor-pointer p-3 rounded-lg min-w-20 text-center
-                        ${isSelected ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}
-                      `}
-                      onClick={() => setSelectedDate(date)}
-                    >
-                      <div className="text-sm font-bold">
-                        {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                {availableDates
+                  .filter(date => dateHasShowtimes(date))
+                  .map((date, index) => {
+                    const isSelected = selectedDate && 
+                      date.getDate() === selectedDate.getDate() && 
+                      date.getMonth() === selectedDate.getMonth();
+                    
+                    return (
+                      <div 
+                        key={index}
+                        className={`
+                          flex-shrink-0 cursor-pointer p-3 rounded-lg min-w-20 text-center
+                          ${isSelected ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}
+                        `}
+                        onClick={() => setSelectedDate(date)}
+                      >
+                        <div className="text-sm font-bold">
+                          {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                        </div>
+                        <div className="text-lg font-bold">
+                          {date.getDate()}
+                        </div>
+                        <div className="text-xs">
+                          {date.toLocaleDateString('en-US', { month: 'short' })}
+                        </div>
                       </div>
-                      <div className="text-lg font-bold">
-                        {date.getDate()}
-                      </div>
-                      <div className="text-xs">
-                        {date.toLocaleDateString('en-US', { month: 'short' })}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
             </div>
           )}

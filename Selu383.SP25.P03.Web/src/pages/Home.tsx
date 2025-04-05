@@ -3,38 +3,57 @@ import { useState, useEffect } from "react";
 import MovieCard from "../Components/MovieCard";
 import { useNavigate } from "react-router-dom";
 import { movieService } from "../services/MovieApi";
+import { showtimeService } from "../services/ShowtimeApi"; // Import showtime service
 import { Movie } from "../Data/MovieInterfaces";
 
 const Home = () => {
   const navigate = useNavigate();
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [moviesWithShowtimes, setMoviesWithShowtimes] = useState<number[]>([]); // IDs of movies with showtimes
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchMovies = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const data = await movieService.getAll();
-        setMovies(data);
+        
+        // Get all movies
+        const moviesData = await movieService.getAll();
+        setMovies(moviesData);
+        
+        // Get upcoming showtimes using your existing endpoint
+        const showtimesData = await showtimeService.getUpcoming();
+        
+        // Extract unique movie IDs that have showtimes
+        const movieIdsWithShowtimes = [...new Set(showtimesData.map(s => s.movieId))];
+        setMoviesWithShowtimes(movieIdsWithShowtimes);
+        
         setError(null);
       } catch (err) {
-        console.error("Failed to fetch movies:", err);
+        console.error("Failed to fetch data:", err);
         setError("Failed to load movies. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
-    fetchMovies();
+    fetchData();
   }, []);
 
   // Filter movies into categories
   const nowShowing = movies.filter(
-    (movie) => new Date(movie.releaseDate) <= new Date()
+    // A movie is "Now Showing" if:
+    // 1. It has been released (past release date)
+    // 2. AND it has upcoming showtimes
+    (movie) => 
+      new Date(movie.releaseDate) <= new Date() && 
+      moviesWithShowtimes.includes(movie.id)
   );
+  
   const comingSoon = movies.filter(
     (movie) => new Date(movie.releaseDate) > new Date()
   );
+  
   const topRated = [...movies]
     .filter((movie) => movie.rating) // Ensure rating exists
     .sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating)) // Sort by rating (highest first)
@@ -104,7 +123,7 @@ const Home = () => {
             ))
           ) : (
             <div className="col-span-full text-center py-10">
-              No movies currently Showing
+              No movies currently showing
             </div>
           )}
         </div>
@@ -138,7 +157,7 @@ const Home = () => {
             ))
           ) : (
             <div className="col-span-full text-center py-10">
-              No Upcoming movies Scheduled
+              No upcoming movies scheduled
             </div>
           )}
         </div>
@@ -181,7 +200,7 @@ const Home = () => {
       {/* Exclusive Offers & Membership */}
       <section className="bg-[#7c0000] p-10 text-center mt-16">
         <h2 className="text-3xl font-bold">
-          Get early access, discounts, and more with Lion’s Den Plus.
+          Get early access, discounts, and more with Lion's Den Plus.
         </h2>
         <p className="mt-2">Unlock unlimited movies and exclusive perks.</p>
 
