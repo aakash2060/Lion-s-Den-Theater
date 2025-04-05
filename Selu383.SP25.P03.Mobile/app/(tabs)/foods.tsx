@@ -7,8 +7,20 @@ import { BASE_URL } from "@/constants/baseUrl";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
+interface FoodProps {
+  id: number;
+  name: string;
+  imgUrl: string;
+  price: string;
+  description: string;
+  stockQuantity: string;
+}
 export default function FoodsScreen() {
   const [foodItems, setFoodItems] = useState([]);
+  
+  const handleCart = (foodItem:FoodProps) =>{
+    console.log("Added to Cart", foodItem)
+  }
 
   // Fetch the food items from backend
   useEffect(() => {
@@ -43,7 +55,7 @@ export default function FoodsScreen() {
 
       
         {/* Scrollable Food Menu - Pass fetched data */}
-        <FoodMenu foodItems={foodItems} />
+        <FoodMenu foodItems={foodItems} onAddToCart={handleCart}/>
       </ScrollView>
     </SafeAreaView>
   );

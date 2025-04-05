@@ -13,13 +13,14 @@ interface FoodProps {
 
 interface FoodMenuProps {
   foodItems: FoodProps[];
+  onAddToCart: (item: FoodProps) => void;
 }
 
-const FoodMenu: React.FC<FoodMenuProps> = ({ foodItems }) => {
+const FoodMenu: React.FC<FoodMenuProps> = ({ foodItems, onAddToCart }) => {
   const [favorites, setFavorites] = useState<{ [key: number]: boolean }>({});
 
   const screenWidth = Dimensions.get("window").width;
-  const cardWidth = (screenWidth - 48) / 2; // Adjusted width for two columns with spacing
+  const cardWidth = (screenWidth - 48) / 2; 
 
   const toggleFavorite = (id: number) => {
     setFavorites((prev) => ({
@@ -52,10 +53,33 @@ const FoodMenu: React.FC<FoodMenuProps> = ({ foodItems }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Food Name */}
-        <Text className="text-base font-semibold text-white mt-2">{item.name}</Text>
-        {/* Food Price */}
-        <Text className="text-sm text-gray-400">${item.price}</Text>
+        {/* Food Info */}
+        <View className="w-full px-2">
+          <Text className="text-base font-semibold text-white mt-2">{item.name}</Text>
+          <Text className="text-sm text-gray-400">${item.price}</Text>
+          
+          {/* Add to Cart Button */}
+          <TouchableOpacity
+  className="flex-row items-center justify-center bg-['#E50914'] rounded-md py-3 px-6 mt-3"
+  onPress={() => onAddToCart(item)}
+  activeOpacity={0.85}
+  style={{
+   shadowColor:'#E50914',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5
+  }}
+>
+  <Icon 
+    name="shoppingcart"  
+    size={16} 
+    color="white" 
+    style={{ marginRight: 10 }} 
+  />
+  <Text className="text-white font-bold text-sm tracking-wider">ADD TO CART</Text>
+</TouchableOpacity>
+        </View>
       </View>
     );
   };
