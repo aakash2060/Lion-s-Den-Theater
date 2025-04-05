@@ -63,13 +63,22 @@ const ShowtimesPage = () => {
     
     fetchData();
   }, [id]);
-
-  // Generate the next 7 days for date selection
-  const nextSevenDays = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() + i);
-    return date;
-  });
+// Extract unique dates from showtimes data
+const getUniqueDates = () => {
+  if (!movie || !movie.showtimes) return [];
+  
+  const uniqueDates = new Set(
+    movie.showtimes.map(showtime => {
+      const date = new Date(showtime.startTime);
+      return date.toISOString().split('T')[0]; // Get YYYY-MM-DD format
+    })
+  );
+  
+  return Array.from(uniqueDates)
+    .map(dateString => new Date(dateString))
+    .sort((a, b) => a.getTime() - b.getTime()); // Sort chronologically
+};
+const availableDates = getUniqueDates();
 
   // Filter showtimes based on selected date and theater
   const getFilteredShowtimes = () => {
@@ -148,7 +157,7 @@ const ShowtimesPage = () => {
       <div className="mb-8">
         <h2 className="text-xl font-bold mb-4">Select Date</h2>
         <div className="flex overflow-x-auto pb-4 gap-2">
-          {nextSevenDays.map((date, index) => {
+          {availableDates.map((date, index) => {
             const isSelected = 
               date.getDate() === selectedDate.getDate() && 
               date.getMonth() === selectedDate.getMonth();
