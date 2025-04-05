@@ -176,6 +176,46 @@ const ShowtimesPage = () => {
         </div>
       )}
 
+<div className="mb-8">
+  <h2 className="text-xl font-bold mb-4">Available Showtimes</h2>
+  
+  {filteredShowtimes.length > 0 ? (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      {filteredShowtimes.map((showtime, index) => {
+        const showtimeDate = new Date(showtime.startTime);
+        return (
+          <motion.div
+            key={index}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-gray-800 rounded-lg p-4 cursor-pointer hover:bg-gray-700 transition duration-300"
+            onClick={() => navigate(`/booking/${id}/${showtime.id}`)}
+          >
+            <div className="text-lg font-bold">
+              {showtimeDate.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+              })}
+            </div>
+            <div className="text-sm text-gray-300">{showtime.theaterName}</div>
+            {/* <div className="text-sm text-gray-400">{showtime.}</div> */}
+            <div className="mt-2 text-red-500 font-semibold">
+              ${showtime.price.toFixed(2)}
+            </div>
+          </motion.div>
+        );
+      })}
+    </div>
+  ) : (
+    <div className="bg-gray-800 p-6 rounded-lg text-center">
+      <p className="text-lg">No showtimes available for this selection.</p>
+      <p className="text-sm text-gray-400 mt-2">
+        Try selecting a different date or theater.
+      </p>
+    </div>
+  )}
+</div>
 
       {/* Navigation buttons */}
       <div className="flex justify-between mt-8">

@@ -50,7 +50,7 @@ const MovieDescriptionPage = () => {
       showtimesElement.scrollIntoView({ behavior: "smooth" });
     } else {
       // Navigate to booking page or show modal if no showtimes section
-      navigate(`/movie/${movie?.title}/showtimes/${id}`);
+      navigate(`/showtimes/${id}`);
     }
   };
 
