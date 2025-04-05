@@ -1,3 +1,4 @@
+
 import { Stack } from "expo-router";
 
 export default function OtherPageTheme(){
@@ -23,3 +24,4 @@ export default function OtherPageTheme(){
     )
 
 }
+

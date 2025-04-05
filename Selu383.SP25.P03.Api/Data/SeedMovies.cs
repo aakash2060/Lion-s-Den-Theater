@@ -19,6 +19,7 @@ namespace Selu383.SP25.P03.Api.Data
             {
                 var movies = new List<Movie>
                 {
+
                         new Movie
     {
         Title = "Inception",
@@ -247,8 +248,6 @@ new Movie
     ReleaseDate = new DateTime(2017, 2, 24),
     TrailerId = "DzfpyUB60YY"
 }
-
-
 
                 };
 
