@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
+import { useTheater } from "../context/TheaterContext"; // 🎬 Theater context
 import MovieCard from "../Components/MovieCard";
 import QRCard from "../Components/QRCard";
 import { movieService } from "../services/api";
-import { Movie} from '../Data/MovieInterfaces'
-
+import { Movie } from "../Data/MovieInterfaces";
 
 const DiscoverMovies = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -13,12 +13,14 @@ const DiscoverMovies = () => {
   const [sortOption, setSortOption] = useState("rating");
   const [hoveredMovie, setHoveredMovie] = useState<string | null>(null);
 
-  // Fetch movies from API
+  const { theater } = useTheater(); // 🎬 Grab selected theater
+
   useEffect(() => {
     const fetchMovies = async () => {
+      if (!theater) return; // Wait until theater is selected
       try {
         setLoading(true);
-        const data = await movieService.getAll();
+        const data = await movieService.getAll(theater.id.toString()); // ✅ FIXED: use theater ID
         setMovies(data);
         setError(null);
       } catch (err) {
@@ -30,34 +32,41 @@ const DiscoverMovies = () => {
     };
 
     fetchMovies();
-  }, []);
+  }, [theater]);
 
-  // Determine movie status based on releaseDate
   const getMovieStatus = (releaseDate: string) => {
     return new Date(releaseDate) <= new Date() ? "now_showing" : "upcoming";
   };
 
-  // Filtering Movies (By Genre & Status)
   const filteredMovies =
     filter === "All"
       ? movies
       : movies.filter(
-          (movie) => movie.genre === filter || getMovieStatus(movie.releaseDate) === filter
+          (movie) =>
+            movie.genre === filter ||
+            getMovieStatus(movie.releaseDate) === filter
         );
 
-  // Sorting Movies
   const sortedMovies = [...filteredMovies].sort((a, b) => {
     if (sortOption === "rating") {
-      return parseFloat(b.rating || "0") - parseFloat(a.rating || "0"); // Highest rated first
+      return parseFloat(b.rating || "0") - parseFloat(a.rating || "0");
     }
     if (sortOption === "duration") {
-      return b.duration - a.duration; // Longest movie first
+      return b.duration - a.duration;
     }
     if (sortOption === "alphabetical") {
-      return a.title.localeCompare(b.title); // A → Z sorting
+      return a.title.localeCompare(b.title);
     }
     return 0;
   });
+
+  if (!theater) {
+    return (
+      <div className="flex justify-center items-center h-screen text-white text-xl">
+        🎬 Please select a theater from the top dropdown or theater page to see available movies.
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -77,11 +86,10 @@ const DiscoverMovies = () => {
 
   return (
     <div className="px-8 py-6">
-      {/* Title */}
       <div className="text-center">
         <h1 className="text-4xl font-bold">🎬 Discover Movies</h1>
         <p className="mt-2 text-lg text-gray-400">
-          Find the best movies curated for you!
+          Showing movies at <span className="text-red-400 font-semibold">{theater.name}</span>
         </p>
       </div>
 
@@ -96,10 +104,13 @@ const DiscoverMovies = () => {
           <option value="All">All Movies</option>
           <option value="now_showing">Now Showing</option>
           <option value="upcoming">Upcoming</option>
-          {/* Dynamically populate genre options based on available genres */}
-          {Array.from(new Set(movies.map(movie => movie.genre))).map(genre => (
-            <option key={genre} value={genre}>{genre}</option>
-          ))}
+          {Array.from(new Set(movies.map((movie) => movie.genre))).map(
+            (genre) => (
+              <option key={genre} value={genre}>
+                {genre}
+              </option>
+            )
+          )}
         </select>
 
         {/* Sorting Options */}

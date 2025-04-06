@@ -4,80 +4,116 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const authServices = new AuthServices();
 
+interface User {
+  id: number;
+  userName: string;
+  roles: string[]; 
+}
+
 interface AuthType {
-    isAuthenticated: boolean;
-    signin: (username: string, password: string) => Promise<void>;
-    signout: () => Promise<void>;
-    user: any;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  signin: (username: string, password: string) => Promise<User | null>;
+  signout: () => Promise<void>;
+  user: User | null;
+  error: string | null;
 }
 
 export const AuthContext = createContext<AuthType | undefined>(undefined);
 
 interface AuthProviderProps {
-    children: ReactNode;
+  children: ReactNode;
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-    const [user, setUser] = useState<any>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-    // ✅ Fetch user on app start
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const response = await authServices.getCurrentUser();
-                if (response) {
-                    console.log("Fetched user:", response);
-                    setUser(response);
-                    setIsAuthenticated(true);
-                    await AsyncStorage.setItem("user", JSON.stringify(response));
-                } else {
-                    console.log("No user found, setting state to null");
-                    setUser(null);
-                    setIsAuthenticated(false);
-                }
-            } catch (error) {
-                console.error("Error fetching user:", error);
-                setUser(null);
-                setIsAuthenticated(false);
-            }
-        };
-
-        fetchUser();
-    }, []);
-
-    // Sign in function
-    const signin = async (username: string, password: string) => {
-        try {
-            const response = await authServices.login({ username, password });
-
-            if (response.user) {
-                console.log("User logged in:", response.user);
-                await AsyncStorage.setItem("user", JSON.stringify(response.user));
-                setUser(response.user);
-                setIsAuthenticated(true);
-            }
-        } catch (error) {
-            console.error("Login failed:", error);
+  useEffect(() => {
+    const initializeAuth = async () => {
+      setIsLoading(true);
+      try {
+        const userData = await authServices.getCurrentUser();
+        if (userData) {
+          setUser(userData);
+          setIsAuthenticated(true);
+          await AsyncStorage.setItem("user", JSON.stringify(userData));
+        } else {
+          await clearAuthState();
         }
+      } catch (error) {
+        console.error("Initial auth check failed:", error);
+        await clearAuthState();
+        setError("Failed to initialize authentication");
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    // signout
-    const signout = async () => {
-        try {
-            await authServices.logout();
-            await AsyncStorage.removeItem("user");
-            console.log("User logged out, cleared from storage.");
-            setUser(null);
-            setIsAuthenticated(false);
-        } catch (error) {
-            console.error("Logout failed:", error);
-        }
-    };
+    initializeAuth();
+  }, []);
 
-    return (
-        <AuthContext.Provider value={{ isAuthenticated, signin, signout, user }}>
-            {children}
-        </AuthContext.Provider>
-    );
+  const clearAuthState = async () => {
+    await AsyncStorage.removeItem("user");
+    setUser(null);
+    setIsAuthenticated(false);
+  };
+
+  const signin = async (username: string, password: string): Promise<User | null> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await clearAuthState();
+
+      const response = await authServices.login({ username, password });
+      const userData = response?.user || response;
+
+      if (!userData) {
+        throw new Error("Login succeeded but no user data received");
+      }
+
+      await AsyncStorage.setItem("user", JSON.stringify(userData));
+      setUser(userData);
+      setIsAuthenticated(true);
+      return userData;
+    } catch (error: any) {
+      console.error("Login failed:", error);
+      setError(error.message || "Login failed. Please check your credentials.");
+      await clearAuthState();
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const signout = async () => {
+    setIsLoading(true);
+    try {
+      await authServices.logout();
+      await clearAuthState();
+    } catch (error) {
+      console.error("Logout failed:", error);
+      setError("Logout failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        signin,
+        signout,
+        user,
+        isLoading,
+        error,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
