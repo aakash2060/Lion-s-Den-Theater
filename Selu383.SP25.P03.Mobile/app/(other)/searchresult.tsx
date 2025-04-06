@@ -63,10 +63,13 @@ const SearchResult = () => {
 
             return (
               <MovieCard
-                name={item.title}
-                image={item.posterUrl}
-                duration={item.duration}
-                releaseDate={item.releaseDate}
+                Title={item.title}
+                PosterUrl={imageUrl}
+                ReleaseDate={item.releaseDate}
+                onPress={() => {
+                  console.log("Pressed:", item.title);
+                  // You can replace this with navigation if needed
+                }}
               />
             );
           }}

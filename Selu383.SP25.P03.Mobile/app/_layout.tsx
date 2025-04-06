@@ -43,7 +43,7 @@ export default function RootLayout() {
         <Stack.Screen name='(other)' />
         <Stack.Screen name="index" options={{headerShown:false}} />
         <Stack.Screen name="+not-found" />
-        <Stack.Screen name = "(other)" />
+        
 
       </Stack>
       <StatusBar style="auto" />
