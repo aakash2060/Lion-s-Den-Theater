@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 import '../global.css'
 import { AuthProvider } from '@/context/AuthContext';
 import {SearchProvider} from '@/context/SearchContext';
+import {TheaterProvider} from '@/context/TheaterContext';
 
 
 
@@ -34,6 +35,7 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
+      <TheaterProvider>
       <SearchProvider>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
    
@@ -49,6 +51,7 @@ export default function RootLayout() {
       <StatusBar style="auto" />
     </ThemeProvider>
     </SearchProvider>
+    </TheaterProvider>
     </AuthProvider>
   );
 }
