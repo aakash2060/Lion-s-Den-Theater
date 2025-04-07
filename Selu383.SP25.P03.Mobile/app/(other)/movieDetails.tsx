@@ -68,7 +68,7 @@ function MoviePage() {
               <TouchableOpacity
                 key={time}
                 className="bg-red-600 px-4 py-2 rounded-md"
-                onPress={() => router.push('/')}
+                onPress={() => router.push('/(other)/seats')}
               >
                 <Text className="text-white">{time}</Text>
               </TouchableOpacity>
