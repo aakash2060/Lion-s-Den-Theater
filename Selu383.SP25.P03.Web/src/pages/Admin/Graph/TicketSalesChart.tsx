@@ -9,6 +9,10 @@ interface SalesData {
 
 const TicketSalesChart = () => {
   const [data, setData] = useState<SalesData[]>([]);
+  const [overview, setOverview] = useState<{ totalTicketsSold: number; totalRevenue: number }>({
+    totalTicketsSold: 0,
+    totalRevenue: 0,
+  });
 
   useEffect(() => {
     fetch('/api/tickets/sales')
@@ -22,6 +26,8 @@ const TicketSalesChart = () => {
           : new Date(today.getFullYear(), today.getMonth(), 1);
 
         const groupedData: { [key: string]: { ticketsSold: number; totalRevenue: number } } = {};
+        let totalTicketsSold = 0;
+        let totalRevenue = 0;
 
         rawData.forEach((item: any) => {
           const date = new Date(item.date);
@@ -34,6 +40,10 @@ const TicketSalesChart = () => {
 
             groupedData[dateKey].ticketsSold += item.ticketsSold;
             groupedData[dateKey].totalRevenue += item.totalRevenue;
+
+            // Track total tickets sold and revenue
+            totalTicketsSold += item.ticketsSold;
+            totalRevenue += item.totalRevenue;
           }
         });
 
@@ -50,14 +60,43 @@ const TicketSalesChart = () => {
           startDate.setDate(startDate.getDate() + 1);
         }
 
+        // Update overview
+        setOverview({
+          totalTicketsSold,
+          totalRevenue,
+        });
+
         setData(chartData);
       })
       .catch((err) => console.error('Error loading chart data:', err));
   }, []);
 
+  // Function to format the revenue with commas
+  const formatCurrency = (amount: number) => {
+    return amount.toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    });
+  };
+
   return (
     <div className="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
-      <h2 className="text-2xl font-bold mb-4 text-white">Ticket Sales Over Time</h2>
+      <h2 className="text-2xl font-bold mb-4 text-white">Ticket Sales Overview</h2>
+
+      {/* Overview Section */}
+      <div className="mb-4 text-white">
+        <div className="flex justify-between text-lg font-semibold">
+          <span>Total Tickets Sold: </span>
+          <span>{overview.totalTicketsSold}</span>
+        </div>
+        <div className="flex justify-between text-lg font-semibold">
+          <span>Total Revenue: </span>
+          {/* Displaying formatted revenue */}
+          <span>{formatCurrency(overview.totalRevenue)}</span>
+        </div>
+      </div>
+
+      {/* Line Chart */}
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />

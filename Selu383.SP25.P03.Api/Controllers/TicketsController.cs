@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MimeKit;
 using Selu383.SP25.P03.Api.Data;
 using Selu383.SP25.P03.Api.Features.Theaters;
 using Selu383.SP25.P03.Api.Features.Users;
@@ -465,7 +466,7 @@ namespace Selu383.SP25.P03.Api.Controllers
 
         [HttpGet("movie-ticket-sales")]
         [Authorize(Roles = "Admin,Manager")]
-        public async Task<ActionResult<IEnumerable<SalesDataDto>>> GetMovieTicketSalesData([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+        public async Task<ActionResult<IEnumerable<SalesDataDto>>> GetMovieTicketSalesData([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate, [FromQuery] bool groupByDate = true, [FromQuery] int? theaterId = null)
         {
             var query = tickets
                 .Include(t => t.Showtime)
@@ -485,19 +486,52 @@ namespace Selu383.SP25.P03.Api.Controllers
                 query = query.Where(t => t.PurchaseDate <= endDate.Value);
             }
 
-            var salesData = await query
-                .GroupBy(t => new { t.Showtime.Movie.Title, t.Showtime.Hall.Theater.Name, t.PurchaseDate.Date })
-                .Select(g => new SalesDataDto
-                {
-                    MovieTitle = g.Key.Title,
-                    TheaterName = g.Key.Name,
-                    Date = g.Key.Date,
-                    TicketsSold = g.Count(),
-                    TotalRevenue = g.Sum(t => t.Price)
-                })
-                .ToListAsync();
+            if (theaterId.HasValue)
+            {
+                query = query.Where(t => t.Showtime.Hall.TheaterId == theaterId.Value);
+            }
 
-            return Ok(salesData);
+            if (groupByDate)
+            {
+                var groupedByDate = await query
+                    .GroupBy(t => new
+                    {
+                        t.Showtime.Movie.Title,
+                        TheaterName = t.Showtime.Hall.Theater.Name,
+                        Date = t.PurchaseDate.Date
+                    })
+                    .Select(g => new SalesDataDto
+                    {
+                        MovieTitle = g.Key.Title,
+                        TheaterName = g.Key.TheaterName,
+                        Date = g.Key.Date,
+                        TicketsSold = g.Count(),
+                        TotalRevenue = g.Sum(t => t.Price)
+                    })
+                    .ToListAsync();
+
+                return Ok(groupedByDate);
+            }
+            else
+            {
+                var summarized = await query
+                    .GroupBy(t => new
+                    {
+                        t.Showtime.Movie.Title,
+                        TheaterName = t.Showtime.Hall.Theater.Name
+                    })
+                    .Select(g => new SalesDataDto
+                    {
+                        MovieTitle = g.Key.Title,
+                        TheaterName = g.Key.TheaterName,
+                        TicketsSold = g.Count(),
+                        TotalRevenue = g.Sum(t => t.Price)
+                    })
+                    .OrderByDescending(s => s.TicketsSold)
+                    .ToListAsync();
+
+                return Ok(summarized);
+            }
         }
 
 
