@@ -14,6 +14,7 @@ namespace Selu383.SP25.P03.Api.Features.Movies
         [Required] public string Genre { get; set; }
         [Required] public string PosterUrl { get; set; }
         public DateTime ReleaseDate { get; set; }
+        public string TrailerId { get; set; }
         public ICollection<Showtime> Showtimes { get; set; } = new List<Showtime>();
     };
 

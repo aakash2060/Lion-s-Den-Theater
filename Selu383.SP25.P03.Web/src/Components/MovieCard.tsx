@@ -15,38 +15,54 @@ const genreColors: { [key: string]: string } = {
   Default: "border-gray-700 shadow-gray-500",
 };
 
-const MovieCard: React.FC<MovieProps> = ({
-  id, title, posterUrl, releaseDate, genre, rating
-}) => {
-  const borderClass = genre ? genreColors[genre] || genreColors["Default"] : genreColors["Default"];
-  const movieUrl = `/movie/${id}`;
+type MovieCardProps = MovieProps & {
+  isUpcoming?: boolean;
+};
 
-  // Format the date nicely
-  const formattedDate = new Date(releaseDate).toLocaleDateString('en-US', {
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric'
+const MovieCard: React.FC<MovieCardProps> = ({
+  id,
+  title,
+  posterUrl,
+  releaseDate,
+  genre,
+  rating,
+  isUpcoming = false,
+}) => {
+  const borderClass =
+    genre && genreColors[genre] ? genreColors[genre] : genreColors["Default"];
+  const movieUrl = `/movie/${id}`;
+  const formattedDate = new Date(releaseDate).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   });
 
   return (
     <Link to={movieUrl}>
       <div
-        className={`relative w-64 bg-gray-900 shadow-lg border ${borderClass} rounded-lg overflow-hidden transition-transform duration-500 hover:scale-105 hover:shadow-2xl group cursor-pointer`}
+        className={`relative w-full h-full flex flex-col bg-gray-900 shadow-lg border ${borderClass} rounded-lg overflow-hidden transition-transform duration-500 hover:scale-105 hover:shadow-2xl group cursor-pointer`}
       >
-        {/* Movie Image */}
+        {/* Coming Soon Badge */}
+        {isUpcoming && (
+          <div className="absolute top-2 left-2 bg-yellow-400 text-black text-xs font-semibold px-2 py-1 rounded shadow z-10">
+            Coming Soon
+          </div>
+        )}
+
+        {/* Movie Poster */}
         <img
-          className="w-full h-80 object-cover transition-opacity duration-500 group-hover:opacity-80"
+          className="w-full aspect-[2/3] object-cover transition-opacity duration-500 group-hover:opacity-80"
           src={posterUrl}
           alt={title}
           onError={(e) => {
-            e.currentTarget.src = "/images/placeholder-poster.jpg"; // Fallback image
+            e.currentTarget.src = "/images/placeholder-poster.jpg";
           }}
         />
 
-        {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black opacity-0 group-hover:opacity-100 transition duration-500"></div>
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 transition duration-300" />
 
-        {/* Movie Details on Hover - simplified with only the props we have */}
+        {/* Movie Info */}
         <div className="absolute inset-0 flex flex-col justify-end p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500">
           <h5 className="text-xl font-bold text-white mb-1">{title}</h5>
           <p className="text-sm text-gray-300">📅 {formattedDate}</p>
