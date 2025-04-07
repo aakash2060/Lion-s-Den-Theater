@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.P03.Api.Data;
 using Selu383.SP25.P03.Api.Features.Theaters;
 

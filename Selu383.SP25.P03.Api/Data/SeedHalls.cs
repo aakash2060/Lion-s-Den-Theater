@@ -1,4 +1,4 @@
-﻿using Selu383.SP25.P03.Api.Data;
+using Selu383.SP25.P03.Api.Data;
 using Selu383.SP25.P03.Api.Features.Theaters;
 using System;
 using System.Collections.Generic;

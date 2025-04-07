@@ -1,51 +1,60 @@
 import { useState, useEffect } from "react";
-import { useTheater } from "../context/TheaterContext"; // 🎬 Theater context
+import { useTheater } from "../context/TheaterContext";
 import MovieCard from "../Components/MovieCard";
 import QRCard from "../Components/QRCard";
+import { showtimeService } from "../services/ShowtimeApi";
 import { movieService } from "../services/api";
 import { Movie } from "../Data/MovieInterfaces";
+import { Showtime } from "../Data/ShowtimeInterfaces";
 
 const DiscoverMovies = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [showtimes, setShowtimes] = useState<Showtime[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState("All");
+  const [filter, setFilter] = useState("now_showing"); // ✅ Default is "Now Showing"
   const [sortOption, setSortOption] = useState("rating");
   const [hoveredMovie, setHoveredMovie] = useState<string | null>(null);
 
-  const { theater } = useTheater(); // 🎬 Grab selected theater
+  const { theater } = useTheater();
 
   useEffect(() => {
-    const fetchMovies = async () => {
-      if (!theater) return; // Wait until theater is selected
+    const fetchData = async () => {
+      if (!theater) return;
       try {
         setLoading(true);
-        const data = await movieService.getAll(theater.id.toString()); // ✅ FIXED: use theater ID
-        setMovies(data);
+        const [movieData, showtimeData] = await Promise.all([
+          movieService.getAll(theater.id.toString()),
+          showtimeService.getByTheaterId(theater.id),
+        ]);
+        setMovies(movieData);
+        setShowtimes(showtimeData);
         setError(null);
       } catch (err) {
-        console.error("Failed to fetch movies:", err);
+        console.error("Failed to fetch data:", err);
         setError("Failed to load movies. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMovies();
+    fetchData();
   }, [theater]);
 
-  const getMovieStatus = (releaseDate: string) => {
-    return new Date(releaseDate) <= new Date() ? "now_showing" : "upcoming";
+  const movieIdsWithShowtimes = new Set(showtimes.map((s) => s.movieId));
+
+  const getFilteredMovies = () => {
+    if (filter === "All") return movies;
+    if (filter === "now_showing") {
+      return movies.filter((movie) => movieIdsWithShowtimes.has(movie.id));
+    }
+    if (filter === "upcoming") {
+      return movies.filter((movie) => !movieIdsWithShowtimes.has(movie.id));
+    }
+    return movies.filter((movie) => movie.genre === filter);
   };
 
-  const filteredMovies =
-    filter === "All"
-      ? movies
-      : movies.filter(
-          (movie) =>
-            movie.genre === filter ||
-            getMovieStatus(movie.releaseDate) === filter
-        );
+  const filteredMovies = getFilteredMovies();
 
   const sortedMovies = [...filteredMovies].sort((a, b) => {
     if (sortOption === "rating") {
@@ -101,8 +110,8 @@ const DiscoverMovies = () => {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         >
-          <option value="All">All Movies</option>
           <option value="now_showing">Now Showing</option>
+          <option value="All">All Movies</option>
           <option value="upcoming">Upcoming</option>
           {Array.from(new Set(movies.map((movie) => movie.genre))).map(
             (genre) => (
