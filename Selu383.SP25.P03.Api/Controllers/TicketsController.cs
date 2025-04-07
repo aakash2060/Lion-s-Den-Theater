@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.P03.Api.Data;
-using Selu383.SP25.P03.Api.Features.Sales;
 using Selu383.SP25.P03.Api.Features.Theaters;
 using Selu383.SP25.P03.Api.Features.Users;
 using System;
@@ -429,13 +428,8 @@ namespace Selu383.SP25.P03.Api.Controllers
 
         [HttpGet("sales")]
         [Authorize(Roles = "Admin,Manager")]
-        public async Task<ActionResult<IEnumerable<SalesDataDto>>> GetSalesData(
-    [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+        public async Task<ActionResult<IEnumerable<SalesDataDto>>> GetTicketSalesData([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
-            var userId = await GetCurrentUserId();
-            var isAdmin = User.IsInRole(UserRoleNames.Admin);
-            var isManager = User.IsInRole(UserRoleNames.Manager);
-
             var query = tickets
                 .Include(t => t.Showtime)
                 .ThenInclude(s => s.Movie)
@@ -454,17 +448,50 @@ namespace Selu383.SP25.P03.Api.Controllers
                 query = query.Where(t => t.PurchaseDate <= endDate.Value);
             }
 
-            if (isManager && !isAdmin)
-            {
-                query = query.Where(t => t.Showtime.Hall.Theater.ManagerId == userId);
-            }
-
             var salesData = await query
-                .GroupBy(t => new { t.Showtime.Movie.Title, t.Showtime.Hall.Theater.Name })
+                .GroupBy(t => new { t.Showtime.Movie.Title, t.Showtime.Hall.Theater.Name, t.PurchaseDate.Date })
                 .Select(g => new SalesDataDto
                 {
                     MovieTitle = g.Key.Title,
                     TheaterName = g.Key.Name,
+                    Date = g.Key.Date,
+                    TicketsSold = g.Count(),
+                    TotalRevenue = g.Sum(t => t.Price)
+                })
+                .ToListAsync();
+
+            return Ok(salesData);
+        }
+
+        [HttpGet("movie-ticket-sales")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<ActionResult<IEnumerable<SalesDataDto>>> GetMovieTicketSalesData([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+        {
+            var query = tickets
+                .Include(t => t.Showtime)
+                .ThenInclude(s => s.Movie)
+                .Include(t => t.Showtime)
+                .ThenInclude(s => s.Hall)
+                .ThenInclude(h => h.Theater)
+                .AsQueryable();
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(t => t.PurchaseDate >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                query = query.Where(t => t.PurchaseDate <= endDate.Value);
+            }
+
+            var salesData = await query
+                .GroupBy(t => new { t.Showtime.Movie.Title, t.Showtime.Hall.Theater.Name, t.PurchaseDate.Date })
+                .Select(g => new SalesDataDto
+                {
+                    MovieTitle = g.Key.Title,
+                    TheaterName = g.Key.Name,
+                    Date = g.Key.Date,
                     TicketsSold = g.Count(),
                     TotalRevenue = g.Sum(t => t.Price)
                 })

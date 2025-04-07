@@ -1,11 +1,9 @@
-﻿namespace Selu383.SP25.P03.Api.Features.Sales
+﻿public class SalesDataDto
 {
-    public class SalesDataDto
-    {
-        public string MovieTitle { get; set; }
-        public string TheaterName { get; set; }
-        public int TicketsSold { get; set; }
-        public decimal TotalRevenue { get; set; }
-    }
-
+    public string TheaterName { get; set; }
+    public string MovieTitle { get; set; }
+    public DateTime Date { get; set; }
+    public int TicketsSold { get; set; }
+    public decimal TotalRevenue { get; set; }
+    public int FoodSales { get; set; } 
 }
