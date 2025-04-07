@@ -12,7 +12,7 @@ const DiscoverMovies = () => {
   const [showtimes, setShowtimes] = useState<Showtime[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState("All");
+  const [filter, setFilter] = useState("now_showing"); // ✅ Default is "Now Showing"
   const [sortOption, setSortOption] = useState("rating");
   const [hoveredMovie, setHoveredMovie] = useState<string | null>(null);
 
@@ -110,8 +110,8 @@ const DiscoverMovies = () => {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         >
-          <option value="All">All Movies</option>
           <option value="now_showing">Now Showing</option>
+          <option value="All">All Movies</option>
           <option value="upcoming">Upcoming</option>
           {Array.from(new Set(movies.map((movie) => movie.genre))).map(
             (genre) => (
@@ -165,7 +165,9 @@ const DiscoverMovies = () => {
         <div className="md:w-1/2 text-center md:text-left">
           <h2 className="text-2xl font-bold">🍿 Making Your Moments Special</h2>
           <p className="text-gray-400 mt-2">
-            Lion's Den is the place we go for magic, where stories feel perfect and powerful. Academy Award® winner Nicole Kidman reveals why movies are better here than anywhere else.
+            Lion's Den is the place we go for magic, where stories feel perfect
+            and powerful. Academy Award® winner Nicole Kidman reveals why movies
+            are better here than anywhere else.
           </p>
         </div>
         <div className="md:w-1/2 mt-6 md:mt-0">
