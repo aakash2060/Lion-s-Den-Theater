@@ -1,42 +1,65 @@
-using Selu383.SP25.P03.Api.Data;
+using Microsoft.EntityFrameworkCore;
 using Selu383.SP25.P03.Api.Features.Theaters;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-public static class SeedHalls
+namespace Selu383.SP25.P03.Api.Data
 {
-    public static async Task Initialize(IServiceProvider serviceProvider)
+    public static class SeedHalls
     {
-        // Resolve the DataContext from the service provider
-        using (var context = serviceProvider.GetRequiredService<DataContext>())
+        public static async Task Initialize(IServiceProvider serviceProvider)
         {
-            // If there are already halls in the database, skip seeding
-            if (context.Halls.Any())
+            using (var context = new DataContext(serviceProvider.GetRequiredService<DbContextOptions<DataContext>>()))
             {
-                return;
+                if (context.Halls.Any())
+                {
+                    return;
+                }
+
+                var theaters = context.Theaters.ToList();
+                if (!theaters.Any())
+                {
+                    return; // Need theaters first
+                }
+
+                var hallsByTheater = new Dictionary<string, (string Name, int Count, int BaseCapacity)>
+                {
+                    { "Lion's Den New York", ("NYC", 2, 75) },
+                    { "Lion's Den New Orleans", ("NOLA", 3, 65) },
+                    { "Lion's Den Los Angeles", ("LA", 4, 75) }
+                };
+
+                foreach (var theater in theaters)
+                {
+                    if (hallsByTheater.TryGetValue(theater.Name, out var hallInfo))
+                    {
+                        // Create halls for each theater based on the config
+                        for (int i = 1; i <= hallInfo.Count; i++)
+                        {
+                            // Assign different screen types based on hall number
+                            string screenType = "Standard";
+                            if (i == hallInfo.Count) // Last hall in each theater
+                            {
+                                screenType = "IMAX";
+                            }
+                            else if (i == hallInfo.Count - 1 && hallInfo.Count > 2) // Second to last hall if there are more than 2
+                            {
+                                screenType = "3D";
+                            }
+
+                            var hall = new Hall
+                            {
+                                HallNumber = i,
+                                TheaterId = theater.Id,
+                                Capacity = hallInfo.BaseCapacity + (i * 5),
+                                ScreenType = screenType
+                            };
+
+                            context.Halls.Add(hall);
+                        }
+                    }
+                }
+
+                context.SaveChanges();
             }
-
-            // Create halls for two theaters, each with multiple halls (doubling the halls)
-            var halls = new List<Hall>
-            {
-                // Theater 1
-                new Hall { HallNumber = 1, TheaterId = 1, Capacity = 150, ScreenType = "Standard" },
-                new Hall { HallNumber = 2, TheaterId = 1, Capacity = 200, ScreenType = "3D" },
-                new Hall { HallNumber = 3, TheaterId = 1, Capacity = 175, ScreenType = "IMAX" },
-                new Hall { HallNumber = 4, TheaterId = 1, Capacity = 220, ScreenType = "Dolby" },
-
-                // Theater 2
-                new Hall { HallNumber = 1, TheaterId = 2, Capacity = 100, ScreenType = "IMAX" },
-                new Hall { HallNumber = 2, TheaterId = 2, Capacity = 120, ScreenType = "Standard" },
-                new Hall { HallNumber = 3, TheaterId = 2, Capacity = 150, ScreenType = "4D" },
-                new Hall { HallNumber = 4, TheaterId = 2, Capacity = 180, ScreenType = "Standard" }
-            };
-
-            // Add halls to the context and save changes
-            await context.Halls.AddRangeAsync(halls);
-            await context.SaveChangesAsync();
         }
     }
 }
