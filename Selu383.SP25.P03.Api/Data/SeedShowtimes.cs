@@ -4,7 +4,7 @@ using Selu383.SP25.P03.Api.Features.Theaters;
 
 public static class SeedShowtimes
 {
-    public static async Task Initialize(IServiceProvider serviceProvider)
+    public static void Initialize(IServiceProvider serviceProvider)
     {
         using var context = new DataContext(serviceProvider.GetRequiredService<DbContextOptions<DataContext>>());
 

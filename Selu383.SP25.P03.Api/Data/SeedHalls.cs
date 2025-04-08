@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 public static class SeedHalls
 {
-    public static async Task Initialize(IServiceProvider serviceProvider)
+    public static void Initialize(IServiceProvider serviceProvider)
     {
         // Resolve the DataContext from the service provider
         using (var context = serviceProvider.GetRequiredService<DataContext>())
