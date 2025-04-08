@@ -12,7 +12,7 @@ export default function App() {
         bookedSeats={['A1', 'B2', 'C5', 'D3']}
         pricePerSeat={350}
       />
-      <View className='mb-20  items-center pb-8'>
+      <View className='mb-30  items-center pb-8'>
        <TouchableOpacity 
                   className="bg-red-600 py-3 px-10 rounded-lg mt-6 items-center"
                   onPress={() => route.push('/(other)/checkout')}
