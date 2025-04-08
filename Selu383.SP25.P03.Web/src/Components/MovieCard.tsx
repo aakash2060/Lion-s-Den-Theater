@@ -15,15 +15,21 @@ const genreColors: { [key: string]: string } = {
   Default: "border-gray-700 shadow-gray-500",
 };
 
-const MovieCard: React.FC<MovieProps> = ({
+type MovieCardProps = MovieProps & {
+  isUpcoming?: boolean;
+};
+
+const MovieCard: React.FC<MovieCardProps> = ({
   id,
   title,
   posterUrl,
   releaseDate,
   genre,
   rating,
+  isUpcoming = false,
 }) => {
-  const borderClass = genre ? genreColors[genre] || genreColors["Default"] : genreColors["Default"];
+  const borderClass =
+    genre && genreColors[genre] ? genreColors[genre] : genreColors["Default"];
   const movieUrl = `/movie/${id}`;
   const formattedDate = new Date(releaseDate).toLocaleDateString("en-US", {
     year: "numeric",
@@ -36,6 +42,13 @@ const MovieCard: React.FC<MovieProps> = ({
       <div
         className={`relative w-full h-full flex flex-col bg-gray-900 shadow-lg border ${borderClass} rounded-lg overflow-hidden transition-transform duration-500 hover:scale-105 hover:shadow-2xl group cursor-pointer`}
       >
+        {/* Coming Soon Badge */}
+        {isUpcoming && (
+          <div className="absolute top-2 left-2 bg-yellow-400 text-black text-xs font-semibold px-2 py-1 rounded shadow z-10">
+            Coming Soon
+          </div>
+        )}
+
         {/* Movie Poster */}
         <img
           className="w-full aspect-[2/3] object-cover transition-opacity duration-500 group-hover:opacity-80"

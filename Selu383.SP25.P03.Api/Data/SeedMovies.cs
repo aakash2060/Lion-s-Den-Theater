@@ -100,7 +100,7 @@ namespace Selu383.SP25.P03.Api.Data
         Duration = 139,
         Rating = "R",
         Genre = "Sci-Fi",
-        PosterUrl = "https://upload.wikimedia.org/wikipedia/en/1/1e/Everything_Everywhere_All_at_Once.jpg",
+        PosterUrl = "https://alternativemovieposters.com/wp-content/uploads/2022/08/GaryDadd_Everything.jpg",
         ReleaseDate = new DateTime(2022, 3, 11),
         TrailerId = "wxN1T1uxQ2g"
     },
@@ -112,7 +112,7 @@ namespace Selu383.SP25.P03.Api.Data
         Duration = 131,
         Rating = "PG-13",
         Genre = "Action",
-        PosterUrl = "https://upload.wikimedia.org/wikipedia/en/thumb/1/13/Top_Gun_Maverick_Poster.jpg/220px-Top_Gun_Maverick_Poster.jpg",
+        PosterUrl = "https://www.vintagemovieposters.co.uk/wp-content/uploads/2022/09/IMG_7673-scaled.jpeg",
         ReleaseDate = new DateTime(2022, 5, 27),
         TrailerId = "giXco2jaZ_4"
     },
@@ -124,7 +124,7 @@ namespace Selu383.SP25.P03.Api.Data
         Duration = 161,
         Rating = "PG-13",
         Genre = "Action",
-        PosterUrl = "https://upload.wikimedia.org/wikipedia/en/3/3b/Black_Panther_Wakanda_Forever_poster.jpg",
+        PosterUrl = "https://images2.alphacoders.com/127/thumb-1920-1278971.jpg",
         ReleaseDate = new DateTime(2022, 11, 11),
         TrailerId = "RlOB3UALvrQ"
     },
@@ -136,7 +136,7 @@ namespace Selu383.SP25.P03.Api.Data
     Duration = 142,
     Rating = "R",
     Genre = "Drama",
-    PosterUrl = "https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg",
+    PosterUrl = "https://myhotposters.com/cdn/shop/products/mHP0131.jpeg?v=1571444281",
     ReleaseDate = new DateTime(1994, 9, 23),
     TrailerId = "PLl99DlL6b4"
 },
@@ -148,7 +148,7 @@ new Movie
     Duration = 178,
     Rating = "PG-13",
     Genre = "Fantasy",
-    PosterUrl = "https://upload.wikimedia.org/wikipedia/en/8/8a/The_Lord_of_the_Rings_The_Fellowship_of_the_Ring_%282001%29.jpg",
+    PosterUrl = "https://cdn.shopify.com/s/files/1/0182/2915/files/LOTR_WEB_1024x1024.png?v=1696277912",
     ReleaseDate = new DateTime(2001, 12, 19),
     TrailerId = "V75dMMIW2B4"
 },
@@ -160,7 +160,7 @@ new Movie
     Duration = 132,
     Rating = "R",
     Genre = "Drama",
-    PosterUrl = "https://upload.wikimedia.org/wikipedia/en/5/53/Parasite_%282019_film%29.png",
+    PosterUrl = "https://www.vintagemovieposters.co.uk/wp-content/uploads/2020/11/IMG_0681-scaled.jpeg",
     ReleaseDate = new DateTime(2019, 5, 30),
     TrailerId = "5xH0HfJHsaY"
 },
