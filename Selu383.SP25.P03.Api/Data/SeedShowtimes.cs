@@ -23,41 +23,39 @@ public static class SeedShowtimes
         }
 
         var random = new Random();
-        var showtimes = new List<Showtime>();
-
         var today = DateTime.UtcNow.Date;
 
-        // Generate showtimes from 30 days ago to 7 days in the future
-        foreach (var dayOffset in Enumerable.Range(-30, 38)) // 30 past + today + 7 future
-        {
-            var currentDate = today.AddDays(dayOffset);
+        var dayOffsets = Enumerable.Range(-30, 38).ToList(); // 30 past to 7 future
 
-            foreach (var hallId in hallIds)
+        var showtimes = dayOffsets
+            .SelectMany(dayOffset =>
             {
-                // 2–4 showtimes per hall per day
-                int showtimeCount = random.Next(2, 5);
-
-                for (int i = 0; i < showtimeCount; i++)
+                var date = today.AddDays(dayOffset);
+                return hallIds.SelectMany(hallId =>
                 {
-                    var movieId = movieIds[random.Next(movieIds.Count)];
-                    var startHour = 10 + i * 3; // 10 AM, 1 PM, 4 PM, etc.
-                    var startTime = currentDate.AddHours(startHour);
-                    var endTime = startTime.AddHours(2);
-                    var is3D = random.Next(0, 2) == 1;
-                    var price = is3D ? 15.00m : 10.00m;
-
-                    showtimes.Add(new Showtime
+                    int showtimeCount = random.Next(2, 5);
+                    return Enumerable.Range(0, showtimeCount).Select(i =>
                     {
-                        MovieId = movieId,
-                        HallId = hallId,
-                        StartTime = startTime,
-                        EndTime = endTime,
-                        TicketPrice = price,
-                        Is3D = is3D
+                        var movieId = movieIds[random.Next(movieIds.Count)];
+                        var startHour = 10 + i * 3;
+                        var startTime = date.AddHours(startHour);
+                        var endTime = startTime.AddHours(2);
+                        var is3D = random.Next(0, 2) == 1;
+                        var price = is3D ? 15.00m : 10.00m;
+
+                        return new Showtime
+                        {
+                            MovieId = movieId,
+                            HallId = hallId,
+                            StartTime = startTime,
+                            EndTime = endTime,
+                            TicketPrice = price,
+                            Is3D = is3D
+                        };
                     });
-                }
-            }
-        }
+                });
+            })
+            .ToList();
 
         context.Showtimes.AddRange(showtimes);
         context.SaveChanges();
