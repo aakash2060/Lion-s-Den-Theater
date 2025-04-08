@@ -35,8 +35,8 @@ public static class SeedHalls
             };
 
             // Add halls to the context and save changes
-            await context.Halls.AddRangeAsync(halls);
-            await context.SaveChangesAsync();
+            context.Halls.AddRangeAsync(halls);
+            context.SaveChangesAsync();
         }
     }
 }
