@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Text, ScrollView, Dimensions } from 'react-native';
-
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type SeatProps = {
   maxRows?: number;
@@ -29,6 +29,8 @@ const SeatSelection: React.FC<SeatProps> = ({
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const { width } = Dimensions.get('window');
   const seatSize = width * 0.08;
+  const seatGap = width * 0.02;
+  const rowLabelGap = width * 0.03;
 
   const generateSeatLayout = (): SeatType[][] => {
     const rows: SeatType[][] = [];
@@ -70,21 +72,32 @@ const SeatSelection: React.FC<SeatProps> = ({
         key={`row-${rowIndex}`} 
         className="flex-row items-center mb-3"
       >
-        <Text className="w-5 mr-2 font-bold">{row[0].row}</Text>
+        <Text className="font-bold text-white" style={{ width: rowLabelGap, marginRight: rowLabelGap }}>{row[0].row}</Text>
         
         {row.map((seat) => (
           <TouchableOpacity
             key={seat.id}
-            className={`rounded-md justify-center items-center mr-1 ${
-              seat.isBooked ? 'bg-red-200' : 
-              seat.isSelected ? 'bg-green-300' : 'bg-gray-200'
-            } ${seat.isAisle ? 'mr-5' : ''}`}
-            style={{ width: seatSize, height: seatSize }}
+            className={`rounded-md justify-center items-center ${
+              seat.isBooked 
+                ? 'bg-yellow-600 border-yellow-700' 
+                : seat.isSelected 
+                  ? 'bg-red-600 border-red-700' 
+                  : 'bg-gray-700 border-gray-600'
+            }`}
+            style={{ 
+              width: seatSize, 
+              height: seatSize,
+              marginRight: seat.isAisle ? seatGap * 3 : seatGap,
+              borderWidth: 1,
+              opacity: seat.isBooked ? 0.6 : 1,
+              transform: seat.isSelected ? [{ scale: 1.1 }] : []
+            }}
             onPress={() => toggleSeat(seat.id)}
             disabled={seat.isBooked}
             activeOpacity={0.7}
           >
-            <Text className={`font-medium`} style={{ fontSize: seatSize * 0.35 }}>
+            <Text className={`font-medium ${seat.isBooked ? 'text-gray-300' : 'text-black'}`} 
+              style={{ fontSize: seatSize * 0.35 }}>
               {seat.number}
             </Text>
           </TouchableOpacity>
@@ -94,11 +107,12 @@ const SeatSelection: React.FC<SeatProps> = ({
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-black">
+    <View>
       {/* Screen */}
       <View className="items-center my-5">
-        <View className="w-4/5 h-4 bg-white-300 rounded-t-lg mb-1" />
-        <Text className="text-xs text-blue">SCREEN THIS WAY</Text>
+        <View className="w-4/5 h-6 bg-gray-800 rounded-t-lg mb-1 border border-gray-700" />
+        <Text className="text-xs text-gray-400">SCREEN THIS WAY</Text>
       </View>
 
       {/* Seats */}
@@ -106,34 +120,62 @@ const SeatSelection: React.FC<SeatProps> = ({
         {renderSeats()}
       </ScrollView>
 
-      {/* Legend */}
-      <View className="flex-row justify-center mb-4 gap-4">
-        <View className="flex-row items-center gap-1">
-          <View className="w-4 h-4 rounded bg-white-200" />
-          <Text>Available</Text>
-        </View>
-        <View className="flex-row items-center gap-1">
-          <View className="w-4 h-4 rounded bg-red-200" />
-          <Text>Booked</Text>
-        </View>
-        <View className="flex-row items-center gap-1">
-          <View className="w-4 h-4 rounded bg-green-300" />
-          <Text>Selected</Text>
-        </View>
-      </View>
+      <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 24, paddingHorizontal: 24, backgroundColor: 'black' }}>
+  {/* Available */}
+  <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 24 }}>
+    <View style={{
+      width: 24,
+      height: 24,
+      backgroundColor: '#6B7280', // Tailwind gray-500
+      borderColor: '#FFFFFF',
+      borderWidth: 2
+    }} />
+    <Text style={{ color: '#FFFFFF', fontSize: 14, marginLeft: 8 }}>Available</Text>
+  </View>
+
+  {/* Booked */}
+  <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 24 }}>
+    <View style={{
+      width: 24,
+      height: 24,
+      backgroundColor: '#000000',
+      borderColor: '#FFFFFF',
+      borderWidth: 2
+    }} />
+    <Text style={{ color: '#FFFFFF', fontSize: 14, marginLeft: 8 }}>Booked</Text>
+  </View>
+
+  {/* Selected */}
+  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <View style={{
+      width: 24,
+      height: 24,
+      backgroundColor: '#DC2626', 
+      borderColor: '#FFFFFF',
+      borderWidth: 2
+    }} />
+    <Text style={{ color: '#FFFFFF', fontSize: 14, marginLeft: 8 }}>Selected</Text>
+  </View>
+</View>
+
+
+
+
+
 
       {/* Selection Summary */}
       {selectedSeats.length > 0 && (
-        <View className="p-4 bg-gray-50 border-t border-gray-200">
-          <Text className="text-base font-medium mb-1">
-            Selected {selectedSeats.length} seat(s): {selectedSeats.join(', ')}
+        <View className="p-4 bg-gray-900 border-t border-gray-800">
+          <Text className="text-base font-medium mb-1 text-white">
+            Selected {selectedSeats.length} seat(s): <Text className="text-amber-400">{selectedSeats.join(', ')}</Text>
           </Text>
-          <Text className="text-base font-medium">
-            Total: ${selectedSeats.length * pricePerSeat}
+          <Text className="text-base font-medium text-white">
+            Total: <Text className="text-amber-400">${selectedSeats.length * pricePerSeat}</Text>
           </Text>
         </View>
       )}
     </View>
+    </SafeAreaView>
   );
 };
 

@@ -27,7 +27,7 @@ function MoviePage() {
 
   return (
     <ScrollView>
-      {/* Video Section (common to both tabs) */}
+    
       <View className="h-56 bg-black mt-20">
         <YoutubePlayer
           height={224}
@@ -74,13 +74,6 @@ function MoviePage() {
               </TouchableOpacity>
             ))}
           </View>
-          
-          <TouchableOpacity 
-            className="bg-red-600 py-3 rounded-lg mt-6 items-center"
-            onPress={() => router.push('/')}
-          >
-            <Text className="text-white font-bold">Buy Tickets</Text>
-          </TouchableOpacity>
         </View>
       )}
 
