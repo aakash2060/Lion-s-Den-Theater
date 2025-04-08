@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 public static class SeedHalls
 {
-    public static void Initialize(IServiceProvider serviceProvider)
+    public static async Task Initialize(IServiceProvider serviceProvider)
     {
         // Resolve the DataContext from the service provider
         using (var context = serviceProvider.GetRequiredService<DataContext>())
@@ -35,8 +35,8 @@ public static class SeedHalls
             };
 
             // Add halls to the context and save changes
-            context.Halls.AddRangeAsync(halls);
-            context.SaveChangesAsync();
+            await context.Halls.AddRangeAsync(halls);
+            await context.SaveChangesAsync();
         }
     }
 }
