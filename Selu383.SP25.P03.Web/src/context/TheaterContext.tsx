@@ -27,7 +27,7 @@ export const TheaterProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     } catch (err) {
-      console.warn("⚠️ Invalid saved theater format. Clearing...");
+      console.warn("⚠️ Invalid saved theater format. Clearing...",err);
       localStorage.removeItem("selectedTheater");
     }
 

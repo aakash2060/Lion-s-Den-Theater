@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import MovieCard from "../Components/MovieCard";
 import { useNavigate } from "react-router-dom";
 import { movieService } from "../services/api";
+import { showtimeService } from "../services/ShowtimeApi";
 import { Movie } from "../Data/MovieInterfaces";
 import { useTheater } from "../context/TheaterContext";
 
@@ -10,37 +11,48 @@ const Home = () => {
   const navigate = useNavigate();
   const { theater } = useTheater();
 
-  const [movies, setMovies] = useState<Movie[]>([]);
+  const [allMovies, setAllMovies] = useState<Movie[]>([]);
+  const [showtimes, setShowtimes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchMovies = async () => {
+    const fetchData = async () => {
       if (!theater) return;
 
       try {
         setLoading(true);
-        const data = await movieService.getAll(theater.id.toString()); // ✅ Fix: Use theater ID
-        setMovies(data);
+        const [movies, showtimesData] = await Promise.all([
+          movieService.getAll(),
+          showtimeService.getByTheaterId(theater.id),
+        ]);
+        setAllMovies(movies);
+        setShowtimes(showtimesData);
         setError(null);
       } catch (err) {
-        console.error("Failed to fetch movies:", err);
+        console.error("Failed to fetch movies/showtimes:", err);
         setError("Failed to load movies. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMovies();
+    fetchData();
   }, [theater]);
 
-  const nowShowing = movies.filter(
-    (movie) => new Date(movie.releaseDate) <= new Date()
+  const showtimeMovieIds = new Set(showtimes.map((s) => s.movieId));
+
+  const nowShowing = allMovies.filter(
+    (movie) =>
+      showtimeMovieIds.has(movie.id) &&
+      new Date(movie.releaseDate) <= new Date()
   );
-  const comingSoon = movies.filter(
-    (movie) => new Date(movie.releaseDate) > new Date()
+
+  const comingSoon = allMovies.filter(
+    (movie) => !showtimeMovieIds.has(movie.id)
   );
-  const topRated = [...movies]
+
+  const topRated = [...allMovies]
     .filter((movie) => movie.rating)
     .sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating))
     .slice(0, 5);
