@@ -95,7 +95,7 @@ namespace Selu383.SP25.P03.Api
                 await SeedUsers.Initialize(scope.ServiceProvider);
                 await SeedHalls.Initialize(scope.ServiceProvider);
                 SeedMovies.Initialize(scope.ServiceProvider);
-                await SeedShowtimes.Initialize(scope.ServiceProvider);
+                SeedShowtimes.Initialize(scope.ServiceProvider);
                 SeedFoodData.Initialize(scope.ServiceProvider);
             }
 
