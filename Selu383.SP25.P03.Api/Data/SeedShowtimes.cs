@@ -8,7 +8,7 @@ namespace Selu383.SP25.P03.Api.Data
 {
     public static class SeedShowtimes
     {
-        public static void Initialize(IServiceProvider serviceProvider)
+        public static async Task  Initialize(IServiceProvider serviceProvider)
         {
             using (var scope = serviceProvider.CreateScope())
             {
