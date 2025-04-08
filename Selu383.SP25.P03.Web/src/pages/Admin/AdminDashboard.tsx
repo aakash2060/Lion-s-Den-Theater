@@ -18,9 +18,12 @@ const AdminDashboard = () => {
             <FaChartBar className="text-3xl text-yellow-400" />
             <h2 className="text-2xl font-bold">Site Stats</h2>
           </div>
-          <p className="text-gray-300">Active Users: 1,204</p>
-          <p className="text-gray-300">Bookings Today: 58</p>
-          <p className="text-gray-300">Revenue: $4,320</p>
+          <p className="text-gray-300">View ticket sales and analytics reports.</p>
+          <Link to="/admin-site-stats">
+            <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 mt-4 rounded">
+              View Stats
+            </button>
+          </Link>
         </motion.div>
 
         {/* User Management */}

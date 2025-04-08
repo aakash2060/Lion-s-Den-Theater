@@ -60,9 +60,12 @@ const AdminDashboard = () => {
             onPress={() => {
               if (item.label === "Theaters") {
                 router.push("/admin/theaters");
+              } else if (item.label === "Movies") {
+                router.push("/admin/movies");
               } else {
                 handleComingSoon(item.label);
               }
+              
             }}
             className="flex-row items-center gap-4 bg-zinc-900 border border-zinc-800 rounded-2xl p-5 active:scale-95"
             activeOpacity={0.85}

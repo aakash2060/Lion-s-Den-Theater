@@ -25,6 +25,7 @@ import AdminEditTheater from "./pages/Admin/AdminEditTheater";
 import TheaterGuard from "./Components/TheaterGuard"; // 🛡️ NEW GUARD
 import ShowtimesPage from "./pages/ShowtimesPage";
 import TheatersPage from "./pages/TheatersPage";
+import SiteStats from "./pages/Admin/Graph/SiteStats";
 
 import "./index.css";
 
@@ -62,6 +63,7 @@ const App = () => {
                     <Route path="/admin-manage-theaters" element={<AdminManageTheaters />} />
                     <Route path="/admin-add-theater" element={<AdminAddTheater />} />
                     <Route path="/admin/edit-theater/:id" element={<AdminEditTheater />} />
+                    <Route path="/admin-site-stats" element={<SiteStats/>}/>
                     
                   </Routes>
                 </main>

@@ -18,6 +18,7 @@ interface FoodMenuProps {
 
 const FoodMenu: React.FC<FoodMenuProps> = ({ foodItems, onAddToCart }) => {
   const [favorites, setFavorites] = useState<{ [key: number]: boolean }>({});
+  const [quantities, setQuantities] = useState<{ [key: number]: number }>({});
 
   const screenWidth = Dimensions.get("window").width;
   const cardWidth = (screenWidth - 48) / 2; 
@@ -29,8 +30,27 @@ const FoodMenu: React.FC<FoodMenuProps> = ({ foodItems, onAddToCart }) => {
     }));
   };
 
+  const handleQuantityChange = (id: number, change: number) => {
+    setQuantities((prev) => {
+      const newQuantity = (prev[id] || 0) + change;
+      return {
+        ...prev,
+        [id]: newQuantity >= 0 ? newQuantity : 0,
+      };
+    });
+    
+    // Find the item and call onAddToCart when incrementing
+    if (change > 0) {
+      const item = foodItems.find(food => food.id === id);
+      if (item) {
+        onAddToCart(item);
+      }
+    }
+  };
+
   const renderFoodItem = ({ item }: { item: FoodProps }) => {
     const isFavorite = favorites[item.id] || false;
+    const quantity = quantities[item.id] || 0;
 
     return (
       <View style={{ width: cardWidth, alignItems: "center", marginBottom: 12 }}>
@@ -57,28 +77,46 @@ const FoodMenu: React.FC<FoodMenuProps> = ({ foodItems, onAddToCart }) => {
         <View className="w-full px-2">
           <Text className="text-base font-semibold text-white mt-2">{item.name}</Text>
           <Text className="text-sm text-gray-400">${item.price}</Text>
-          
-          {/* Add to Cart Button */}
-          <TouchableOpacity
-  className="flex-row items-center justify-center bg-['#E50914'] rounded-md py-3 px-6 mt-3"
-  onPress={() => onAddToCart(item)}
-  activeOpacity={0.85}
-  style={{
-   shadowColor:'#E50914',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5
-  }}
->
-  <Icon 
-    name="shoppingcart"  
-    size={16} 
-    color="white" 
-    style={{ marginRight: 10 }} 
-  />
-  <Text className="text-white font-bold text-sm tracking-wider">ADD TO CART</Text>
-</TouchableOpacity>
+
+          {/* Quantity Selector */}
+          {quantity === 0 ? (
+            <TouchableOpacity
+              onPress={() => handleQuantityChange(item.id, 1)}
+              style={{
+                backgroundColor: "#E50914",
+                padding: 8,
+                borderRadius: 6,
+                marginTop: 8,
+                alignItems: 'center'
+              }}
+            >
+              <Text style={{ color: "white", fontSize: 16 }}>Add to Cart</Text>
+            </TouchableOpacity>
+          ) : (
+            <View className="flex-row items-center justify-between mt-3 bg-gray-800 rounded-lg p-1">
+              <TouchableOpacity
+                onPress={() => handleQuantityChange(item.id, -1)}
+                style={{
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                }}
+              >
+                <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>-</Text>
+              </TouchableOpacity>
+
+              <Text style={{ color: "white", fontSize: 16 }}>{quantity}</Text>
+
+              <TouchableOpacity
+                onPress={() => handleQuantityChange(item.id, 1)}
+                style={{
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                }}
+              >
+                <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>+</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </View>
     );
@@ -90,9 +128,8 @@ const FoodMenu: React.FC<FoodMenuProps> = ({ foodItems, onAddToCart }) => {
       renderItem={renderFoodItem}
       keyExtractor={(item) => item.id.toString()}
       numColumns={2}
-      columnWrapperStyle={{ justifyContent: "space-between", paddingHorizontal: 8 }}
-      contentContainerStyle={{ paddingBottom: 20 }}
-      showsVerticalScrollIndicator={false}
+      columnWrapperStyle={{ justifyContent: "space-between" }}
+      contentContainerStyle={{ paddingTop: 16 }}
     />
   );
 };
