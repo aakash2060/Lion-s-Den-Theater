@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 import '../global.css'
 import { AuthProvider } from '@/context/AuthContext';
 import {SearchProvider} from '@/context/SearchContext';
+import {TheaterProvider} from '@/context/TheaterContext';
 
 
 
@@ -34,21 +35,22 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
+      <TheaterProvider>
       <SearchProvider>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
    
       <Stack screenOptions={{headerShown:false}}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(auth)" /> 
-        <Stack.Screen name='(other)' />
         <Stack.Screen name="index" options={{headerShown:false}} />
         <Stack.Screen name="+not-found" />
-        <Stack.Screen name = "(other)" />
+        
 
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
     </SearchProvider>
+    </TheaterProvider>
     </AuthProvider>
   );
 }
