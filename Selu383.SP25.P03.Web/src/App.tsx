@@ -28,6 +28,8 @@ import TheatersPage from "./pages/TheatersPage";
 import SiteStats from "./pages/Admin/Graph/SiteStats";
 
 import "./index.css";
+import TicketConfirmation from "./pages/OrderSummary";
+import CartPage from "./pages/CartPage";
 
 const App = () => {
   return (
@@ -53,6 +55,8 @@ const App = () => {
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/showtimes/:movieId" element={<ShowtimesPage />} />
                     <Route path="/theaters" element={<TheatersPage />} />
+                    <Route path="/confirmation" element={<TicketConfirmation />} />
+                    <Route path="/cart" element={<CartPage />}/>
                     
                     {/* Admin Routes */}
                     <Route path="/admin-dashboard" element={<AdminDashboard />} />
