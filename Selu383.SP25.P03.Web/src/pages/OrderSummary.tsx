@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ShowtimeDetail } from '../Data/ShowtimeInterfaces';
-import { FoodItem } from '../Data/FoodItem';
-import { fetchFoodMenus } from '../services/FoodApi';
-import { CheckCircle, ArrowRightCircle } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { ShowtimeDetail } from "../Data/ShowtimeInterfaces";
+import { FoodItem } from "../Data/FoodItem";
+import { fetchFoodMenus } from "../services/FoodApi";
+import { CheckCircle, ArrowRightCircle } from "lucide-react";
 
 interface LocationState {
   showtime: ShowtimeDetail;
@@ -25,7 +25,7 @@ const OrderSummary: React.FC = () => {
   const [cart, setCart] = useState<{ [key: string]: CartItem }>({});
   const [menus, setMenus] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     const getFoodMenus = async () => {
@@ -33,7 +33,7 @@ const OrderSummary: React.FC = () => {
         const data = await fetchFoodMenus();
         setMenus(data);
       } catch (err) {
-        setError('Failed to fetch food menus');
+        setError("Failed to fetch food menus");
       } finally {
         setLoading(false);
       }
@@ -85,24 +85,24 @@ const OrderSummary: React.FC = () => {
       totalPrice: calculateTotalWithFood(),
     };
 
-    // Retrieve existing cart data from localStorage
-    let existingCart = JSON.parse(localStorage.getItem('orderCart') || '[]');
+    // Retrieve existing cart data from localStorage and ensure it's an array
+    let existingCart = JSON.parse(localStorage.getItem("orderCart") || "[]");
 
-    // Ensure that existingCart is always an array
+    // Ensure that existingCart is an array
     if (!Array.isArray(existingCart)) {
-      console.warn('Invalid cart data in localStorage, resetting cart.');
+      console.warn("Invalid cart data in localStorage, resetting cart.");
       existingCart = []; // Reset to an empty array if not valid
     }
 
     // Add the new cart to the existing array
     const updatedCart = [...existingCart, currentCart];
-    console.log('Updated Cart:', updatedCart); // Debugging to ensure it looks correct
+    console.log("Updated Cart:", updatedCart); // Debugging to ensure it looks correct
 
     // Store the updated cart back into localStorage
-    localStorage.setItem('orderCart', JSON.stringify(updatedCart));
+    localStorage.setItem("orderCart", JSON.stringify(updatedCart));
 
     // Navigate to the cart page
-    navigate('/cart');
+    navigate("/cart");
   };
 
   if (loading) return <div className="text-center text-white text-xl py-20">Loading...</div>;
@@ -114,7 +114,7 @@ const OrderSummary: React.FC = () => {
         <h2 className="text-2xl font-bold text-red-500 mb-4">No Order Information</h2>
         <p className="text-gray-300 mb-6">We couldn't find your order information.</p>
         <button 
-          onClick={() => navigate('/home')} 
+          onClick={() => navigate("/home")} 
           className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-md font-semibold"
         >
           Return to Home
@@ -183,7 +183,7 @@ const OrderSummary: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap justify-center gap-4">
-          <button onClick={() => navigate('/home')} className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-md font-semibold">
+          <button onClick={() => navigate("/home")} className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-md font-semibold">
             Return to Home
           </button>
           <button onClick={handleAddToCart} className="bg-yellow-600 hover:bg-yellow-700 px-6 py-3 rounded-md font-semibold flex items-center gap-2">
