@@ -5,6 +5,8 @@ using Selu383.SP25.P03.Api.Features.Users;
 using Selu383.SP25.P03.Api.Features.Theaters;
 using Selu383.SP25.P03.Api.Features.Movies;
 using Selu383.SP25.P03.Api.Features.Reviews;
+using Selu383.SP25.P03.Api.Features.Cart;
+using System.Reflection.Emit;
 
 
 namespace Selu383.SP25.P03.Api.Data
@@ -24,6 +26,9 @@ namespace Selu383.SP25.P03.Api.Data
         public DbSet<FoodMenu> FoodMenus { get; set; }
         public DbSet<FoodItem> FoodItems { get; set; }
         public DbSet<FoodMenuItem> FoodMenuItems { get; set; }
+        public DbSet<Cart> Carts { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
+         
 
 
 
@@ -67,6 +72,11 @@ namespace Selu383.SP25.P03.Api.Data
                 .HasOne(fm => fm.FoodItem)
                 .WithMany()
                 .HasForeignKey(fm => fm.FoodItemId);
+
+            builder.Entity<Cart>()
+                .HasMany(c => c.Items)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
 
         }
     }
