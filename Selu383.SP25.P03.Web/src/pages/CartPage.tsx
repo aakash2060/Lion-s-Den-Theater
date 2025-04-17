@@ -13,7 +13,7 @@ const CartPage: React.FC = () => {
   }, []);
 
   const getItemTotal = (item: any) => {
-    const ticketTotal = item.showtime.price * item.selectedSeats.length;
+    const ticketTotal = item.showtime?.price * item.selectedSeats.length || 0;
     const foodTotal = Object.values(item.foodCart || {}).reduce(
       (acc: number, foodItem: any) => acc + foodItem.foodItem.price * foodItem.quantity,
       0
@@ -88,57 +88,54 @@ const CartPage: React.FC = () => {
         ) : (
           <div>
             {cartList.map((order, idx) => (
-              <div
-                key={`order-${idx}`}
-                className="bg-gray-900 rounded-xl shadow-lg p-6 space-y-6 mb-6 hover:shadow-xl transition-shadow duration-200"
-              >
-                <div className="flex items-center space-x-6">
-                  <img
-                    src={order.showtime.moviePoster}
-                    alt={order.showtime.movieTitle}
-                    className="w-32 h-48 rounded-lg shadow-md"
-                  />
-                  <div className="flex flex-col space-y-2">
-                    <h2 className="text-xl font-semibold text-white">{order.showtime.movieTitle}</h2>
-                    <p className="text-sm text-gray-400">
-                      {new Date(order.showtime.startTime).toLocaleDateString()} -{" "}
-                      {new Date(order.showtime.startTime).toLocaleTimeString()}
-                    </p>
-                    <p className="text-sm text-gray-400">Seats: {order.selectedSeats.join(", ")}</p>
-                    <p className="text-base font-semibold">
-                      Price: ${order.showtime.price.toFixed(2)} per ticket
-                    </p>
-                    <p className="text-lg font-bold">
-                      Total: ${(order.showtime.price * order.selectedSeats.length).toFixed(2)}
-                    </p>
+              <div key={`order-${idx}`} className="bg-gray-900 rounded-xl shadow-lg p-6 space-y-6 mb-6">
+                {order.showtime ? (
+                  <div className="flex items-center space-x-6">
+                    <img
+                      src={order.showtime.moviePoster}
+                      alt={order.showtime.movieTitle}
+                      className="w-32 h-48 rounded-lg shadow-md"
+                    />
+                    <div className="flex flex-col space-y-2">
+                      <h2 className="text-xl font-semibold text-white">{order.showtime.movieTitle}</h2>
+                      <p className="text-sm text-gray-400">
+                        {new Date(order.showtime.startTime).toLocaleDateString()} - {new Date(order.showtime.startTime).toLocaleTimeString()}
+                      </p>
+                      <p className="text-sm text-gray-400">Seats: {order.selectedSeats.join(", ")}</p>
+                      <p className="text-base font-semibold">Price: ${order.showtime.price.toFixed(2)} per ticket</p>
+                      <p className="text-lg font-bold">
+                        Total: ${(order.showtime.price * order.selectedSeats.length).toFixed(2)}
+                      </p>
+                    </div>
                   </div>
+                ) : null}
+
+                {order.foodCart && Object.keys(order.foodCart).length > 0 && (
+                  <div className="bg-gray-800 rounded-xl p-4">
+                    <h3 className="text-xl font-semibold mb-4">Food & Drinks</h3>
+                    {Object.values(order.foodCart).map((foodItem: any, index: number) => (
+                      <div key={`food-${index}`} className="flex items-center justify-between gap-4 py-3 border-b border-gray-700">
+                        <div className="flex items-center gap-4">
+                          <img
+                            src={foodItem.foodItem.imgUrl || "/api/placeholder/100/100"}
+                            alt={foodItem.foodItem.name}
+                            className="w-16 h-16 object-cover rounded-md"
+                          />
+                          <span className="text-sm text-white">{foodItem.foodItem.name} × {foodItem.quantity}</span>
+                        </div>
+                        <span className="text-sm text-white">${(foodItem.foodItem.price * foodItem.quantity).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex justify-end">
                   <button
                     onClick={() => removeItem(idx)}
-                    className="text-red-500 hover:text-red-700 ml-auto"
+                    className="bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded-lg font-semibold mt-4"
                   >
-                    <FaTrashAlt className="w-6 h-6" /> Remove
+                    <FaTrashAlt className="inline mr-2" /> Remove
                   </button>
-                </div>
-
-                <div className="mt-4 bg-gray-800 rounded-xl p-4">
-                  <h3 className="text-xl font-semibold text-white">Food & Drinks</h3>
-                  {Object.keys(order.foodCart).length > 0 ? (
-                    Object.values(order.foodCart).map((foodItem: any, index: number) => (
-                      <div
-                        key={`food-${index}`}
-                        className="flex justify-between py-2 border-b border-gray-700"
-                      >
-                        <span className="text-sm text-white">
-                          {foodItem.foodItem.name} × {foodItem.quantity}
-                        </span>
-                        <span className="text-sm text-white">
-                          ${(foodItem.foodItem.price * foodItem.quantity).toFixed(2)}
-                        </span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-400">No food items added.</p>
-                  )}
                 </div>
               </div>
             ))}
