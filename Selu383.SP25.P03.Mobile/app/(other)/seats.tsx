@@ -15,7 +15,7 @@ export default function App() {
       <View className='mb-30  items-center pb-8'>
        <TouchableOpacity 
                   className="bg-red-600 py-3 px-10 rounded-lg mt-6 items-center"
-                  onPress={() => route.push('/(other)/checkout')}
+                  onPress={() => route.push('/checkout' as any)}
                 >
                   <Text className="text-white font-bold">Buy Tickets</Text>
                 </TouchableOpacity>

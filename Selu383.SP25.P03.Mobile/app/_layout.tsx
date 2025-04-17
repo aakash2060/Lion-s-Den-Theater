@@ -9,6 +9,7 @@ import '../global.css'
 import { AuthProvider } from '@/context/AuthContext';
 import {SearchProvider} from '@/context/SearchContext';
 import {TheaterProvider} from '@/context/TheaterContext';
+import TheaterGuard from "@/components/TheaterGuard";
 
 
 
@@ -38,6 +39,7 @@ export default function RootLayout() {
       <TheaterProvider>
       <SearchProvider>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <TheaterGuard>  
    
       <Stack screenOptions={{headerShown:false}}>
         <Stack.Screen name="(tabs)" />
@@ -47,7 +49,9 @@ export default function RootLayout() {
         
 
       </Stack>
+      </TheaterGuard>  
       <StatusBar style="auto" />
+      
     </ThemeProvider>
     </SearchProvider>
     </TheaterProvider>
