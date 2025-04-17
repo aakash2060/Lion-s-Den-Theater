@@ -20,7 +20,11 @@ namespace Selu383.SP25.P03.Api.Controllers
         [HttpPost("{userId}/add")]
         public async Task<IActionResult> AddToCart(int userId, [FromBody] AddCartItemDto addCartItemDto)
         {
-            // Retrieve or create the cart for the user
+            if (addCartItemDto.Quantity <= 0)
+            {
+                return BadRequest("Quantity must be greater than 0.");
+            }
+
             var cart = await _context.Carts.Include(c => c.Items).FirstOrDefaultAsync(c => c.UserId == userId);
             if (cart == null)
             {
@@ -28,59 +32,78 @@ namespace Selu383.SP25.P03.Api.Controllers
                 _context.Carts.Add(cart);
             }
 
-            // Validate the showtime
-            var showtime = await _context.Showtimes.FindAsync(addCartItemDto.ShowtimeId);
+            var showtime = await _context.Showtimes.Include(s => s.Movie).FirstOrDefaultAsync(s => s.Id == addCartItemDto.ShowtimeId);
             if (showtime == null)
             {
                 return NotFound("Showtime not found.");
             }
 
-            // Add the cart item
-            var cartItem = new CartItem
+            var existingCartItem = cart.Items.FirstOrDefault(i => i.ShowtimeId == addCartItemDto.ShowtimeId);
+            if (existingCartItem != null)
             {
-                ShowtimeId = addCartItemDto.ShowtimeId,
-                Quantity = addCartItemDto.Quantity,
-                TotalPrice = addCartItemDto.Quantity * showtime.TicketPrice,
-                Showtime = showtime
-            };
+                existingCartItem.Quantity += addCartItemDto.Quantity;
+                existingCartItem.TotalPrice += addCartItemDto.Quantity * showtime.TicketPrice;
+            }
+            else
+            {
+                var cartItem = new CartItem
+                {
+                    ShowtimeId = addCartItemDto.ShowtimeId,
+                    Quantity = addCartItemDto.Quantity,
+                    TotalPrice = addCartItemDto.Quantity * showtime.TicketPrice,
+                    Showtime = showtime
+                };
+                cart.Items.Add(cartItem);
+            }
 
-            cart.Items.Add(cartItem);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "An error occurred while saving changes.");
+            }
 
-            return Ok(cart);
+            return Ok(MapToDto(cart));
         }
 
         [HttpDelete("{userId}/remove/{cartItemId}")]
         public async Task<IActionResult> RemoveFromCart(int userId, int cartItemId)
         {
-            // Retrieve the cart for the user
             var cart = await _context.Carts.Include(c => c.Items).FirstOrDefaultAsync(c => c.UserId == userId);
             if (cart == null)
             {
                 return NotFound("Cart not found.");
             }
 
-            // Find the cart item
             var cartItem = cart.Items.FirstOrDefault(i => i.Id == cartItemId);
             if (cartItem == null)
             {
                 return NotFound("Cart item not found.");
             }
 
-            // Remove the cart item
             cart.Items.Remove(cartItem);
-            await _context.SaveChangesAsync();
 
-            return Ok(cart);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                return StatusCode(500, "An error occurred while saving changes.");
+            }
+
+            return Ok(MapToDto(cart));
         }
 
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetCart(int userId)
         {
-            // Retrieve the cart for the user
             var cart = await _context.Carts
                 .Include(c => c.Items)
                 .ThenInclude(i => i.Showtime)
+                .ThenInclude(s => s.Movie)
                 .FirstOrDefaultAsync(c => c.UserId == userId);
 
             if (cart == null)
@@ -88,8 +111,12 @@ namespace Selu383.SP25.P03.Api.Controllers
                 return NotFound("Cart not found.");
             }
 
-            // Map the cart to a DTO
-            var cartDto = new CartDto
+            return Ok(MapToDto(cart));
+        }
+
+        private CartDto MapToDto(Cart cart)
+        {
+            return new CartDto
             {
                 Id = cart.Id,
                 UserId = cart.UserId,
@@ -102,8 +129,6 @@ namespace Selu383.SP25.P03.Api.Controllers
                     TotalPrice = i.TotalPrice
                 }).ToList()
             };
-
-            return Ok(cartDto);
         }
     }
 }
