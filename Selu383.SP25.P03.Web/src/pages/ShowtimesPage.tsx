@@ -175,7 +175,7 @@ const ShowtimesPage = () => {
       const responses = await Promise.all(bookingPromises);
       const tickets = responses.map(response => response);
 
-      navigate('/confirmation', {
+      navigate('/orders', {
         state: {
           tickets,
           showtime: selectedShowtime,

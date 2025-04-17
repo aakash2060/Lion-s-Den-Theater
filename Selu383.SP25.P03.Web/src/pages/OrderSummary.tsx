@@ -5,6 +5,9 @@ import { ShowtimeDetail } from "../Data/ShowtimeInterfaces";
 import { FoodItem } from "../Data/FoodItem";
 import { fetchFoodMenus } from "../services/FoodApi";
 import { CheckCircle, ArrowRightCircle } from "lucide-react";
+import { cartService } from "../services/CartApi";
+import { useAuth } from "../context/AuthContext";
+
 
 interface LocationState {
   showtime: ShowtimeDetail;
@@ -18,14 +21,22 @@ interface CartItem {
 }
 
 const OrderSummary: React.FC = () => {
+
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const { showtime, selectedSeats, totalPrice } = location.state as LocationState || {};
 
   const [cart, setCart] = useState<{ [key: string]: CartItem }>({});
   const [menus, setMenus] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { returnUrl: location.pathname } });
+    }
+  }, [isAuthenticated, navigate, location.pathname]);
 
   useEffect(() => {
     const getFoodMenus = async () => {
@@ -77,7 +88,20 @@ const OrderSummary: React.FC = () => {
     return total;
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+
+    if (!isAuthenticated || !user) {
+      navigate('/login', { state: { returnUrl: location.pathname } });
+      return;
+    }
+
+    try {
+
+      await cartService.addToCart(user.id, {
+        showtimeId: showtime.id,
+        quantity: selectedSeats.length
+      });
+
     const currentCart = {
       selectedSeats,
       showtime,
@@ -102,8 +126,12 @@ const OrderSummary: React.FC = () => {
     localStorage.setItem("orderCart", JSON.stringify(updatedCart));
 
     // Navigate to the cart page
-    navigate("/cart");
-  };
+    navigate(`/cart?userId=${user.id}`);
+  } catch (error) {
+    console.error("Failed to add items to cart:", error);
+    setError("Failed to add items to cart. Please try again.");
+  }
+};
 
   if (loading) return <div className="text-center text-white text-xl py-20">Loading...</div>;
   if (error) return <div className="text-center text-red-500 text-xl py-20">{error}</div>;
