@@ -1,4 +1,6 @@
-﻿namespace Selu383.SP25.P03.Api.Features.Cart
+﻿using Selu383.SP25.P03.Api.Features.Theaters;
+
+namespace Selu383.SP25.P03.Api.Features.Cart
 {
     public class AddCartItemDto
     {
@@ -17,7 +19,7 @@
     {
         public int Id { get; set; }
         public int ShowtimeId { get; set; }
-        public string ShowtimeDetails { get; set; }
+        public Showtime Showtime { get; set; }
         public int Quantity { get; set; }
         public decimal TotalPrice { get; set; }
     }

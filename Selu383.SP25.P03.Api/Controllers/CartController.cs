@@ -71,7 +71,11 @@ namespace Selu383.SP25.P03.Api.Controllers
         [HttpDelete("{userId}/remove/{cartItemId}")]
         public async Task<IActionResult> RemoveFromCart(int userId, int cartItemId)
         {
-            var cart = await _context.Carts.Include(c => c.Items).FirstOrDefaultAsync(c => c.UserId == userId);
+            var cart = await _context.Carts
+         .Include(c => c.Items)
+         .ThenInclude(i => i.Showtime)
+         .ThenInclude(s => s.Movie)   
+         .FirstOrDefaultAsync(c => c.UserId == userId);
             if (cart == null)
             {
                 return NotFound("Cart not found.");
@@ -124,7 +128,7 @@ namespace Selu383.SP25.P03.Api.Controllers
                 {
                     Id = i.Id,
                     ShowtimeId = i.ShowtimeId,
-                    ShowtimeDetails = $"{i.Showtime.Movie.Title} at {i.Showtime.StartTime}",
+                    Showtime = i.Showtime,
                     Quantity = i.Quantity,
                     TotalPrice = i.TotalPrice
                 }).ToList()
