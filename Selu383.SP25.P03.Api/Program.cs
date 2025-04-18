@@ -102,31 +102,7 @@ namespace Selu383.SP25.P03.Api
             }
 
             if (app.Environment.IsDevelopment())
-            {
-                try
-                {
-                    var frontendPath = @"C:\Users\ajyol\cmps383-2025-sp-p03-cmps383-2025-sp-p03-g01\Selu383.SP25.P03.Web";
-
-                    var frontend = new Process
-                    {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            FileName = "cmd.exe",
-                            Arguments = "/c npm run dev",
-                            WorkingDirectory = frontendPath,
-                            CreateNoWindow = true,
-                            UseShellExecute = false
-                        }
-                    };
-
-                    frontend.Start();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"⚠️ Failed to start frontend dev server: {ex.Message}");
-                }
-
-
+            { 
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
