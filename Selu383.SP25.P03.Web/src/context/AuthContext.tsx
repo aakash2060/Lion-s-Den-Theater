@@ -1,29 +1,33 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import axios from "axios";
 
-//export const AuthContext = createContext<any>(null);
+
 
 interface AuthContextType {
   user: any;
   fetchUser: () => void;
   logout: () => void;
+  isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // 
+  //
   const fetchUser = async () => {
     try {
       const response = await axios.get("/api/authentication/me", {
         withCredentials: true, //
       });
-      setUser(response.data); 
+      setUser(response.data);
+      setIsAuthenticated(true);
     } catch (error) {
       console.error("Session check failed:", error);
       setUser(null);
+      setIsAuthenticated(false);
     }
   };
 
@@ -31,16 +35,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await axios.post("/api/authentication/logout", {}, { withCredentials: true });
       setUser(null);
+      setIsAuthenticated(false);
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
 
   useEffect(() => {
-    fetchUser(); // 
+    fetchUser(); //
   }, []);
 
-  return <AuthContext.Provider value={{ user, fetchUser, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, fetchUser, logout, isAuthenticated }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
