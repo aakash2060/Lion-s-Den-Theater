@@ -30,6 +30,8 @@ namespace Selu383.SP25.P03.Api
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Configuration.AddEnvironmentVariables();
+
             // Identity configuration
             builder.Services.AddIdentity<User, Role>()
                 .AddEntityFrameworkStores<DataContext>()
