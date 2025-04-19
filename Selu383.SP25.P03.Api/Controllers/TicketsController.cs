@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using EmailService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,13 +23,15 @@ namespace Selu383.SP25.P03.Api.Controllers
         private readonly DbSet<Showtime> showtimes;
         private readonly DataContext dataContext;
         private readonly UserManager<User> userManager;
+        private readonly EmailService.IEmailSender emailSender;
 
-        public TicketsController(DataContext dataContext, UserManager<User> userManager)
+        public TicketsController(DataContext dataContext, UserManager<User> userManager, EmailService.IEmailSender emailSender)
         {
             this.dataContext = dataContext;
             tickets = dataContext.Set<Ticket>();
             showtimes = dataContext.Set<Showtime>();
             this.userManager = userManager;
+            this.emailSender = emailSender;
         }
 
         // Helper method to get the current user ID
@@ -223,6 +226,7 @@ namespace Selu383.SP25.P03.Api.Controllers
             try
             {
                 var userId = await GetCurrentUserId();
+                var user = await userManager.FindByIdAsync(userId.ToString());
 
                 // Check if showtime exists
                 var showtime = await showtimes
@@ -289,6 +293,31 @@ namespace Selu383.SP25.P03.Api.Controllers
                 {
                     showtime.IsSoldOut = true;
                     await dataContext.SaveChangesAsync();
+                }
+
+                if (!string.IsNullOrEmpty(user?.Email))
+                {
+                    var emailBody = $@"
+                                        <div style='font-family:Segoe UI, sans-serif; padding:20px; color:#333;'>
+                                            <h2 style='color:#d35400;'>🎟️ Your Ticket Confirmation</h2>
+                                            <p>Hello {user.FirstName},</p>
+                                            <p>Thanks for booking with <strong>Lion's Den Theaters</strong>! 🦁</p>
+                                            <p><strong>Movie:</strong> {showtime.Movie.Title}</p>
+                                            <p><strong>Theater:</strong> {showtime.Hall.Theater.Name}</p>
+                                            <p><strong>Hall:</strong> {showtime.Hall.HallNumber}</p>
+                                            <p><strong>Seat:</strong> {ticket.SeatNumber}</p>
+                                            <p><strong>Date & Time:</strong> {showtime.StartTime:dddd, MMM dd yyyy, h:mm tt}</p>
+                                            <p><strong>Ticket Type:</strong> {ticket.TicketType}</p>
+                                            <p><strong>Price:</strong> ${ticket.Price:F2}</p>
+                                            <p><strong>Confirmation:</strong> {ticket.ConfirmationNumber}</p>
+                                            <br />
+                                            <p style='font-size:14px;'>This email is your ticket. Please present it at the entrance. 🍿</p>
+                                            <p><strong>– The Lion’s Den Team</strong></p>
+                                        </div>";
+
+                    var message = new Message(new[] { user.Email }, "🎟️ Your Lion's Den Ticket Confirmation", emailBody);
+
+                    await emailSender.SendEmailAsync(message);
                 }
 
                 var result = new TicketDto
