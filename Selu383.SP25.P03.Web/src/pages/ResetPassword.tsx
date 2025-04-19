@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const ResetPassword = () => {
@@ -7,13 +7,20 @@ const ResetPassword = () => {
   const email = location.state?.email || ""; // Get email from previous page
   const [token, setToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setMessage("");
     setError("");
+
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
 
     try {
       const response = await axios.post(
@@ -22,6 +29,7 @@ const ResetPassword = () => {
         { withCredentials: true }
       );
       setMessage(response.data);
+      navigate("/login");
     } catch (err) {
       setError("Failed to reset password.");
     }
@@ -58,6 +66,15 @@ const ResetPassword = () => {
             placeholder="New Password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
+            required
+            className="w-full px-4 py-2 rounded-md bg-gray-800 text-white border border-gray-600 focus:border-red-500 outline-none mb-3"
+          />
+
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             required
             className="w-full px-4 py-2 rounded-md bg-gray-800 text-white border border-gray-600 focus:border-red-500 outline-none mb-3"
           />
