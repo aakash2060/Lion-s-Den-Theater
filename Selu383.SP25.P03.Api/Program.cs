@@ -1,4 +1,4 @@
-using EmailService;
+﻿using EmailService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +6,7 @@ using Selu383.SP25.P03.Api.Data;
 using Selu383.SP25.P03.Api.Features.Payment;
 using Selu383.SP25.P03.Api.Features.Users;
 using Stripe;
+using System.Diagnostics;
 
 namespace Selu383.SP25.P03.Api
 {
@@ -15,6 +16,9 @@ namespace Selu383.SP25.P03.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Read Environment Variables
+            builder.Configuration.AddEnvironmentVariables();
+            
             // Configure Database
             builder.Services.AddDbContext<DataContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DataContext")
@@ -100,9 +104,8 @@ namespace Selu383.SP25.P03.Api
                 await SeedTickets.Initialize(scope.ServiceProvider);
             }
 
-            // Swagger Setup
             if (app.Environment.IsDevelopment())
-            {
+            { 
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
