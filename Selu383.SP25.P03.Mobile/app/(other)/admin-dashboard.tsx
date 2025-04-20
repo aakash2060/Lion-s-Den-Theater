@@ -21,16 +21,7 @@ const AdminDashboard = () => {
   }, []);
 
   const dashboardItems: DashboardItem[] = [
-    {
-      label: "Statistics",
-      description: "View app-wide stats and analytics.",
-      icon: <BarChart3 size={28} color="#ef4444" />, // red-500
-    },
-    {
-      label: "Users",
-      description: "Manage registered users.",
-      icon: <Users2 size={28} color="#ef4444" />,
-    },
+    
     {
       label: "Movies",
       description: "Add, update, and delete movies.",
