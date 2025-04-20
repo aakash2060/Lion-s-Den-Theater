@@ -4,6 +4,7 @@ import axios from "axios";
 import { useSearch } from "@/context/SearchContext";
 import { BASE_URL } from "@/constants/baseUrl";
 import MovieCard from "@/components/MovieCard";
+import { useRouter } from "expo-router";
 
 type BackendMovie = {
   id: number;
@@ -11,12 +12,17 @@ type BackendMovie = {
   posterUrl: string;
   duration?: string;
   releaseDate: string;
+  description?: string;
+  director?: string;
+  genre?: string;
+  trailerId?: string;
 };
 
 const SearchResult = () => {
   const { query } = useSearch();
   const [results, setResults] = useState<BackendMovie[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -67,8 +73,12 @@ const SearchResult = () => {
                 PosterUrl={imageUrl}
                 ReleaseDate={item.releaseDate}
                 onPress={() => {
-                  console.log("Pressed:", item.title);
-                  // You can replace this with navigation if needed
+                  router.push({
+                    pathname: "/(other)/movieDetails",
+                    params: {
+                      movie: JSON.stringify(item),
+                    },
+                  } as any);
                 }}
               />
             );
