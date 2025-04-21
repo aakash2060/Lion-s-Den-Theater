@@ -1,28 +1,38 @@
-﻿using Selu383.SP25.P03.Api.Features.Theaters;
+﻿using System.ComponentModel.DataAnnotations;
+using Selu383.SP25.P03.Api.Features.Theaters;
 
 namespace Selu383.SP25.P03.Api.Features.Cart
 {
-    public class AddCartItemDto
-    {
-        public int ShowtimeId { get; set; }
-        public int Quantity { get; set; }
-    }
 
     public class CartDto
     {
         public int Id { get; set; }
         public int UserId { get; set; }
         public List<CartItemDto> Items { get; set; }
+        public List<FoodCartItemDto> FoodItems { get; set; } = new();
     }
 
     public class CartItemDto
     {
         public int Id { get; set; }
         public int ShowtimeId { get; set; }
-        public Showtime Showtime { get; set; }
+        public string ShowtimeDetails { get; set; }
         public int Quantity { get; set; }
         public decimal TotalPrice { get; set; }
     }
+
+    public class AddCartItemDto
+    {
+        public int ShowtimeId { get; set; }
+        public int Quantity { get; set; }
+    }
+    public class UpdateCartItemDto
+    {
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1.")]
+        public int Quantity { get; set; }
+    }
+
     public class AddFoodCartItemDto
     {
         public int FoodItemId { get; set; }

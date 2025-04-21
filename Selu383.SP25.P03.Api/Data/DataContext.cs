@@ -28,7 +28,8 @@ namespace Selu383.SP25.P03.Api.Data
         public DbSet<FoodMenuItem> FoodMenuItems { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
-         
+        public DbSet<FoodCartItem> FoodCartItems { get; set; }
+
 
 
 
@@ -73,11 +74,20 @@ namespace Selu383.SP25.P03.Api.Data
                 .WithMany()
                 .HasForeignKey(fm => fm.FoodItemId);
 
-            builder.Entity<Cart>()
-                .HasMany(c => c.Items)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
+            builder.Entity<CartItem>()
+                .HasOne(c => c.Showtime)
+                .WithMany()
+                .HasForeignKey(c => c.ShowtimeId);
 
+            builder.Entity<FoodCartItem>()
+                .HasOne(f => f.Cart)
+                .WithMany(c => c.FoodItems)
+                .HasForeignKey(f => f.CartId);
+
+            builder.Entity<FoodCartItem>()
+                .HasOne(f => f.FoodItem)
+                .WithMany()
+                .HasForeignKey(f => f.FoodItemId);
         }
     }
 }
