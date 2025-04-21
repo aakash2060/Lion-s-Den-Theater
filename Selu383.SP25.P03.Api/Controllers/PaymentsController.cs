@@ -42,4 +42,12 @@ public class PaymentsController : ControllerBase
 
         return Ok(new { sessionId = session.Id });
     }
+
+    [HttpGet("public-key")]
+    public IActionResult GetPublicKey()
+    {
+        var publicKey = _configuration["Stripe:PublishableKey"];
+        return Ok(new { publicKey });
+    }
+
 }
