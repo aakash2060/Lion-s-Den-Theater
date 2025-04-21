@@ -549,5 +549,43 @@ namespace Selu383.SP25.P03.Api.Controllers
             return new string(Enumerable.Repeat(chars, 10)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
+
+        [HttpGet("showtime/{showtimeId}")]
+        public async Task<ActionResult<IEnumerable<TicketDto>>> GetTicketsByShowtime(int showtimeId)
+        {
+            // Check if the showtime exists
+            var showtimeExists = await showtimes.AnyAsync(s => s.Id == showtimeId);
+            if (!showtimeExists)
+            {
+                return NotFound("Showtime not found");
+            }
+
+            var result = await tickets
+                .Include(t => t.Showtime)
+                .ThenInclude(s => s.Movie)
+                .Include(t => t.Showtime)
+                .ThenInclude(s => s.Hall)
+                .ThenInclude(h => h.Theater)
+                .Where(t => t.ShowtimeId == showtimeId)
+                .Select(t => new TicketDto
+                {
+                    Id = t.Id,
+                    ShowtimeId = t.ShowtimeId,
+                    UserId = t.UserId,
+                    PurchaseDate = t.PurchaseDate,
+                    SeatNumber = t.SeatNumber,
+                    Price = t.Price,
+                    IsCheckedIn = t.IsCheckedIn,
+                    TicketType = t.TicketType,
+                    ConfirmationNumber = t.ConfirmationNumber,
+                    MovieTitle = t.Showtime.Movie.Title,
+                    TheaterName = t.Showtime.Hall.Theater.Name,
+                    HallNumber = t.Showtime.Hall.HallNumber,
+                    ShowtimeStart = t.Showtime.StartTime
+                })
+                .ToListAsync();
+
+            return Ok(result);
+        }
+        }
     }
-}

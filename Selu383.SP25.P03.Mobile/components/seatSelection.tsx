@@ -169,9 +169,7 @@ const SeatSelection: React.FC<SeatProps> = ({
           <Text className="text-base font-medium mb-1 text-white">
             Selected {selectedSeats.length} seat(s): <Text className="text-amber-400">{selectedSeats.join(', ')}</Text>
           </Text>
-          <Text className="text-base font-medium text-white">
-            Total: <Text className="text-amber-400">${selectedSeats.length * pricePerSeat}</Text>
-          </Text>
+         
         </View>
       )}
     </View>

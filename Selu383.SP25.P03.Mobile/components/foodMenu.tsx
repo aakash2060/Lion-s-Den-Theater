@@ -13,7 +13,7 @@ interface FoodProps {
 
 interface FoodMenuProps {
   foodItems: FoodProps[];
-  onAddToCart: (item: FoodProps) => void;
+  onAddToCart: (item: FoodProps, quantity: number) => void;
 }
 
 const FoodMenu: React.FC<FoodMenuProps> = ({ foodItems, onAddToCart }) => {
@@ -33,19 +33,19 @@ const FoodMenu: React.FC<FoodMenuProps> = ({ foodItems, onAddToCart }) => {
   const handleQuantityChange = (id: number, change: number) => {
     setQuantities((prev) => {
       const newQuantity = (prev[id] || 0) + change;
-      return {
-        ...prev,
-        [id]: newQuantity >= 0 ? newQuantity : 0,
-      };
-    });
-    
-    // Find the item and call onAddToCart when incrementing
-    if (change > 0) {
+      const updatedQuantity = newQuantity >= 0 ? newQuantity : 0;
+      
+      // Find the item and call onAddToCart with the new quantity
       const item = foodItems.find(food => food.id === id);
       if (item) {
-        onAddToCart(item);
+        onAddToCart(item, updatedQuantity);
       }
-    }
+      
+      return {
+        ...prev,
+        [id]: updatedQuantity,
+      };
+    });
   };
 
   const renderFoodItem = ({ item }: { item: FoodProps }) => {
@@ -78,45 +78,30 @@ const FoodMenu: React.FC<FoodMenuProps> = ({ foodItems, onAddToCart }) => {
           <Text className="text-base font-semibold text-white mt-2">{item.name}</Text>
           <Text className="text-sm text-gray-400">${item.price}</Text>
 
-          {/* Quantity Selector */}
-          {quantity === 0 ? (
+          {/* Quantity Selector - Always visible */}
+          <View className="flex-row items-center justify-between mt-3 bg-gray-800 rounded-lg p-1">
+            <TouchableOpacity
+              onPress={() => handleQuantityChange(item.id, -1)}
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+              }}
+            >
+              <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>-</Text>
+            </TouchableOpacity>
+
+            <Text style={{ color: "white", fontSize: 16 }}>{quantity}</Text>
+
             <TouchableOpacity
               onPress={() => handleQuantityChange(item.id, 1)}
               style={{
-                backgroundColor: "#E50914",
-                padding: 8,
-                borderRadius: 6,
-                marginTop: 8,
-                alignItems: 'center'
+                paddingHorizontal: 12,
+                paddingVertical: 6,
               }}
             >
-              <Text style={{ color: "white", fontSize: 16 }}>Add to Cart</Text>
+              <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>+</Text>
             </TouchableOpacity>
-          ) : (
-            <View className="flex-row items-center justify-between mt-3 bg-gray-800 rounded-lg p-1">
-              <TouchableOpacity
-                onPress={() => handleQuantityChange(item.id, -1)}
-                style={{
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                }}
-              >
-                <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>-</Text>
-              </TouchableOpacity>
-
-              <Text style={{ color: "white", fontSize: 16 }}>{quantity}</Text>
-
-              <TouchableOpacity
-                onPress={() => handleQuantityChange(item.id, 1)}
-                style={{
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                }}
-              >
-                <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>+</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          </View>
         </View>
       </View>
     );

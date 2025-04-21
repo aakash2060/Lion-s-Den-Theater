@@ -1,11 +1,11 @@
 import { SafeAreaView, ScrollView } from "react-native";
 import { Text, View, TextInput } from "react-native";
 import FoodMenu from "@/components/foodMenu";
-import FoodCard from "@/components/foodcard";
 import Icon from "react-native-vector-icons/AntDesign";
 import { BASE_URL } from "@/constants/baseUrl";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useBooking } from "@/context/BookingContext";
 
 interface FoodProps {
   id: number;
@@ -18,9 +18,22 @@ interface FoodProps {
 export default function FoodsScreen() {
   const [foodItems, setFoodItems] = useState([]);
   
-  const handleCart = (foodItem:FoodProps) =>{
-    console.log("Added to Cart", foodItem)
-  }
+  const handleCart = (foodItem: FoodProps, quantity: number) => {
+    const { addFoodItem, updateFoodItemQuantity } = useBooking();
+  
+    if (quantity === 1) {
+      // Just increment
+      addFoodItem({
+        id: String(foodItem.id),
+        name: foodItem.name,
+        price: parseFloat(foodItem.price),
+      });
+    } else {
+      // On decrement or manual adjustment
+      updateFoodItemQuantity(String(foodItem.id), quantity);
+    }
+  };
+  
 
   // Fetch the food items from backend
   useEffect(() => {
