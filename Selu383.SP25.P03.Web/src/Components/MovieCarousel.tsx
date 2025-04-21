@@ -86,7 +86,8 @@ const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies: propMovies }) => 
                 <p className="text-gray-400 mt-2 text-lg max-w-2xl opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition duration-700 delay-200">
                   {movie.description}
                 </p>
-                <div className="mt-4 flex space-x-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition duration-700 delay-300">
+                <div className="mt-4 flex space-x-4 transition duration-700 delay-300">
+
                   <button 
                     className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition"
                     onClick={() => navigate(`/movie/${movie.id}`)}

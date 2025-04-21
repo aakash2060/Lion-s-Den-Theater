@@ -5,9 +5,8 @@ const FoodMenuComponent = () => {
   const [menus, setMenus] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
-
-  // State to track cart items with their quantities, keyed by foodItem id.
   const [cart, setCart] = useState<{ [key: string]: number }>({});
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     const getFoodMenus = async () => {
@@ -23,7 +22,6 @@ const FoodMenuComponent = () => {
     getFoodMenus();
   }, []);
 
-  // Increase the quantity for the given food item.
   const handleIncrement = (id: string) => {
     setCart((prevCart) => ({
       ...prevCart,
@@ -31,12 +29,33 @@ const FoodMenuComponent = () => {
     }));
   };
 
-  // Decrease the quantity for the given food item, ensuring it doesn't go below 0.
   const handleDecrement = (id: string) => {
     setCart((prevCart) => ({
       ...prevCart,
       [id]: Math.max((prevCart[id] || 0) - 1, 0),
     }));
+  };
+
+  const handleAddFoodToCart = (item: any, quantity: number) => {
+    if (quantity <= 0) return;
+
+    const cartData = JSON.parse(localStorage.getItem("orderCart") || "[]");
+
+    const foodEntry = {
+      showtime: null,
+      selectedSeats: [],
+      foodCart: {
+        [item.id]: {
+          foodItem: item,
+          quantity: quantity,
+        },
+      },
+    };
+
+    cartData.push(foodEntry);
+    localStorage.setItem("orderCart", JSON.stringify(cartData));
+    setToast(`${item.name} added to cart!`);
+    setTimeout(() => setToast(null), 3000);
   };
 
   if (loading)
@@ -49,7 +68,13 @@ const FoodMenuComponent = () => {
     );
 
   return (
-    <div className="bg-black text-white min-h-screen py-10 px-6">
+    <div className="bg-black text-white min-h-screen py-10 px-6 relative">
+      {toast && (
+        <div className="fixed top-24 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl z-50 text-lg font-semibold animate-bounce">
+          ✅ {toast}
+        </div>
+      )}
+
       <h1 className="text-4xl font-bold text-center mb-10 text-red-500">
         🍿 Food & Drinks Menu
       </h1>
@@ -61,7 +86,6 @@ const FoodMenuComponent = () => {
               {menu.name}
             </h2>
 
-            {/* Food Items Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {menu.foodMenuItems.map((item: any) => (
                 <div
@@ -83,7 +107,6 @@ const FoodMenuComponent = () => {
                     ${item.foodItem.price}
                   </p>
 
-                  {/* Quantity control buttons */}
                   <div className="flex items-center justify-center space-x-4 mt-4">
                     <button
                       onClick={() => handleDecrement(item.foodItem.id)}
@@ -101,6 +124,16 @@ const FoodMenuComponent = () => {
                       +
                     </button>
                   </div>
+
+                  <button
+                    onClick={() => handleAddFoodToCart(item.foodItem, cart[item.foodItem.id] || 0)}
+                    className={`mt-4 px-4 py-2 rounded bg-red-600 text-white ${
+                      (cart[item.foodItem.id] || 0) === 0 ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                    disabled={(cart[item.foodItem.id] || 0) === 0}
+                  >
+                    Add to Cart
+                  </button>
                 </div>
               ))}
             </div>

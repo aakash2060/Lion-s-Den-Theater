@@ -1,8 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import axios from "axios";
 
-
-
 interface AuthContextType {
   user: any;
   fetchUser: () => void;
@@ -16,18 +14,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  //
   const fetchUser = async () => {
     try {
       const response = await axios.get("/api/authentication/me", {
-        withCredentials: true, //
+        withCredentials: true,
       });
       setUser(response.data);
       setIsAuthenticated(true);
-    } catch (error) {
-      console.error("Session check failed:", error);
-      setUser(null);
-      setIsAuthenticated(false);
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        // 🔇 Silent fail for unauthenticated guest user
+        setUser(null);
+        setIsAuthenticated(false);
+      } else {
+        console.error("Unexpected auth error:", error);
+        setUser(null);
+        setIsAuthenticated(false);
+      }
     }
   };
 
@@ -42,10 +45,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    fetchUser(); //
+    fetchUser();
   }, []);
 
-  return <AuthContext.Provider value={{ user, fetchUser, logout, isAuthenticated }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, fetchUser, logout, isAuthenticated }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {
