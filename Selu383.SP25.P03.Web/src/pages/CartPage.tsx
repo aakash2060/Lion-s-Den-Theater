@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { FaTrashAlt } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const CartPage: React.FC = () => {
-  const navigate = useNavigate();
   const [cartList, setCartList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [guestEmail, setGuestEmail] = useState("");
   const [showGuestEmailInput, setShowGuestEmailInput] = useState(false);
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const cartData = JSON.parse(localStorage.getItem("orderCart") || "[]");
@@ -56,9 +56,7 @@ const CartPage: React.FC = () => {
         for (const seat of selectedSeats) {
           const res = await fetch("/api/tickets", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               showtimeId: showtime.id,
               seatNumber: seat,
@@ -74,9 +72,28 @@ const CartPage: React.FC = () => {
         }
       }
 
+      const firstOrder = cartList[0];
+
+      // Redirect to payment if there's food
+      const hasFood = firstOrder.foodCart && Object.keys(firstOrder.foodCart).length > 0;
+
       localStorage.removeItem("orderCart");
-      alert("Booking successful!");
-      navigate("/confirmation");
+
+      if (!hasFood) {
+        alert("Tickets booked successfully!");
+        navigate("/confirmation");
+        return;
+      }
+
+      // 👇 Pass info to payment page
+      navigate("/payment", {
+        state: {
+          totalPrice: getCartTotal(),
+          selectedSeats: cartList.flatMap((order) => order.selectedSeats),
+          foodCart: firstOrder.foodCart || {}
+        }
+      });
+
     } catch (error: any) {
       alert(error.message || "Checkout failed. Please try again.");
     } finally {
