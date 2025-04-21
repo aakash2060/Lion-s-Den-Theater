@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaTrashAlt } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext";
 
 const CartPage: React.FC = () => {
   const navigate = useNavigate();
   const [cartList, setCartList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [guestEmail, setGuestEmail] = useState("");
+  const [showGuestEmailInput, setShowGuestEmailInput] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const cartData = JSON.parse(localStorage.getItem("orderCart") || "[]");
@@ -33,9 +37,13 @@ const CartPage: React.FC = () => {
   };
 
   const handleCheckout = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("You must be logged in to complete the purchase.");
+    if (!isAuthenticated && !guestEmail) {
+      setShowGuestEmailInput(true);
+      return;
+    }
+
+    if (!isAuthenticated && guestEmail && !guestEmail.includes("@")) {
+      alert("Please enter a valid email address.");
       return;
     }
 
@@ -50,12 +58,12 @@ const CartPage: React.FC = () => {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({
               showtimeId: showtime.id,
               seatNumber: seat,
               ticketType: "Standard",
+              guestEmail: isAuthenticated ? undefined : guestEmail,
             }),
           });
 
@@ -89,7 +97,7 @@ const CartPage: React.FC = () => {
           <div>
             {cartList.map((order, idx) => (
               <div key={`order-${idx}`} className="bg-gray-900 rounded-xl shadow-lg p-6 space-y-6 mb-6">
-                {order.showtime ? (
+                {order.showtime && (
                   <div className="flex items-center space-x-6">
                     <img
                       src={order.showtime.moviePoster}
@@ -99,16 +107,19 @@ const CartPage: React.FC = () => {
                     <div className="flex flex-col space-y-2">
                       <h2 className="text-xl font-semibold text-white">{order.showtime.movieTitle}</h2>
                       <p className="text-sm text-gray-400">
-                        {new Date(order.showtime.startTime).toLocaleDateString()} - {new Date(order.showtime.startTime).toLocaleTimeString()}
+                        {new Date(order.showtime.startTime).toLocaleDateString()} -{" "}
+                        {new Date(order.showtime.startTime).toLocaleTimeString()}
                       </p>
                       <p className="text-sm text-gray-400">Seats: {order.selectedSeats.join(", ")}</p>
-                      <p className="text-base font-semibold">Price: ${order.showtime.price.toFixed(2)} per ticket</p>
+                      <p className="text-base font-semibold">
+                        Price: ${order.showtime.price.toFixed(2)} per ticket
+                      </p>
                       <p className="text-lg font-bold">
                         Total: ${(order.showtime.price * order.selectedSeats.length).toFixed(2)}
                       </p>
                     </div>
                   </div>
-                ) : null}
+                )}
 
                 {order.foodCart && Object.keys(order.foodCart).length > 0 && (
                   <div className="bg-gray-800 rounded-xl p-4">
@@ -123,7 +134,9 @@ const CartPage: React.FC = () => {
                           />
                           <span className="text-sm text-white">{foodItem.foodItem.name} × {foodItem.quantity}</span>
                         </div>
-                        <span className="text-sm text-white">${(foodItem.foodItem.price * foodItem.quantity).toFixed(2)}</span>
+                        <span className="text-sm text-white">
+                          ${(foodItem.foodItem.price * foodItem.quantity).toFixed(2)}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -145,15 +158,33 @@ const CartPage: React.FC = () => {
                 <span>Total Cart Value:</span>
                 <span className="text-lg">${getCartTotal().toFixed(2)}</span>
               </div>
+
+              {!isAuthenticated && showGuestEmailInput && (
+                <div className="mt-4">
+                  <label className="block text-gray-300 font-medium mb-1">Guest Email for Tickets:</label>
+                  <input
+                    type="email"
+                    className="w-full md:w-1/2 px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    placeholder="Enter your email address"
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail(e.target.value)}
+                  />
+                  {guestEmail && !guestEmail.includes("@") && (
+                    <p className="text-red-400 text-sm mt-1">Please enter a valid email address.</p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end mt-4">
               <button
                 onClick={handleCheckout}
                 className={`bg-green-600 text-white hover:bg-green-700 px-8 py-4 rounded-lg font-semibold ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
+                  loading || (!isAuthenticated && showGuestEmailInput && !guestEmail.includes("@"))
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
                 }`}
-                disabled={loading}
+                disabled={loading || (!isAuthenticated && showGuestEmailInput && !guestEmail.includes("@"))}
               >
                 {loading ? "Processing..." : "Complete Booking"}
               </button>

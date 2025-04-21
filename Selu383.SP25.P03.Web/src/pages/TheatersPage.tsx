@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Theater } from "../services/api";
 import { theaterService } from "../services/api";
-import { FaMapMarkerAlt, FaChair, FaFilm, FaStar } from "react-icons/fa";
+import { FaMapMarkerAlt, FaFilm, FaStar } from "react-icons/fa";
 import { useTheater } from "../context/TheaterContext";
 import { motion } from "framer-motion";
 
