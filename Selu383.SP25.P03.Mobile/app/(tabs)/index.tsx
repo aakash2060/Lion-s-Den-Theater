@@ -43,21 +43,21 @@ const Home = () => {
 
   const getSpringFeaturedMovies = (movies: Movie[]): Movie[] => {
     const springGenres = ["Romance", "Adventure", "Family", "Comedy"];
-    
+
     // Convert all to lowercase once for case-insensitive comparison
-    const springGenresLower = springGenres.map(g => g.toLowerCase());
-    
+    const springGenresLower = springGenres.map((g) => g.toLowerCase());
+
     // Filter movies where any genre matches any spring genre
-    const springMovies = movies.filter(movie => 
-        movie.genres?.some(movieGenre => 
-            springGenresLower.includes(movieGenre.toLowerCase())
-        )
+    const springMovies = movies.filter((movie) =>
+      movie.genres?.some((movieGenre) =>
+        springGenresLower.includes(movieGenre.toLowerCase())
+      )
     );
 
     // Randomly pick 4-6 movies
     const shuffled = [...springMovies].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, Math.min(6, shuffled.length));
-};
+  };
 
   // Fetch all data
   useEffect(() => {

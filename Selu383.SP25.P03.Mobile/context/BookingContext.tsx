@@ -1,5 +1,5 @@
 // contexts/BookingContext.tsx
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from "react";
 
 type FoodItem = {
   id: string;
@@ -24,14 +24,13 @@ type Movie = {
   title: string;
   description: string;
   director: string;
-
 };
 
 type BookingContextType = {
   selectedSeats: string[];
   setSelectedSeats: (seats: string[]) => void;
   foodItems: FoodItem[];
-  addFoodItem: (item: Omit<FoodItem, 'quantity'>) => void;
+  addFoodItem: (item: Omit<FoodItem, "quantity">) => void;
   removeFoodItem: (id: string) => void;
   updateFoodItemQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -46,17 +45,17 @@ const BookingContext = createContext<BookingContextType | undefined>(undefined);
 export const BookingProvider = ({ children }: { children: ReactNode }) => {
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
-  const [currentShowtime, setCurrentShowtime] = useState<ShowtimeDto | null>(null);
+  const [currentShowtime, setCurrentShowtime] = useState<ShowtimeDto | null>(
+    null
+  );
   const [currentMovie, setCurrentMovie] = useState<Movie | null>(null);
 
-  const addFoodItem = (item: Omit<FoodItem, 'quantity'>) => {
-    setFoodItems(prev => {
-      const existingItem = prev.find(food => food.id === item.id);
+  const addFoodItem = (item: Omit<FoodItem, "quantity">) => {
+    setFoodItems((prev) => {
+      const existingItem = prev.find((food) => food.id === item.id);
       if (existingItem) {
-        return prev.map(food =>
-          food.id === item.id 
-            ? { ...food, quantity: food.quantity + 1 } 
-            : food
+        return prev.map((food) =>
+          food.id === item.id ? { ...food, quantity: food.quantity + 1 } : food
         );
       }
       return [...prev, { ...item, quantity: 1 }];
@@ -64,7 +63,7 @@ export const BookingProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const removeFoodItem = (id: string) => {
-    setFoodItems(prev => prev.filter(item => item.id !== id));
+    setFoodItems((prev) => prev.filter((item) => item.id !== id));
   };
 
   const updateFoodItemQuantity = (id: string, quantity: number) => {
@@ -72,8 +71,8 @@ export const BookingProvider = ({ children }: { children: ReactNode }) => {
       removeFoodItem(id);
       return;
     }
-    setFoodItems(prev =>
-      prev.map(item => (item.id === id ? { ...item, quantity } : item))
+    setFoodItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, quantity } : item))
     );
   };
 
@@ -108,7 +107,7 @@ export const BookingProvider = ({ children }: { children: ReactNode }) => {
 export const useBooking = () => {
   const context = useContext(BookingContext);
   if (context === undefined) {
-    throw new Error('useBooking must be used within a BookingProvider');
+    throw new Error("useBooking must be used within a BookingProvider");
   }
   return context;
 };

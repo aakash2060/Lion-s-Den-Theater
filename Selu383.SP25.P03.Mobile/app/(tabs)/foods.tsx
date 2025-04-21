@@ -17,10 +17,10 @@ interface FoodProps {
 }
 export default function FoodsScreen() {
   const [foodItems, setFoodItems] = useState([]);
-  
+
   const handleCart = (foodItem: FoodProps, quantity: number) => {
     const { addFoodItem, updateFoodItemQuantity } = useBooking();
-  
+
     if (quantity === 1) {
       // Just increment
       addFoodItem({
@@ -33,7 +33,6 @@ export default function FoodsScreen() {
       updateFoodItemQuantity(String(foodItem.id), quantity);
     }
   };
-  
 
   // Fetch the food items from backend
   useEffect(() => {
@@ -58,7 +57,12 @@ export default function FoodsScreen() {
 
         {/* Search Bar */}
         <View className="bg-white rounded-xl mt-4 mb-6 px-4 py-3 shadow-md flex-row items-center">
-          <Icon name="search1" size={20} color="#888" style={{ marginRight: 10 }} />
+          <Icon
+            name="search1"
+            size={20}
+            color="#888"
+            style={{ marginRight: 10 }}
+          />
           <TextInput
             className="h-10 text-base text-gray-700 flex-1"
             placeholder="What are you craving?"
@@ -66,9 +70,8 @@ export default function FoodsScreen() {
           />
         </View>
 
-      
         {/* Scrollable Food Menu - Pass fetched data */}
-        <FoodMenu foodItems={foodItems} onAddToCart={handleCart}/>
+        <FoodMenu foodItems={foodItems} onAddToCart={handleCart} />
       </ScrollView>
     </SafeAreaView>
   );

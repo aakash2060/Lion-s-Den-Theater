@@ -79,16 +79,20 @@ export default function MoviePage() {
           : res.data;
         setShowtimes(filtered);
 
+        // Only set selectedDate if it's empty and we have showtimes
         if (filtered.length > 0 && !selectedDate) {
-          const first = new Date(filtered[0].startTime);
-          setSelectedDate(formatDateKey(first));
+          const firstShowtimeDate = formatDateKey(
+            new Date(filtered[0].startTime)
+          );
+          setSelectedDate(firstShowtimeDate);
         }
       } catch (err) {
-        console.error(" Failed to fetch showtimes", err);
+        console.error("Failed to fetch showtimes", err);
       }
     };
+
     fetchShowtimes();
-  }, [movie, theater]);
+  }, [movie?.id, theater?.id]);
 
   useEffect(() => {
     const getCity = async () => {
@@ -101,12 +105,12 @@ export default function MoviePage() {
           setCity(reverse[0].city);
         }
       } catch (err) {
-        console.warn(" Failed to get city", err);
+        console.warn("Failed to get city", err);
       }
     };
     getCity();
   }, []);
-
+  
   const dateOptions = getDateOptions();
   const filteredShowtimes = showtimes.filter(
     (s) => formatDateKey(new Date(s.startTime)) === selectedDate
@@ -201,18 +205,17 @@ export default function MoviePage() {
               {filteredShowtimes.map((s) => (
                 <TouchableOpacity
                   key={s.id}
-                  onPress={() =>{
-                    setCurrentShowtime(s)
-                    setCurrentMovie(movie)
+                  onPress={() => {
+                    setCurrentShowtime(s);
+                    setCurrentMovie(movie);
                     router.push({
                       pathname: "/(other)/seats",
-                      params: { 
+                      params: {
                         showtime: JSON.stringify(s),
-                        movie: JSON.stringify(movie)
-                      }
-                    })
-                  }
-                }
+                        movie: JSON.stringify(movie),
+                      },
+                    });
+                  }}
                   className="bg-zinc-900 p-4 rounded-xl border border-zinc-700 w-full"
                 >
                   <Text className="text-white text-xl font-bold">
