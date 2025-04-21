@@ -68,12 +68,7 @@ const TheatersPage = () => {
                 <FaMapMarkerAlt className="text-red-400" />
                 <span>{theater.address}</span>
               </div>
-
-              <div className="flex items-center gap-2 text-gray-300">
-                <FaChair className="text-blue-300" />
-                <span>Seats: {theater.seatCount}</span>
-              </div>
-
+              
               <div className="flex items-center gap-1 text-yellow-400 text-sm">
                 {[...Array(4)].map((_, i) => <FaStar key={i} />)}
                 <FaStar className="text-gray-600" />
