@@ -17,9 +17,9 @@ const FoodCard: React.FC = () => {
   return (
     <View>
       <View>
-        <Image 
-          source={{ uri: item.image }} 
-          style={styles.foodImage} 
+        <Image
+          source={{ uri: item.image }}
+          style={styles.foodImage}
           resizeMode="cover"
         />
       </View>
@@ -32,9 +32,8 @@ const styles = StyleSheet.create({
     width: "98%",
     height: 200,
     borderRadius: 10,
-    backgroundColor: "#e0e0e0", 
+    backgroundColor: "#e0e0e0",
   },
-
 });
 
 export default FoodCard;

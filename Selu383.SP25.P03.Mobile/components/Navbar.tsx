@@ -12,6 +12,7 @@ import {
 import Icon from "react-native-vector-icons/FontAwesome";
 import { AuthContext } from "@/context/AuthContext";
 import { useSearch } from "@/context/SearchContext";
+import CartIcon from "./cartIcon";
 
 const Navbar: React.FC = () => {
   const router = useRouter();
@@ -80,6 +81,7 @@ const Navbar: React.FC = () => {
 
       {/* Right Icons */}
       <View style={styles.rightContainer}>
+    
         {showSearch ? (
           <TouchableOpacity onPress={cancelSearch}>
             <Icon name="times" size={20} color="white" style={styles.icon} />
@@ -92,14 +94,9 @@ const Navbar: React.FC = () => {
             >
               <Icon name="search" size={20} color="white" style={styles.icon} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
-              <Icon
-                name="envelope"
-                size={20}
-                color="white"
-                style={styles.icon}
-              />
-            </TouchableOpacity>
+            <View>
+      <CartIcon onPress={() => router.push('/(other)/checkout')} />
+    </View>
             <TouchableOpacity
               onPress={handleProfileIconPress}
               style={styles.iconButton}
