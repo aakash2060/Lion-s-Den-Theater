@@ -20,6 +20,7 @@ namespace Selu383.SP25.P03.Api.Controllers
         private readonly RoleManager<Role> roleManager;
         private readonly DataContext dataContext;
         private readonly EmailService.IEmailSender emailSender;
+        private static readonly Dictionary<string, (string Pin, DateTime Expiration)> resetPins = new();
         private DbSet<Role> roles;
 
         public UsersController(
@@ -82,27 +83,21 @@ namespace Selu383.SP25.P03.Api.Controllers
                 return BadRequest(result.Errors);
             }
 
-            // Generate email confirmation token
-            var emailConfirmationToken = await userManager.GenerateEmailConfirmationTokenAsync(newUser);
-
-            // Encode the token for added security
-            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailConfirmationToken));
-
-            // Send the confirmation token in an email (instead of a link)
             var subject = "Email Confirmation Request";
-            var body = $"<p>Thank you for registering! Your email confirmation token is: <strong>{encodedToken}</strong></p>";
+            var body = $@"
+                        <div style='font-family:Segoe UI, sans-serif; background-color:#fff8f0; padding:20px; border-radius:10px; border:1px solid #ffe0b3; max-width:500px; margin:auto;'>
+                            <h2 style='color:#c0392b;'>🎟️ Welcome to Lion's Den Theaters</h2>
+                            <p style='font-size:16px; color:#333;'>Dear {dto.FirstName},</p>
+                            <p style='font-size:16px; color:#333;'>We're absolutely thrilled to have you join our community of movie lovers! 🎉</p>
+                            <p style='font-size:16px; color:#333;'>Get ready to enjoy the magic of cinema, special treats, and unforgettable moments.</p>
+                            <p style='font-size:16px; color:#333;'>🍿 Your seat is reserved. Let the stories begin!</p>
+                            <p style='font-size:16px; color:#333;'>Warm regards,</p>
+                            <p style='font-weight:bold; color:#c0392b;'>The Lion's Den Team 🦁</p>
+                        </div>";
 
             var message = new Message(new[] { dto.Email }, subject, body);
 
-            // Send the email with the token
-            try
-            {
-                await emailSender.SendEmailAsync(message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error sending email: {ex.Message}");
-            }
+            await emailSender.SendEmailAsync(message);
 
             // Assign roles if provided
             if (dto.Roles != null && dto.Roles.Length > 0)
@@ -136,27 +131,28 @@ namespace Selu383.SP25.P03.Api.Controllers
             if (user == null)
                 return NotFound("User not found.");
 
-            try
-            {
-                // Generate password reset token
-                var token = await userManager.GeneratePasswordResetTokenAsync(user);
+            var pin = new Random().Next(100000, 999999).ToString();
+            resetPins[forgotPassword.Email!] = (pin, DateTime.UtcNow.AddMinutes(2));
+            var subject = "Lion's Den Theaters Password Reset PIN";
+            var body = $@"
+                        <div style='font-family:Segoe UI, sans-serif; color:#333; max-width:600px; margin:auto;'>
+                            <h2 style='color:#b91c1c;'>🦁 Lion's Den Theaters</h2>
+                            <p style='font-size:16px;'>Hello,</p>
+                            <p style='font-size:16px;'>
+                                We received a request to reset your password. Please use the following 6-digit PIN to proceed:
+                            </p>
+                            <p style='font-size:20px; font-weight:bold; color:#1d4ed8; margin:16px 0;'>
+                                {pin}
+                            </p>
+                            <p style='font-size:14px; color:#555;'>This PIN is valid for <strong>2 minutes</strong>.</p>
+                            <p style='font-size:14px; color:#555;'>If you did not request this, you can safely ignore this email.</p>
+                            <br/>
+                            <p style='font-size:14px;'>Stay cozy and enjoy the magic of the movies 🎬</p>
+                            <p style='font-weight:bold;'>– Lion's Den Team</p>
+                        </div>";
 
-                // Encode the token for added security
-                var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-
-                // Send the reset token in an email (instead of a clickable link)
-                var subject = "Password Reset Request";
-                var body = $"<p>We received a request to reset your password. Your password reset token is: <strong>{encodedToken}</strong></p>";
-
-                var message = new Message(new[] { forgotPassword.Email! }, subject, body);
-
-                // Send the email with the token
-                await emailSender.SendEmailAsync(message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error sending email: {ex.Message}");
-            }
+            var message = new Message(new[] { forgotPassword.Email! }, subject, body);
+            await emailSender.SendEmailAsync(message);
 
             return Ok("Password reset email sent.");
         }
@@ -166,28 +162,44 @@ namespace Selu383.SP25.P03.Api.Controllers
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPassword)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest("Invalid password reset request.");
+            }
+
+            if (!resetPins.TryGetValue(resetPassword.Email, out var pinInfo))
+            {
+                return BadRequest("No reset PIN found for this email.");
+            }
+
+            if (DateTime.UtcNow > pinInfo.Expiration)
+            {
+                resetPins.Remove(resetPassword.Email);
+                return BadRequest("Reset PIN has expired.");
+            }
+
+            if (pinInfo.Pin != resetPassword.Token)
+            {
+                return BadRequest("Invalid reset PIN.");
+            }
 
             var user = await userManager.FindByEmailAsync(resetPassword.Email);
             if (user == null)
+            {
                 return BadRequest("User not found.");
-
-            try
-            {
-                var decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(resetPassword.Token));
-                var result = await userManager.ResetPasswordAsync(user, decodedToken, resetPassword.NewPassword);
-
-                if (!result.Succeeded)
-                {
-                    return BadRequest("Password reset failed.");
-                }
-
-                return Ok("Password has been reset successfully.");
             }
-            catch (Exception ex)
+
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await userManager.ResetPasswordAsync(user, token, resetPassword.NewPassword);
+
+            if (!result.Succeeded)
             {
-                return StatusCode(500, $"Error processing password reset: {ex.Message}");
+                return BadRequest("Password reset failed.");
             }
+
+            // Invalidate the used PIN
+            resetPins.Remove(resetPassword.Email);
+
+            return Ok("Password has been reset successfully.");
         }
 
         // Confirm Email
