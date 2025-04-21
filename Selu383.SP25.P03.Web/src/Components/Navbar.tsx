@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaUser, FaSearch, FaBars, FaTimes } from "react-icons/fa";
+import { FaUser, FaSearch, FaBars, FaTimes, FaShoppingCart } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import { useSearch } from "../context/SearchContext";
 import { useTheater } from "../context/TheaterContext";
@@ -145,6 +145,16 @@ const Navbar = () => {
           )}
         </div>
 
+        {/* 🛒 Cart */}
+        <div className="relative hidden md:block">
+          <button
+            className="text-xl text-white hover:text-primary transition duration-200"
+            onClick={() => navigate("/cart")}
+          >
+            <FaShoppingCart />
+          </button>
+        </div>
+
         {/* 🍔 Mobile Menu */}
         <button
           className="text-2xl text-white md:hidden focus:outline-none"
@@ -182,6 +192,13 @@ const Navbar = () => {
               onClick={() => {
                 setMenuOpen(false);
                 navigate(user ? "/profile" : "/login");
+              }}
+            />
+            <FaShoppingCart
+              className="text-3xl text-white cursor-pointer"
+              onClick={() => {
+                setMenuOpen(false);
+                navigate("/cart");
               }}
             />
           </div>
