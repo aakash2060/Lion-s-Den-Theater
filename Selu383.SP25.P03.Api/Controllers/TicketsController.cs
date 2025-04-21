@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using EmailService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,13 +23,17 @@ namespace Selu383.SP25.P03.Api.Controllers
         private readonly DbSet<Showtime> showtimes;
         private readonly DataContext dataContext;
         private readonly UserManager<User> userManager;
+        private readonly EmailService.IEmailSender emailSender;
+        private readonly SignInManager<User> signInManager;
 
-        public TicketsController(DataContext dataContext, UserManager<User> userManager)
+        public TicketsController(DataContext dataContext, UserManager<User> userManager, EmailService.IEmailSender emailSender, SignInManager<User> signInManager)
         {
             this.dataContext = dataContext;
             tickets = dataContext.Set<Ticket>();
             showtimes = dataContext.Set<Showtime>();
             this.userManager = userManager;
+            this.emailSender = emailSender;
+            this.signInManager = signInManager;
         }
 
         // Helper method to get the current user ID
@@ -212,7 +217,6 @@ namespace Selu383.SP25.P03.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         public async Task<ActionResult<TicketDto>> PurchaseTicket(PurchaseTicketDto dto)
         {
             if (IsInvalid(dto))
@@ -220,33 +224,57 @@ namespace Selu383.SP25.P03.Api.Controllers
                 return BadRequest("Invalid ticket data");
             }
 
+            User user = null;
+
             try
             {
-                var userId = await GetCurrentUserId();
+                int userId;
 
-                // Check if showtime exists
+                if (User.Identity.IsAuthenticated)
+                {
+                    userId = await GetCurrentUserId();
+                    user = await userManager.FindByIdAsync(userId.ToString());
+                }
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
+                    {
+                        return BadRequest("Email and password are required for guest users.");
+                    }
+
+                    var guestUser = new User
+                    {
+                        UserName = $"guest{DateTime.UtcNow.Ticks}",
+                        Email = dto.Email,
+                        FirstName = "Guest",
+                        LastName = "User",
+                        EmailConfirmed = true
+                    };
+
+                    var result = await userManager.CreateAsync(guestUser, dto.Password);
+                    if (!result.Succeeded)
+                    {
+                        return BadRequest(result.Errors);
+                    }
+
+                    await signInManager.SignInAsync(guestUser, isPersistent: false);
+                    user = guestUser;
+                    userId = guestUser.Id;
+                }
+
                 var showtime = await showtimes
                     .Include(s => s.Movie)
                     .Include(s => s.Hall)
                     .ThenInclude(h => h.Theater)
                     .FirstOrDefaultAsync(s => s.Id == dto.ShowtimeId);
 
-                if (showtime == null)
-                {
-                    return BadRequest("Showtime not found");
-                }
+                if (showtime == null) return BadRequest("Showtime not found");
 
-                // Check if showtime is in the past
-                if (showtime.StartTime < DateTime.UtcNow)
-                {
-                    return BadRequest("Cannot purchase tickets for past showtimes");
-                }
+                if (showtime.StartTime < DateTime.UtcNow) return BadRequest("Cannot purchase tickets for past showtimes");
 
-                // Check for available seats
                 var ticketCount = await tickets.CountAsync(t => t.ShowtimeId == dto.ShowtimeId);
                 if (ticketCount >= showtime.Hall.Capacity)
                 {
-                    // Update the IsSoldOut flag if needed
                     if (!showtime.IsSoldOut)
                     {
                         showtime.IsSoldOut = true;
@@ -255,7 +283,6 @@ namespace Selu383.SP25.P03.Api.Controllers
                     return BadRequest("This showtime is sold out");
                 }
 
-                // Check if seat is already taken
                 if (!string.IsNullOrEmpty(dto.SeatNumber))
                 {
                     var seatTaken = await tickets
@@ -267,13 +294,12 @@ namespace Selu383.SP25.P03.Api.Controllers
                     }
                 }
 
-                // Generate confirmation code
                 var confirmationNumber = GenerateConfirmationCode();
 
                 var ticket = new Ticket
                 {
                     ShowtimeId = dto.ShowtimeId,
-                    UserId = userId,
+                    UserId = user.Id,
                     PurchaseDate = DateTime.UtcNow,
                     SeatNumber = dto.SeatNumber,
                     Price = showtime.TicketPrice,
@@ -284,14 +310,37 @@ namespace Selu383.SP25.P03.Api.Controllers
                 tickets.Add(ticket);
                 await dataContext.SaveChangesAsync();
 
-                // Check if this was the last available seat
                 if (ticketCount + 1 >= showtime.Hall.Capacity && !showtime.IsSoldOut)
                 {
                     showtime.IsSoldOut = true;
                     await dataContext.SaveChangesAsync();
                 }
 
-                var result = new TicketDto
+                if (!string.IsNullOrEmpty(user?.Email))
+                {
+                    var emailBody = $@"
+                <div style='font-family:Segoe UI, sans-serif; padding:20px; color:#333;'>
+                    <h2 style='color:#d35400;'>🎟️ Your Ticket Confirmation</h2>
+                    <p>Hello {user.FirstName},</p>
+                    <p>Thanks for booking with <strong>Lion's Den Theaters</strong>! 🦁</p>
+                    <p><strong>Movie:</strong> {showtime.Movie.Title}</p>
+                    <p><strong>Theater:</strong> {showtime.Hall.Theater.Name}</p>
+                    <p><strong>Hall:</strong> {showtime.Hall.HallNumber}</p>
+                    <p><strong>Seat:</strong> {ticket.SeatNumber}</p>
+                    <p><strong>Date & Time:</strong> {showtime.StartTime:dddd, MMM dd yyyy, h:mm tt}</p>
+                    <p><strong>Ticket Type:</strong> {ticket.TicketType}</p>
+                    <p><strong>Price:</strong> ${ticket.Price:F2}</p>
+                    <p><strong>Confirmation:</strong> {ticket.ConfirmationNumber}</p>
+                    <br />
+                    <p style='font-size:14px;'>This email is your ticket. Please present it at the entrance. 🍿</p>
+                    <p><strong>– The Lion’s Den Team</strong></p>
+                </div>";
+
+                    var message = new Message(new[] { user.Email }, "🎟️ Your Lion's Den Ticket Confirmation", emailBody);
+                    await emailSender.SendEmailAsync(message);
+                }
+
+                var resultDto = new TicketDto
                 {
                     Id = ticket.Id,
                     ShowtimeId = ticket.ShowtimeId,
@@ -308,7 +357,7 @@ namespace Selu383.SP25.P03.Api.Controllers
                     ShowtimeStart = showtime.StartTime
                 };
 
-                return CreatedAtAction(nameof(GetTicket), new { id = result.Id }, result);
+                return CreatedAtAction(nameof(GetTicket), new { id = resultDto.Id }, resultDto);
             }
             catch (InvalidOperationException ex)
             {
