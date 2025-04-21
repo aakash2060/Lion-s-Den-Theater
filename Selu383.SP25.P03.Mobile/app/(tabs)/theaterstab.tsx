@@ -1,28 +1,25 @@
 import React, { useEffect, useState } from "react";
-
 import {
   View,
   Text,
   FlatList,
   TextInput,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
 } from "react-native";
-import * as Location from "expo-location";
-import { BASE_URL } from "@/constants/baseUrl";
 import axios from "axios";
+import * as Location from "expo-location";
+import { MapPin } from "lucide-react-native";
+
 import TheaterCard from "@/components/TheaterCard";
 import { useTheater } from "@/context/TheaterContext";
-import { MapPin } from "lucide-react-native";
+import { BASE_URL } from "@/constants/baseUrl";
 
 type Theater = {
   id: number;
   name: string;
   address: string;
   seatCount: number;
-  latitude?: number;
-  longitude?: number;
 };
 
 const TheatersTab = () => {
@@ -30,36 +27,45 @@ const TheatersTab = () => {
   const [filtered, setFiltered] = useState<Theater[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
-    null
-  );
-  const { setTheater } = useTheater();
+  const [city, setCity] = useState<string | null>(null);
+
+  const { theater } = useTheater();
 
   useEffect(() => {
-    (async () => {
+    const getCityAndTheaters = async () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          Alert.alert(
-            "Location Denied",
-            "We need location to show nearby theaters."
-          );
-          return;
+        let userCity = null;
+
+        if (status === "granted") {
+          const loc = await Location.getCurrentPositionAsync({});
+          const reverse = await Location.reverseGeocodeAsync(loc.coords);
+          userCity = reverse[0]?.city?.toLowerCase().trim();
+          setCity(reverse[0]?.city ?? null);
         }
 
-        const loc = await Location.getCurrentPositionAsync({});
-        setLocation({ lat: loc.coords.latitude, lon: loc.coords.longitude });
+        const res = await axios.get<Theater[]>(`${BASE_URL}/api/theaters`);
+        let list = res.data;
 
-        const res = await axios.get(`${BASE_URL}/api/theaters`);
-        setTheaters(res.data);
-        setFiltered(res.data);
+        if (userCity) {
+          list = [...list].sort((a, b) => {
+            const aMatch = a.address.toLowerCase().includes(userCity) ? 1 : 0;
+            const bMatch = b.address.toLowerCase().includes(userCity) ? 1 : 0;
+            return bMatch - aMatch;
+          });
+        }
+
+        setTheaters(list);
+        setFiltered(list);
       } catch (err) {
+        console.error("Error fetching theaters or location", err);
         Alert.alert("Error", "Could not fetch theaters.");
-        console.error(err);
       } finally {
         setLoading(false);
       }
-    })();
+    };
+
+    getCityAndTheaters();
   }, []);
 
   useEffect(() => {
@@ -76,10 +82,6 @@ const TheatersTab = () => {
       );
     }
   }, [search, theaters]);
-
-  const renderItem = ({ item }: { item: Theater }) => (
-    <TheaterCard theater={item} />
-  );
 
   if (loading) {
     return (
@@ -98,6 +100,13 @@ const TheatersTab = () => {
         <Text className="text-white text-2xl font-bold">Theaters</Text>
       </View>
 
+      {/* Location Info */}
+      {city && (
+        <Text className="text-white mb-2 text-center text-sm">
+          📍 Based on your location: <Text className="font-bold">{city}</Text>
+        </Text>
+      )}
+
       {/* Search Input */}
       <TextInput
         placeholder="Search by name or city..."
@@ -111,7 +120,9 @@ const TheatersTab = () => {
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
+        renderItem={({ item }) => (
+          <TheaterCard theater={item} isSelected={item.id === theater?.id} />
+        )}
         ListEmptyComponent={
           <Text className="text-gray-400 text-center mt-10">
             No theaters found.
