@@ -32,6 +32,7 @@ import Payment from "./pages/Payment";
 import "./index.css";
 import TicketConfirmation from "./pages/OrderSummary";
 import CartPage from "./pages/CartPage";
+import ThankYouPage from "./pages/ThankYouPage";
 
 const App = () => {
   return (
@@ -60,6 +61,7 @@ const App = () => {
                     <Route path="/confirmation" element={<TicketConfirmation />} />
                     <Route path="/cart" element={<CartPage />}/>
                     <Route path="/payment" element={<Payment />}/>
+                    <Route path="/thankyou" element={<ThankYouPage />} />
                     
                     {/* Admin Routes */}
                     <Route path="/admin-dashboard" element={<AdminDashboard />} />
