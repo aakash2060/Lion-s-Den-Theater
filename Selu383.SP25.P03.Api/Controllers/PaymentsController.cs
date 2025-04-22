@@ -28,12 +28,12 @@ public class PaymentsController : ControllerBase
                     {
                         Name = service.Name,
                     },
-                    UnitAmount = service.Price * 100,
+                    UnitAmount = service.Price ,
                 },
                 Quantity = 1,
             }).ToList(),
             Mode = "payment",
-            SuccessUrl = $"{Request.Scheme}://{Request.Host}/success?session_id={{CHECKOUT_SESSION_ID}}",
+            SuccessUrl = $"{Request.Scheme}://{Request.Host}/thankyou",
             CancelUrl = $"{Request.Scheme}://{Request.Host}/cancel",
         };
 
@@ -42,4 +42,12 @@ public class PaymentsController : ControllerBase
 
         return Ok(new { sessionId = session.Id });
     }
+
+    [HttpGet("public-key")]
+    public IActionResult GetPublicKey()
+    {
+        var publicKey = _configuration["Stripe:PublishableKey"];
+        return Ok(new { publicKey });
+    }
+
 }

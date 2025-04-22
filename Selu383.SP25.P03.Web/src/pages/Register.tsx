@@ -5,12 +5,12 @@ import axios from "axios";
 const Register = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(""); // ✅ Correct casing
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // For loading state
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -18,7 +18,6 @@ const Register = () => {
     setError("");
     setLoading(true);
 
-    // Password match validation
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       setLoading(false);
@@ -26,33 +25,31 @@ const Register = () => {
     }
 
     try {
-      // Construct the ClientUri dynamically (for example, the current page URL or a predefined URL)
-      const clientUri = window.location.origin; // or any other URI you want to send
+      const clientUri = window.location.origin;
 
-      // API call for registration
       await axios.post(
         "/api/users",
         {
           firstName,
           lastName,
-          userName: username,
+          username, // ✅ CORRECT KEY (was `userName`)
           email,
           password,
           roles: ["User"],
-          clientUri
+          clientUri,
         },
         { withCredentials: true }
       );
 
-      // Redirect to login after successful registration
       navigate("/login");
     } catch (err) {
-      // Handle errors from the backend
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 400) {
-          setError("Registration failed. Please check the form and try again.");
-        } else if (err.response?.data?.includes("Email is already taken")) {
-          setError("Email is already in use. Please try another one.");
+          if (err.response?.data?.includes("Email is already taken")) {
+            setError("Email is already in use. Please try another one.");
+          } else {
+            setError("Registration failed. Please check the form and try again.");
+          }
         } else {
           setError("Something went wrong. Please try again later.");
         }
@@ -130,7 +127,7 @@ const Register = () => {
           <button
             type="submit"
             className="w-full bg-red-600 hover:bg-red-500 transition-all py-2 mt-4 rounded-md text-white font-semibold"
-            disabled={loading} // Disable button while loading
+            disabled={loading}
           >
             {loading ? "Registering..." : "Register"}
           </button>
