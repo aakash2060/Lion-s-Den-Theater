@@ -259,7 +259,23 @@ namespace Selu383.SP25.P03.Api.Controllers
 
                     await signInManager.SignInAsync(guestUser, isPersistent: false);
                     user = guestUser;
+
                     userId = guestUser.Id;
+
+                    var subject = "Welcome to Lion's Den Theaters";
+                    var body = $@"
+                            <div style='font-family:Segoe UI, sans-serif; background-color:#fff8f0; padding:20px; border-radius:10px; border:1px solid #ffe0b3; max-width:500px; margin:auto;'>
+                                <h2 style='color:#c0392b;'>🎟️ Welcome to Lion's Den Theaters</h2>
+                                <p style='font-size:16px; color:#333;'>Dear {guestUser.FirstName},</p>
+                                <p style='font-size:16px; color:#333;'>We're absolutely thrilled to have you join our community of movie lovers! 🎉</p>
+                                <p style='font-size:16px; color:#333;'>Get ready to enjoy the magic of cinema, special treats, and unforgettable moments.</p>
+                                <p style='font-size:16px; color:#333;'>Your Guest Account Username is {guestUser.UserName}</p>
+                                <p style='font-size:16px; color:#333;'>Warm regards,</p>
+                                <p style='font-weight:bold; color:#c0392b;'>The Lion's Den Team 🦁</p>
+                            </div>";
+
+                    var message = new Message(new[] { user.Email }, subject, body);
+                    await emailSender.SendEmailAsync(message);
                 }
 
                 var showtime = await showtimes
@@ -319,22 +335,34 @@ namespace Selu383.SP25.P03.Api.Controllers
                 if (!string.IsNullOrEmpty(user?.Email))
                 {
                     var emailBody = $@"
-                <div style='font-family:Segoe UI, sans-serif; padding:20px; color:#333;'>
-                    <h2 style='color:#d35400;'>🎟️ Your Ticket Confirmation</h2>
-                    <p>Hello {user.FirstName},</p>
-                    <p>Thanks for booking with <strong>Lion's Den Theaters</strong>! 🦁</p>
-                    <p><strong>Movie:</strong> {showtime.Movie.Title}</p>
-                    <p><strong>Theater:</strong> {showtime.Hall.Theater.Name}</p>
-                    <p><strong>Hall:</strong> {showtime.Hall.HallNumber}</p>
-                    <p><strong>Seat:</strong> {ticket.SeatNumber}</p>
-                    <p><strong>Date & Time:</strong> {showtime.StartTime:dddd, MMM dd yyyy, h:mm tt}</p>
-                    <p><strong>Ticket Type:</strong> {ticket.TicketType}</p>
-                    <p><strong>Price:</strong> ${ticket.Price:F2}</p>
-                    <p><strong>Confirmation:</strong> {ticket.ConfirmationNumber}</p>
-                    <br />
-                    <p style='font-size:14px;'>This email is your ticket. Please present it at the entrance. 🍿</p>
-                    <p><strong>– The Lion’s Den Team</strong></p>
-                </div>";
+                 <div style='font-family:Segoe UI, sans-serif; padding:20px; color:#333; background-color:#f4f4f4; border-radius:8px; max-width:600px; margin:auto;'>
+                     <div style='background-color:#d35400; color:white; text-align:center; padding:20px; border-top-left-radius:8px; border-top-right-radius:8px;'>
+                         <h2 style='margin:0; font-size:24px;'>🎟️ Your Ticket Confirmation</h2>
+                     </div>
+                     <div style='padding:20px; background-color:white; border-radius:8px; border:1px solid #ddd; box-shadow:0px 4px 8px rgba(0, 0, 0, 0.1);'>
+                         <p style='font-size:16px; color:#333;'>Hello <strong>{user.FirstName}</strong>,</p>
+                         <p style='font-size:16px; color:#333;'>Thank you for booking with <strong>Lion's Den Theaters 🦁</strong>!</p>
+
+                         <div style='border-top:1px solid #ddd; padding-top:10px;'>
+                             <p style='font-size:16px; color:#333;'><strong>Movie:</strong> {showtime.Movie.Title}</p>
+                             <p style='font-size:16px; color:#333;'><strong>Theater:</strong> {showtime.Hall.Theater.Name}</p>
+                             <p style='font-size:16px; color:#333;'><strong>Hall:</strong> {showtime.Hall.HallNumber}</p>
+                             <p style='font-size:16px; color:#333;'><strong>Seat:</strong> {ticket.SeatNumber}</p>
+                             <p style='font-size:16px; color:#333;'><strong>Date & Time:</strong> {showtime.StartTime:dddd, MMM dd yyyy, h:mm tt}</p>
+                             <p style='font-size:16px; color:#333;'><strong>Ticket Type:</strong> {ticket.TicketType}</p>
+                             <p style='font-size:16px; color:#333;'><strong>Price:</strong> ${ticket.Price:F2}</p>
+                             <p style='font-size:16px; color:#333;'><strong>Confirmation:</strong> {ticket.ConfirmationNumber}</p>
+                         </div>
+
+                         <div style='margin-top:20px; background-color:#f0f0f0; padding:10px; text-align:center; border-radius:6px;'>
+                             <p style='font-size:14px; color:#333;'>This email serves as your official ticket. Please present it at the entrance. 🍿</p>
+                         </div>
+                     </div>
+
+                     <div style='text-align:center; padding-top:20px;'>
+                         <p style='font-size:14px; color:#777;'>– The Lion’s Den Team</p>
+                     </div>
+                 </div>";
 
                     var message = new Message(new[] { user.Email }, "🎟️ Your Lion's Den Ticket Confirmation", emailBody);
                     await emailSender.SendEmailAsync(message);
@@ -636,5 +664,5 @@ namespace Selu383.SP25.P03.Api.Controllers
 
             return Ok(result);
         }
-        }
     }
+}
