@@ -202,29 +202,30 @@ const CartPage: React.FC = () => {
               </div>
 
               {!isAuthenticated && showGuestEmailInput && (
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300">Guest Email:</label>
-                    <input
-                      type="email"
-                      value={guestEmail}
-                      onChange={(e) => setGuestEmail(e.target.value)}
-                      className="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-                      placeholder="guest@example.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300">Create Password:</label>
-                    <input
-                      type="password"
-                      value={guestPassword}
-                      onChange={(e) => setGuestPassword(e.target.value)}
-                      className="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-                      placeholder="Enter password"
-                    />
-                  </div>
+              <div className="mt-2 space-y-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300">Guest Email:</label>
+                  <input
+                    type="email"
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail(e.target.value)}
+                    className="w-full px-4 py-2 rounded-md bg-gray-800 text-white border border-gray-600 focus:border-red-500 outline-none mb-3"
+                    placeholder="guest@example.com"
+                  />
                 </div>
-              )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300">Create Password:</label>
+                  <input
+                    type="password"
+                    value={guestPassword}
+                    onChange={(e) => setGuestPassword(e.target.value)}
+                    className="w-full px-4 py-2 rounded-md bg-gray-800 text-white border border-gray-600 focus:border-red-500 outline-none mb-3"
+                    placeholder="Enter password"
+                  />
+                </div>
+              </div>
+            )}
+
             </div>
 
             <div className="flex justify-end mt-4">
