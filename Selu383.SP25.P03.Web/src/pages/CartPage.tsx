@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaTrashAlt } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
+import { loadStripe } from "@stripe/stripe-js";
 
 const CartPage: React.FC = () => {
   const navigate = useNavigate();
   const [cartList, setCartList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [guestEmail, setGuestEmail] = useState("");
+  const [guestPassword, setGuestPassword] = useState("");
   const [showGuestEmailInput, setShowGuestEmailInput] = useState(false);
   const { isAuthenticated } = useAuth();
 
@@ -37,13 +39,13 @@ const CartPage: React.FC = () => {
   };
 
   const handleCheckout = async () => {
-    if (!isAuthenticated && !guestEmail) {
+    if (!isAuthenticated && (!guestEmail || !guestPassword)) {
       setShowGuestEmailInput(true);
       return;
     }
 
-    if (!isAuthenticated && guestEmail && !guestEmail.includes("@")) {
-      alert("Please enter a valid email address.");
+    if (!isAuthenticated && (!guestEmail.includes("@") || guestPassword.length < 6)) {
+      alert("Please enter a valid email and password (min 6 characters).");
       return;
     }
 
@@ -56,14 +58,13 @@ const CartPage: React.FC = () => {
         for (const seat of selectedSeats) {
           const res = await fetch("/api/tickets", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               showtimeId: showtime.id,
               seatNumber: seat,
               ticketType: "Standard",
-              guestEmail: isAuthenticated ? undefined : guestEmail,
+              email: isAuthenticated ? undefined : guestEmail,
+              password: isAuthenticated ? undefined : guestPassword,
             }),
           });
 
@@ -74,9 +75,50 @@ const CartPage: React.FC = () => {
         }
       }
 
+      // Step 1: Flatten all ticket and food items
+      const services: any[] = [];
+
+      for (const order of cartList) {
+        const { showtime, selectedSeats, foodCart } = order;
+
+        // Add each ticket as a separate service
+        for (const seat of selectedSeats) {
+          services.push({
+            name: `${showtime.movieTitle} - Seat ${seat}`,
+            price: Math.round(showtime.price * 100)
+          });
+        }
+
+        // Add each food item
+        Object.values(foodCart || {}).forEach((foodItem: any) => {
+          services.push({
+            name: foodItem.foodItem.name,
+            price: Math.round(foodItem.foodItem.price * foodItem.quantity * 100),
+          });
+        });
+      }
+
+      if (services.length === 0) {
+        localStorage.removeItem("orderCart");
+        alert("Tickets booked successfully!");
+        navigate("/confirmation");
+        return;
+      }
+
+      const { publicKey } = await fetch("/api/payments/public-key").then((res) => res.json());
+      const stripe = await loadStripe(publicKey);
+
+      const response = await fetch("/api/payments/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ services }),
+      });
+
+      const { sessionId } = await response.json();
+      if (!sessionId) throw new Error("Stripe session not created");
+
       localStorage.removeItem("orderCart");
-      alert("Booking successful!");
-      navigate("/confirmation");
+      await stripe?.redirectToCheckout({ sessionId });
     } catch (error: any) {
       alert(error.message || "Checkout failed. Please try again.");
     } finally {
@@ -87,7 +129,7 @@ const CartPage: React.FC = () => {
   return (
     <div className="bg-gradient-to-br from-gray-950 to-black min-h-screen text-white py-12 px-4 md:px-10 lg:px-24">
       <div className="max-w-6xl mx-auto space-y-12">
-        <h1 className="text-4xl font-extrabold tracking-tight mb-6 text-center">Cart Summary</h1>
+        <h1 className="text-4xl font-extrabold tracking-tight mb-6 text-center">Your Cart</h1>
 
         {cartList.length === 0 ? (
           <div className="text-center text-gray-500">
@@ -107,7 +149,7 @@ const CartPage: React.FC = () => {
                     <div className="flex flex-col space-y-2">
                       <h2 className="text-xl font-semibold text-white">{order.showtime.movieTitle}</h2>
                       <p className="text-sm text-gray-400">
-                        {new Date(order.showtime.startTime).toLocaleDateString()} -{" "}
+                        {new Date(order.showtime.startTime).toLocaleDateString()} - {" "}
                         {new Date(order.showtime.startTime).toLocaleTimeString()}
                       </p>
                       <p className="text-sm text-gray-400">Seats: {order.selectedSeats.join(", ")}</p>
@@ -115,7 +157,7 @@ const CartPage: React.FC = () => {
                         Price: ${order.showtime.price.toFixed(2)} per ticket
                       </p>
                       <p className="text-lg font-bold">
-                        Total: ${(order.showtime.price * order.selectedSeats.length).toFixed(2)}
+                        Ticket Total: ${(order.showtime.price * order.selectedSeats.length).toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -160,18 +202,27 @@ const CartPage: React.FC = () => {
               </div>
 
               {!isAuthenticated && showGuestEmailInput && (
-                <div className="mt-4">
-                  <label className="block text-gray-300 font-medium mb-1">Guest Email for Tickets:</label>
-                  <input
-                    type="email"
-                    className="w-full md:w-1/2 px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-                    placeholder="Enter your email address"
-                    value={guestEmail}
-                    onChange={(e) => setGuestEmail(e.target.value)}
-                  />
-                  {guestEmail && !guestEmail.includes("@") && (
-                    <p className="text-red-400 text-sm mt-1">Please enter a valid email address.</p>
-                  )}
+                <div className="mt-4 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300">Guest Email:</label>
+                    <input
+                      type="email"
+                      value={guestEmail}
+                      onChange={(e) => setGuestEmail(e.target.value)}
+                      className="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      placeholder="guest@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300">Create Password:</label>
+                    <input
+                      type="password"
+                      value={guestPassword}
+                      onChange={(e) => setGuestPassword(e.target.value)}
+                      className="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      placeholder="Enter password"
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -180,11 +231,11 @@ const CartPage: React.FC = () => {
               <button
                 onClick={handleCheckout}
                 className={`bg-green-600 text-white hover:bg-green-700 px-8 py-4 rounded-lg font-semibold ${
-                  loading || (!isAuthenticated && showGuestEmailInput && !guestEmail.includes("@"))
+                  loading || (!isAuthenticated && showGuestEmailInput && (!guestEmail.includes("@") || guestPassword.length < 6))
                     ? "opacity-50 cursor-not-allowed"
                     : ""
                 }`}
-                disabled={loading || (!isAuthenticated && showGuestEmailInput && !guestEmail.includes("@"))}
+                disabled={loading || (!isAuthenticated && showGuestEmailInput && (!guestEmail.includes("@") || guestPassword.length < 6))}
               >
                 {loading ? "Processing..." : "Complete Booking"}
               </button>
