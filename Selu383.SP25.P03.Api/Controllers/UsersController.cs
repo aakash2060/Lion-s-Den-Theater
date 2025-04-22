@@ -83,7 +83,7 @@ namespace Selu383.SP25.P03.Api.Controllers
                 return BadRequest(result.Errors);
             }
 
-            var subject = "Email Confirmation Request";
+            var subject = "Welcome to Lion's Den Theaters";
             var body = $@"
                         <div style='font-family:Segoe UI, sans-serif; background-color:#fff8f0; padding:20px; border-radius:10px; border:1px solid #ffe0b3; max-width:500px; margin:auto;'>
                             <h2 style='color:#c0392b;'>🎟️ Welcome to Lion's Den Theaters</h2>

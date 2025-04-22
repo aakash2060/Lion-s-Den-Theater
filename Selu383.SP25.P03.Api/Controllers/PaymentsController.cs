@@ -33,7 +33,7 @@ public class PaymentsController : ControllerBase
                 Quantity = 1,
             }).ToList(),
             Mode = "payment",
-            SuccessUrl = $"{Request.Scheme}://{Request.Host}/success?session_id={{CHECKOUT_SESSION_ID}}",
+            SuccessUrl = $"{Request.Scheme}://{Request.Host}/thankyou",
             CancelUrl = $"{Request.Scheme}://{Request.Host}/cancel",
         };
 

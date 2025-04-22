@@ -260,8 +260,22 @@ namespace Selu383.SP25.P03.Api.Controllers
                     await signInManager.SignInAsync(guestUser, isPersistent: false);
                     user = guestUser;
 
-                    // Assign userId directly from guestUser
-                    userId = guestUser.Id;  // Fix: use guestUser.Id directly instead of user.Id
+                    userId = guestUser.Id;
+
+                    var subject = "Welcome to Lion's Den Theaters";
+                    var body = $@"
+                            <div style='font-family:Segoe UI, sans-serif; background-color:#fff8f0; padding:20px; border-radius:10px; border:1px solid #ffe0b3; max-width:500px; margin:auto;'>
+                                <h2 style='color:#c0392b;'>🎟️ Welcome to Lion's Den Theaters</h2>
+                                <p style='font-size:16px; color:#333;'>Dear {guestUser.FirstName},</p>
+                                <p style='font-size:16px; color:#333;'>We're absolutely thrilled to have you join our community of movie lovers! 🎉</p>
+                                <p style='font-size:16px; color:#333;'>Get ready to enjoy the magic of cinema, special treats, and unforgettable moments.</p>
+                                <p style='font-size:16px; color:#333;'>Your Guest Account Username is {guestUser.UserName}</p>
+                                <p style='font-size:16px; color:#333;'>Warm regards,</p>
+                                <p style='font-weight:bold; color:#c0392b;'>The Lion's Den Team 🦁</p>
+                            </div>";
+
+                    var message = new Message(new[] { user.Email }, subject, body);
+                    await emailSender.SendEmailAsync(message);
                 }
 
                 var showtime = await showtimes
@@ -320,21 +334,6 @@ namespace Selu383.SP25.P03.Api.Controllers
 
                 if (!string.IsNullOrEmpty(user?.Email))
                 {
-                    var subject1 = "Email Confirmation Request";
-                    var body1 = $@"
-                <div style='font-family:Segoe UI, sans-serif; background-color:#fff8f0; padding:20px; border-radius:10px; border:1px solid #ffe0b3; max-width:500px; margin:auto;'>
-                    <h2 style='color:#c0392b;'>🎟️ Welcome to Lion's Den Theaters</h2>
-                    <p style='font-size:16px; color:#333;'>Dear {user.FirstName},</p>
-                    <p style='font-size:16px; color:#333;'>We're absolutely thrilled to have you join our community of movie lovers! 🎉</p>
-                    <p style='font-size:16px; color:#333;'>Get ready to enjoy the magic of cinema, special treats, and unforgettable moments.</p>
-                    <p style='font-size:16px; color:#333;'>Your Guest Account Username is {user.UserName}</p>
-                    <p style='font-size:16px; color:#333;'>Warm regards,</p>
-                    <p style='font-weight:bold; color:#c0392b;'>The Lion's Den Team 🦁</p>
-                </div>";
-
-                    var message1 = new Message(new[] { user.Email }, subject1, body1);
-                    await emailSender.SendEmailAsync(message1);
-
                     var emailBody = $@"
                  <div style='font-family:Segoe UI, sans-serif; padding:20px; color:#333; background-color:#f4f4f4; border-radius:8px; max-width:600px; margin:auto;'>
                      <div style='background-color:#d35400; color:white; text-align:center; padding:20px; border-top-left-radius:8px; border-top-right-radius:8px;'>
@@ -365,8 +364,8 @@ namespace Selu383.SP25.P03.Api.Controllers
                      </div>
                  </div>";
 
-                    var message2 = new Message(new[] { user.Email }, "🎟️ Your Lion's Den Ticket Confirmation", emailBody);
-                    await emailSender.SendEmailAsync(message2);
+                    var message = new Message(new[] { user.Email }, "🎟️ Your Lion's Den Ticket Confirmation", emailBody);
+                    await emailSender.SendEmailAsync(message);
                 }
 
                 var resultDto = new TicketDto
