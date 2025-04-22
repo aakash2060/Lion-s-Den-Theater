@@ -16,7 +16,7 @@ namespace Selu383.SP25.P03.Api.Features.Cart
     {
         public int Id { get; set; }
         public int ShowtimeId { get; set; }
-        public string ShowtimeDetails { get; set; }
+        public ShowtimeDetailDto ShowtimeDetails { get; set; }
         public int Quantity { get; set; }
         public decimal TotalPrice { get; set; }
     }

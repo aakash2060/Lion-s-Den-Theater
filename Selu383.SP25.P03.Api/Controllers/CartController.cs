@@ -29,6 +29,11 @@ namespace Selu383.SP25.P03.Api.Controllers
             var cart = await _context.Carts
                 .Include(c => c.Items)
                     .ThenInclude(i => i.Showtime)
+                    .ThenInclude(s => s.Movie)
+                .Include(c => c.Items)
+                    .ThenInclude(i => i.Showtime)
+                    .ThenInclude(s => s.Hall)
+                    .ThenInclude(h => h.Theater)
                 .Include(c => c.FoodItems)
                     .ThenInclude(f => f.FoodItem)
                 .FirstOrDefaultAsync(c => c.UserId == userId);
@@ -49,7 +54,15 @@ namespace Selu383.SP25.P03.Api.Controllers
                 {
                     Id = i.Id,
                     ShowtimeId = i.ShowtimeId,
-                    ShowtimeDetails = FormatShowtimeDetails(i.Showtime),
+                    ShowtimeDetails = new ShowtimeDetailDto
+                    {
+                        MovieTitle = i.Showtime.Movie.Title,
+                        MoviePoster = i.Showtime.Movie.PosterUrl,
+                        StartTime = i.Showtime.StartTime,
+                        Is3D = i.Showtime.Is3D,
+                        TheaterName = i.Showtime.Hall.Theater.Name,
+                        HallNumber = i.Showtime.Hall.HallNumber
+                    },
                     Quantity = i.Quantity,
                     TotalPrice = i.TotalPrice
                 }).ToList(),

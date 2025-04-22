@@ -4,14 +4,12 @@ import { movieService } from "../services/api";
 import { showtimeService } from "../services/ShowtimeApi";
 import { ticketService } from '../services/TicketApi'; 
 import { useTheater } from "../context/TheaterContext";
-import { useAuth } from "../context/AuthContext";
 import { Showtime, ShowtimeDetail } from "../Data/ShowtimeInterfaces";
 import { motion } from "framer-motion";
 
 const ShowtimesPage = () => {
   const { movieId } = useParams<{ movieId: string }>();
   const { theater } = useTheater();
-  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const [movie, setMovie] = useState<any>(null);
@@ -21,10 +19,7 @@ const ShowtimesPage = () => {
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [bookedSeats, setBookedSeats] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [bookingInProgress, setBookingInProgress] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [email,] = useState("");
-  const [, setShowEmailInput] = useState(false);
 
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -147,50 +142,15 @@ const ShowtimesPage = () => {
     );
   };
 
-  const handleBookingConfirm = async () => {
+  const handleBookingConfirm = () => {
     if (selectedSeats.length === 0 || !selectedShowtime) return;
-    if (!isAuthenticated) {
-      setShowEmailInput(true);
-      return;
-    }
-    await processBooking();
-  };
-
-  const processBooking = async () => {
-    if (selectedSeats.length === 0 || !selectedShowtime) return;
-
-    try {
-      setBookingInProgress(true);
-      setError(null);
-
-      const bookingPromises = selectedSeats.map(seatNumber =>
-        ticketService.purchaseTicket({
-          showtimeId: selectedShowtime.id,
-          seatNumber: seatNumber,
-          ticketType: 'Standard',
-          email: email || undefined
-        })
-      );
-
-      const responses = await Promise.all(bookingPromises);
-      const tickets = responses.map(response => response);
-
-      navigate('/orders', {
-        state: {
-          tickets,
-          showtime: selectedShowtime,
-          selectedSeats,
-          totalPrice: selectedSeats.length * selectedShowtime.price
-        }
-      });
-    } catch (err: any) {
-      console.error("Booking error:", err);
-      const errorMessage = err.response?.data || "Failed to complete booking. Please try again.";
-      setError(errorMessage);
-    } finally {
-      setBookingInProgress(false);
-      setShowEmailInput(false);
-    }
+    navigate('/orders', {
+      state: {
+        selectedSeats,
+        showtime: selectedShowtime,
+        totalPrice: selectedSeats.length * selectedShowtime.price
+      }
+    });
   };
 
   const renderSeatGrid = () => {
@@ -326,9 +286,9 @@ const ShowtimesPage = () => {
             <button
               onClick={handleBookingConfirm}
               className="mt-4 px-6 py-2 bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
-              disabled={selectedSeats.length === 0 || bookingInProgress}
+              disabled={selectedSeats.length === 0}
             >
-              {bookingInProgress ? "Processing..." : "Confirm Booking"}
+              Continue to Order Summary
             </button>
           </div>
         </div>

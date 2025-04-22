@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { FaTrashAlt, FaPlus, FaMinus } from "react-icons/fa";
+import { FaTrashAlt } from "react-icons/fa";
 import { cartService } from "../services/CartApi";
 import { CartDto, CartItemDto, FoodCartItemDto } from "../Data/CartInterfaces";
 import { useAuth } from "../context/AuthContext";
+
 
 const CartPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,6 +18,26 @@ const CartPage: React.FC = () => {
   const userIdFromQuery = searchParams.get('userId');
   const userId = userIdFromQuery ? parseInt(userIdFromQuery) : (user ? user.id : null);
 
+  const formatDateTime = (isoString: string): string => {
+    if (!isoString || isoString.startsWith('0001-01-01')) return '';
+    
+    try {
+      const date = new Date(isoString);
+      if (isNaN(date.getTime())) return '';
+      
+      // Format: "Apr 26, 3:00 PM"
+      return date.toLocaleString('en-US', { 
+        month: 'short', 
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true 
+      });
+    } catch (error) {
+      return '';
+    }
+  };
+  
   useEffect(() => {
     if (!isAuthenticated && !userIdFromQuery) {
       navigate('/login', { state: { returnUrl: location.pathname } });
@@ -106,34 +127,6 @@ const CartPage: React.FC = () => {
     }
   };
 
-  const handleUpdateCartItemQuantity = async (cartItemId: number, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      handleRemoveItem(cartItemId);
-      return;
-    }
-
-    if (!userId) {
-      setError("User ID is missing. Please log in.");
-      return;
-    }
-
-    try {
-      const newLoadingState = {...itemsLoading};
-      newLoadingState[`ticket-${cartItemId}`] = true;
-      setItemsLoading(newLoadingState);
-      
-      const updatedCart = await cartService.updateCartItemQuantity(userId, cartItemId, newQuantity);
-      setCart(updatedCart);
-    } catch (err) {
-      console.error("Error updating quantity:", err);
-      setError("Failed to update item quantity.");
-    } finally {
-      const newLoadingState = {...itemsLoading};
-      newLoadingState[`ticket-${cartItemId}`] = false;
-      setItemsLoading(newLoadingState);
-    }
-  };
-
   const handleClearCart = async () => {
     if (!userId) {
       setError("User ID is missing. Please log in.");
@@ -187,7 +180,7 @@ const CartPage: React.FC = () => {
           <div className="text-center py-10 bg-gray-900 rounded-xl">
             <p className="text-gray-500 text-xl mb-4">Your cart is empty.</p>
             <button 
-              onClick={() => navigate("/home")} 
+              onClick={() => navigate("/")} 
               className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-md font-semibold"
             >
               Continue Shopping
@@ -203,24 +196,22 @@ const CartPage: React.FC = () => {
                   <div key={`ticket-${idx}`} className="bg-gray-900 rounded-xl shadow-lg p-6 space-y-2 mb-6 hover:shadow-xl transition-shadow duration-200">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-white">{item.showtimeDetails}</h3>
-                        <div className="flex items-center mt-2">
-                          <button 
-                            onClick={() => handleUpdateCartItemQuantity(item.id, item.quantity - 1)}
-                            className="bg-gray-700 hover:bg-gray-600 text-white p-1 rounded-lg"
-                            disabled={itemsLoading[`ticket-${item.id}`]}
-                          >
-                            <FaMinus className="w-4 h-4" />
-                          </button>
-                          <span className="mx-3 min-w-8 text-center">{item.quantity}</span>
-                          <button 
-                            onClick={() => handleUpdateCartItemQuantity(item.id, item.quantity + 1)}
-                            className="bg-gray-700 hover:bg-gray-600 text-white p-1 rounded-lg"
-                            disabled={itemsLoading[`ticket-${item.id}`]}
-                          >
-                            <FaPlus className="w-4 h-4" />
-                          </button>
-                        </div>
+                      <div className="flex items-center space-x-4">
+              {item.showtimeDetails.moviePoster && (
+                <img
+                  src={item.showtimeDetails.moviePoster}
+                  alt={item.showtimeDetails.movieTitle}
+                  className="w-20 h-28 object-cover rounded-lg"
+                />
+              )}
+              <div>
+                <h3 className="text-xl font-bold">{item.showtimeDetails.movieTitle}</h3>
+                {/* Rendering showtime details (fix this to access specific properties) */}
+                <p className="text-sm text-gray-400">
+                  {formatDateTime(item.showtimeDetails?.startTime)} 
+                </p>
+              </div>
+            </div>
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-bold">${item.totalPrice.toFixed(2)}</p>
