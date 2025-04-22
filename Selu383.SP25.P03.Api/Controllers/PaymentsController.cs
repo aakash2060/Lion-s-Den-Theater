@@ -28,7 +28,7 @@ public class PaymentsController : ControllerBase
                     {
                         Name = service.Name,
                     },
-                    UnitAmount = service.Price * 100,
+                    UnitAmount = service.Price ,
                 },
                 Quantity = 1,
             }).ToList(),
