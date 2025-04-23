@@ -2,6 +2,11 @@ import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useBooking } from '@/context/BookingContext';
+import {
+  initPaymentSheet,
+  presentPaymentSheet,
+} from '@stripe/stripe-react-native';
+import { BASE_URL } from "@/constants/baseUrl";
 
 export default function CartScreen() {
   const router = useRouter();
@@ -20,13 +25,58 @@ export default function CartScreen() {
   const foodTotal = foodItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const total = seatTotal + foodTotal;
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (selectedSeats.length === 0) {
       Alert.alert("No seats selected", "Please select at least one seat before checkout.");
       return;
     }
-    Alert.alert("Proceeding to Payment", "This would navigate to payment processing.");
+  
+    try {
+      // 1. Request a payment intent from backend
+      const response = await fetch(`${BASE_URL}/api/payments/create-payment-intent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: Math.round(total * 100) }),
+      });
+      
+      
+  
+      const { clientSecret } = await response.json();
+  
+      if (!clientSecret) {
+        Alert.alert("Error", "Failed to get payment client secret.");
+        return;
+      }
+  
+      // 2. Initialize Stripe payment sheet
+      const initSheet = await initPaymentSheet({
+        paymentIntentClientSecret: clientSecret,
+        merchantDisplayName: "Lion's Den Theater",
+      });
+      
+      
+  
+      if (initSheet.error) {
+        Alert.alert("Error", initSheet.error.message);
+        return;
+      }
+  
+      // 3. Show Stripe payment sheet
+      const paymentResult = await presentPaymentSheet();
+  
+      if (paymentResult.error) {
+        Alert.alert("Payment failed", paymentResult.error.message);
+      } else {
+        Alert.alert("Success", "Payment complete!");
+        clearCart(); // optionally clear cart
+        router.push('/'); // or wherever you want to go after payment
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Something went wrong with payment.");
+    }
   };
+  
 
   const navigateToFoodMenu = () => {
     router.push('/(tabs)/foods');
