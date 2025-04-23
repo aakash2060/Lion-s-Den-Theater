@@ -78,6 +78,12 @@ namespace Selu383.SP25.P03.Api.Controllers
                 .ToListAsync();
             return Ok(result);
         }
+        private static DateTime ConvertToLocalTime(DateTime utcTime)
+        {
+            var centralTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time");
+
+            return TimeZoneInfo.ConvertTimeFromUtc(utcTime, centralTimeZone);
+        }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ShowtimeDetailDto>> GetShowtimeById(int id)
@@ -104,9 +110,9 @@ namespace Selu383.SP25.P03.Api.Controllers
                 HallId = showtime.HallId,
                 HallNumber = showtime.Hall.HallNumber,
                 TheaterId = showtime.Hall.TheaterId,
-                TheaterName = showtime.Hall.Theater.Name, 
-                StartTime = showtime.StartTime,
-                EndTime = showtime.EndTime,
+                TheaterName = showtime.Hall.Theater.Name,
+                StartTime = ConvertToLocalTime(showtime.StartTime),
+                EndTime = ConvertToLocalTime(showtime.EndTime),
                 Price = showtime.TicketPrice,
                 Is3D = showtime.Is3D,
                 TotalSeats = showtime.Hall.Capacity,
@@ -188,9 +194,9 @@ namespace Selu383.SP25.P03.Api.Controllers
                 HallId = showtime.HallId,
                 HallNumber = hall.HallNumber,
                 TheaterId = hall.TheaterId,
-                TheaterName = hall.Theater.Name, 
-                StartTime = showtime.StartTime,
-                EndTime = showtime.EndTime,
+                TheaterName = hall.Theater.Name,
+                StartTime = ConvertToLocalTime(showtime.StartTime),
+                EndTime = ConvertToLocalTime(showtime.EndTime),
                 Price = showtime.TicketPrice,
                 Is3D = showtime.Is3D,
                 AvailableSeats = hall.Capacity
@@ -262,9 +268,9 @@ namespace Selu383.SP25.P03.Api.Controllers
                 HallId = showtime.HallId,
                 HallNumber = showtime.Hall.HallNumber,
                 TheaterId = showtime.Hall.TheaterId,
-                TheaterName = showtime.Hall.Theater.Name, 
-                StartTime = showtime.StartTime,
-                EndTime = showtime.EndTime,
+                TheaterName = showtime.Hall.Theater.Name,
+                StartTime = ConvertToLocalTime(showtime.StartTime),
+                EndTime = ConvertToLocalTime(showtime.EndTime),
                 Price = showtime.TicketPrice,
                 Is3D = showtime.Is3D,
                 AvailableSeats = showtime.Hall.Capacity - await tickets.CountAsync(t => t.ShowtimeId == showtime.Id)
@@ -310,6 +316,7 @@ namespace Selu383.SP25.P03.Api.Controllers
             return Ok();
         }
 
+
         private bool IsInvalid(CreateShowtimeDto dto)
         {
             return dto.MovieId <= 0 ||
@@ -332,9 +339,9 @@ namespace Selu383.SP25.P03.Api.Controllers
                     HallId = s.HallId,
                     HallNumber = s.Hall.HallNumber,
                     TheaterId = s.Hall.TheaterId,
-                    TheaterName = s.Hall.Theater.Name, 
-                    StartTime = s.StartTime,
-                    EndTime = s.EndTime,
+                    TheaterName = s.Hall.Theater.Name,
+                    StartTime = ConvertToLocalTime(s.StartTime),
+                    EndTime = ConvertToLocalTime(s.EndTime),
                     Price = s.TicketPrice,
                     Is3D = s.Is3D,
                     AvailableSeats = s.Hall.Capacity - tickets.Count(t => t.ShowtimeId == s.Id)
