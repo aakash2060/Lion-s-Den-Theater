@@ -27,12 +27,13 @@ import ShowtimesPage from "./pages/ShowtimesPage";
 import TheatersPage from "./pages/TheatersPage";
 import SiteStats from "./pages/Admin/Graph/SiteStats";
 import Payment from "./pages/Payment";
+
+
 import "./index.css";
+import TicketConfirmation from "./pages/OrderSummary";
 import CartPage from "./pages/CartPage";
-import OrderSummary from "./pages/OrderSummary";
 import ThankYouPage from "./pages/ThankYouPage";
 import ReviewsPage from "./pages/ReviewsPage";
-
 
 const App = () => {
   return (
@@ -58,7 +59,7 @@ const App = () => {
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/showtimes/:movieId" element={<ShowtimesPage />} />
                     <Route path="/theaters" element={<TheatersPage />} />
-                    <Route path="/orders" element={<OrderSummary/>} />
+                    <Route path="/confirmation" element={<TicketConfirmation />} />
                     <Route path="/cart" element={<CartPage />}/>
                     <Route path="/payment" element={<Payment />}/>
                     <Route path="/thankyou" element={<ThankYouPage />} />

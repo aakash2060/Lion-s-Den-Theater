@@ -5,10 +5,6 @@ import { ShowtimeDetail } from "../Data/ShowtimeInterfaces";
 import { FoodItem } from "../Data/FoodItem";
 import { fetchFoodMenus } from "../services/FoodApi";
 import { CheckCircle, ArrowRightCircle } from "lucide-react";
-import { cartService } from "../services/CartApi";
-import { useAuth } from "../context/AuthContext";
-import { AddCartItemDto, AddFoodCartItemDto } from "../Data/CartInterfaces";
-
 
 interface LocationState {
   showtime: ShowtimeDetail;
@@ -20,30 +16,16 @@ interface CartItem {
   foodItem: FoodItem;
   quantity: number;
 }
-interface FoodMenuItem {
-  foodItem: FoodItem;
-  foodMenuId?: number;
-}
 
 const OrderSummary: React.FC = () => {
-
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
   const { showtime, selectedSeats, totalPrice } = location.state as LocationState || {};
 
   const [cart, setCart] = useState<{ [key: string]: CartItem }>({});
   const [menus, setMenus] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
-  const [addingToCart, setAddingToCart] = useState<boolean>(false);
-
-
-  // useEffect(() => {
-  //   if (!isAuthenticated) {
-  //     navigate('/login', { state: { returnUrl: location.pathname } });
-  //   }
-  // }, [isAuthenticated, navigate, location.pathname]);
 
   useEffect(() => {
     const getFoodMenus = async () => {
@@ -61,28 +43,28 @@ const OrderSummary: React.FC = () => {
 
   const handleAddFood = (foodItem: FoodItem) => {
     setCart((prevCart) => {
-      const existingItem = prevCart[foodItem.id.toString()];
+      const existingItem = prevCart[foodItem.id];
       if (existingItem) {
         return {
           ...prevCart,
-          [foodItem.id.toString()]: { foodItem, quantity: existingItem.quantity + 1 }
+          [foodItem.id]: { foodItem, quantity: existingItem.quantity + 1 }
         };
       }
-      return { ...prevCart, [foodItem.id.toString()]: { foodItem, quantity: 1 } };
+      return { ...prevCart, [foodItem.id]: { foodItem, quantity: 1 } };
     });
   };
 
   const handleRemoveFood = (foodItem: FoodItem) => {
     setCart((prevCart) => {
-      const existingItem = prevCart[foodItem.id.toString()];
+      const existingItem = prevCart[foodItem.id];
       if (existingItem && existingItem.quantity > 1) {
         return {
           ...prevCart,
-          [foodItem.id.toString()]: { foodItem, quantity: existingItem.quantity - 1 }
+          [foodItem.id]: { foodItem, quantity: existingItem.quantity - 1 }
         };
       }
       const updatedCart = { ...prevCart };
-      delete updatedCart[foodItem.id.toString()];
+      delete updatedCart[foodItem.id];
       return updatedCart;
     });
   };
@@ -95,50 +77,32 @@ const OrderSummary: React.FC = () => {
     return total;
   };
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = () => {
+    const currentCart = {
+      selectedSeats,
+      showtime,
+      foodCart: cart,
+      totalPrice: calculateTotalWithFood(),
+    };
 
-    if (!isAuthenticated || !user) {
-      navigate('/login', { state: { returnUrl: location.pathname, locationState: location.state } });
-      return;
+    // Retrieve existing cart data from localStorage and ensure it's an array
+    let existingCart = JSON.parse(localStorage.getItem("orderCart") || "[]");
+
+    // Ensure that existingCart is an array
+    if (!Array.isArray(existingCart)) {
+      console.warn("Invalid cart data in localStorage, resetting cart.");
+      existingCart = []; // Reset to an empty array if not valid
     }
 
-    try {
-      setAddingToCart(true);
-      setError("");
+    // Add the new cart to the existing array
+    const updatedCart = [...existingCart, currentCart];
+    console.log("Updated Cart:", updatedCart); // Debugging to ensure it looks correct
 
-      // Create the showtime cart item
-      const showtimeCartItem: AddCartItemDto = {
-        showtimeId: showtime.id,
-        quantity: selectedSeats.length,
-        selectedSeats: selectedSeats, 
-        hallNumber: showtime.hallNumber 
-      };
+    // Store the updated cart back into localStorage
+    localStorage.setItem("orderCart", JSON.stringify(updatedCart));
 
-      // Add showtime to cart first
-      await cartService.addToCart(user.id, showtimeCartItem);
-
-      // Then add all food items
-      const foodPromises = Object.values(cart).map(cartItem => {
-        if (cartItem.quantity > 0) {
-          const foodCartItem: AddFoodCartItemDto = {
-            foodItemId: cartItem.foodItem.id,
-            quantity: cartItem.quantity
-          };
-          return cartService.addFoodToCart(user.id, foodCartItem);
-        }
-        return Promise.resolve();
-      });
-
-      await Promise.all(foodPromises.filter(Boolean));
-
-      // Navigate to the cart page
-      navigate(`/cart?userId=${user.id}`);
-    } catch (error) {
-      console.error("Failed to add items to cart:", error);
-      setError("Failed to add items to cart. Please try again.");
-    } finally {
-      setAddingToCart(false);
-    }
+    // Navigate to the cart page
+    navigate("/cart");
   };
 
   if (loading) return <div className="text-center text-white text-xl py-20">Loading...</div>;
@@ -233,32 +197,20 @@ const OrderSummary: React.FC = () => {
         {menus.map((menu) => (
           <div key={menu.id} className="mb-6">
             <h4 className="text-lg font-semibold text-center text-white bg-gradient-to-r from-red-600 to-purple-600 inline-block px-4 py-1 rounded-full mb-4">{menu.name}</h4>
-            {menu.foodMenuItems.map((menuItem: FoodMenuItem) => (
-              <div key={menuItem.foodItem.id} className="flex items-center justify-between p-4 bg-gray-700 rounded-lg shadow-md mb-4">
+            {menu.foodMenuItems.map((item: any) => (
+              <div key={item.foodItem.id} className="flex items-center justify-between p-4 bg-gray-700 rounded-lg shadow-md mb-4">
                 <div className="flex items-center">
-                  <img src={menuItem.foodItem.imgUrl} alt={menuItem.foodItem.name} className="w-16 h-16 object-cover rounded-lg mr-4" />
+                  <img src={item.foodItem.imgUrl} alt={item.foodItem.name} className="w-16 h-16 object-cover rounded-lg mr-4" />
                   <div>
-                    <p className="text-lg font-semibold">{menuItem.foodItem.name}</p>
-                    <p className="text-sm text-gray-400">{menuItem.foodItem.description}</p>
-                    <p className="text-base font-bold text-red-400">${menuItem.foodItem.price.toFixed(2)}</p>
+                    <p className="text-lg font-semibold">{item.foodItem.name}</p>
+                    <p className="text-sm text-gray-400">{item.foodItem.description}</p>
+                    <p className="text-base font-bold text-red-400">${item.foodItem.price}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <button 
-                    onClick={() => handleRemoveFood(menuItem.foodItem)} 
-                    className="bg-red-600 text-white px-3 py-1 rounded-full"
-                    disabled={addingToCart || !cart[menuItem.foodItem.id.toString()]}
-                  >
-                    –
-                  </button>
-                  <span className="text-lg font-semibold">{cart[menuItem.foodItem.id.toString()]?.quantity || 0}</span>
-                  <button 
-                    onClick={() => handleAddFood(menuItem.foodItem)} 
-                    className="bg-green-600 text-white px-3 py-1 rounded-full"
-                    disabled={addingToCart}
-                  >
-                    +
-                  </button>
+                  <button onClick={() => handleRemoveFood(item.foodItem)} className="bg-red-600 text-white px-3 py-1 rounded-full">–</button>
+                  <span className="text-lg font-semibold">{cart[item.foodItem.id]?.quantity || 0}</span>
+                  <button onClick={() => handleAddFood(item.foodItem)} className="bg-green-600 text-white px-3 py-1 rounded-full">+</button>
                 </div>
               </div>
             ))}

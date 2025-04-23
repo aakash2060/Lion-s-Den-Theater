@@ -55,7 +55,7 @@ namespace Selu383.SP25.P03.Api.Data
                         var movieHalls = theaterHalls.OrderBy(h => random.Next()).Take(random.Next(1, 3)).ToList();
 
                         // For the next 7 days
-                        for (int day = 0; day < 30; day++)
+                        for (int day = 0; day < 7; day++)
                         {
                             var date = DateTime.Now.Date.AddDays(day);
 

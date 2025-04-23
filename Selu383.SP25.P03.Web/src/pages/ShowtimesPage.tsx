@@ -144,8 +144,7 @@ const ShowtimesPage = () => {
 
   const handleBookingConfirm = () => {
     if (selectedSeats.length === 0 || !selectedShowtime) return;
-
-    navigate('/orders', {
+    navigate('/confirmation', {
       state: {
         selectedSeats,
         showtime: selectedShowtime,
