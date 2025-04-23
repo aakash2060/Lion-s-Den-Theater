@@ -13,11 +13,14 @@ export interface CartDto {
     showtimeDetails: ShowtimeDetail;
     quantity: number;
     totalPrice: number;
+    selectedSeats: string;
   }
   
   export interface AddCartItemDto {
     showtimeId: number;
     quantity: number;
+    selectedSeats: string[]; 
+    hallNumber: number; 
   }
   export interface FoodCartItemDto {
     id: number;
@@ -28,10 +31,6 @@ export interface CartDto {
     quantity: number;
     unitPrice: number;
     totalPrice: number;
-  }
-  export interface AddCartItemDto {
-    showtimeId: number;
-    quantity: number;
   }
   
   export interface AddFoodCartItemDto {

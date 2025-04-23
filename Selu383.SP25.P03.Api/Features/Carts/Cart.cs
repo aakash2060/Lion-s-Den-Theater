@@ -19,6 +19,8 @@ namespace Selu383.SP25.P03.Api.Features.Cart
         [Required] public int Quantity { get; set; }
         [Required] public decimal TotalPrice { get; set; }
         public Showtime Showtime { get; set; }
+        public string SelectedSeats { get; set; }
+        public int HallNumber { get; set; }
     }
     public class FoodCartItem
     {

@@ -109,7 +109,9 @@ const OrderSummary: React.FC = () => {
       // Create the showtime cart item
       const showtimeCartItem: AddCartItemDto = {
         showtimeId: showtime.id,
-        quantity: selectedSeats.length
+        quantity: selectedSeats.length,
+        selectedSeats: selectedSeats, 
+        hallNumber: showtime.hallNumber 
       };
 
       // Add showtime to cart first

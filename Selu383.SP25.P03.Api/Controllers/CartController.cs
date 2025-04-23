@@ -64,7 +64,8 @@ namespace Selu383.SP25.P03.Api.Controllers
                         HallNumber = i.Showtime.Hall.HallNumber
                     },
                     Quantity = i.Quantity,
-                    TotalPrice = i.TotalPrice
+                    TotalPrice = i.TotalPrice,
+                    SelectedSeats = i.SelectedSeats, // Use the SelectedSeats array directly
                 }).ToList(),
                 FoodItems = cart.FoodItems.Select(f => new FoodCartItemDto
                 {
@@ -114,7 +115,9 @@ namespace Selu383.SP25.P03.Api.Controllers
                 {
                     ShowtimeId = addCartItemDto.ShowtimeId,
                     Quantity = addCartItemDto.Quantity,
-                    TotalPrice = ticketPrice * addCartItemDto.Quantity
+                    TotalPrice = ticketPrice * addCartItemDto.Quantity,
+                    SelectedSeats = string.Join(",", addCartItemDto.SelectedSeats),
+                    HallNumber = addCartItemDto.HallNumber
                 };
 
                 cart.Items.Add(cartItem);

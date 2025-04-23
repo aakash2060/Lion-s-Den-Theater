@@ -210,6 +210,12 @@ const CartPage: React.FC = () => {
                 <p className="text-sm text-gray-400">
                   {formatDateTime(item.showtimeDetails?.startTime)} 
                 </p>
+                <p className="text-sm text-gray-400">
+  Hall: <span className="text-yellow-400 font-semibold">{item.showtimeDetails.hallNumber}</span>
+</p>
+<p className="text-sm text-gray-400">
+  Seats: <span className="text-yellow-400 font-semibold">{item.selectedSeats}</span>
+</p>
               </div>
             </div>
                       </div>

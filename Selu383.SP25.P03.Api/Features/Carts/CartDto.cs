@@ -19,12 +19,16 @@ namespace Selu383.SP25.P03.Api.Features.Cart
         public ShowtimeDetailDto ShowtimeDetails { get; set; }
         public int Quantity { get; set; }
         public decimal TotalPrice { get; set; }
+        public string SelectedSeats { get; internal set; }
     }
 
     public class AddCartItemDto
     {
         public int ShowtimeId { get; set; }
         public int Quantity { get; set; }
+        public List<string> SelectedSeats { get; set; }
+        public int HallNumber { get; set; }
+
     }
     public class UpdateCartItemDto
     {
