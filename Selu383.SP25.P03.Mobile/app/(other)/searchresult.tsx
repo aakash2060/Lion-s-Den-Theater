@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, FlatList, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, ActivityIndicator, SafeAreaView } from "react-native";
 import axios from "axios";
 import { useSearch } from "@/context/SearchContext";
 import { BASE_URL } from "@/constants/baseUrl";
@@ -44,7 +44,8 @@ const SearchResult = () => {
   }, [query]);
 
   return (
-    <View className="flex-1 bg-black px-4 py-6">
+    <SafeAreaView className="flex-1 bg-black px-4 py-12">
+    <View >
       <Text className="text-white text-xl font-bold mb-4">
         Search Results for "{query}"
       </Text>
@@ -91,6 +92,7 @@ const SearchResult = () => {
         />
       )}
     </View>
+    </SafeAreaView>
   );
 };
 
