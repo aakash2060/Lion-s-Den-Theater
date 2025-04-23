@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using EmailService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,13 +23,17 @@ namespace Selu383.SP25.P03.Api.Controllers
         private readonly DbSet<Showtime> showtimes;
         private readonly DataContext dataContext;
         private readonly UserManager<User> userManager;
+        private readonly EmailService.IEmailSender emailSender;
+        private readonly SignInManager<User> signInManager;
 
-        public TicketsController(DataContext dataContext, UserManager<User> userManager)
+        public TicketsController(DataContext dataContext, UserManager<User> userManager, EmailService.IEmailSender emailSender, SignInManager<User> signInManager)
         {
             this.dataContext = dataContext;
             tickets = dataContext.Set<Ticket>();
             showtimes = dataContext.Set<Showtime>();
             this.userManager = userManager;
+            this.emailSender = emailSender;
+            this.signInManager = signInManager;
         }
 
         // Helper method to get the current user ID
@@ -212,7 +217,6 @@ namespace Selu383.SP25.P03.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         public async Task<ActionResult<TicketDto>> PurchaseTicket(PurchaseTicketDto dto)
         {
             if (IsInvalid(dto))
@@ -220,33 +224,73 @@ namespace Selu383.SP25.P03.Api.Controllers
                 return BadRequest("Invalid ticket data");
             }
 
+            User user = null;
+
             try
             {
-                var userId = await GetCurrentUserId();
+                int userId;
 
-                // Check if showtime exists
+                if (User.Identity.IsAuthenticated)
+                {
+                    userId = await GetCurrentUserId();
+                    user = await userManager.FindByIdAsync(userId.ToString());
+                }
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
+                    {
+                        return BadRequest("Email and password are required for guest users.");
+                    }
+
+                    var guestUser = new User
+                    {
+                        UserName = $"guest{DateTime.UtcNow.Ticks}",
+                        Email = dto.Email,
+                        FirstName = "Guest",
+                        LastName = "User",
+                        EmailConfirmed = true
+                    };
+
+                    var result = await userManager.CreateAsync(guestUser, dto.Password);
+                    if (!result.Succeeded)
+                    {
+                        return BadRequest(result.Errors);
+                    }
+
+                    await signInManager.SignInAsync(guestUser, isPersistent: false);
+                    user = guestUser;
+
+                    userId = guestUser.Id;
+
+                    var subject = "Welcome to Lion's Den Theaters";
+                    var body = $@"
+                            <div style='font-family:Segoe UI, sans-serif; background-color:#fff8f0; padding:20px; border-radius:10px; border:1px solid #ffe0b3; max-width:500px; margin:auto;'>
+                                <h2 style='color:#c0392b;'>🎟️ Welcome to Lion's Den Theaters</h2>
+                                <p style='font-size:16px; color:#333;'>Dear {guestUser.FirstName},</p>
+                                <p style='font-size:16px; color:#333;'>We're absolutely thrilled to have you join our community of movie lovers! 🎉</p>
+                                <p style='font-size:16px; color:#333;'>Get ready to enjoy the magic of cinema, special treats, and unforgettable moments.</p>
+                                <p style='font-size:16px; color:#333;'>Your Guest Account Username is {guestUser.UserName}</p>
+                                <p style='font-size:16px; color:#333;'>Warm regards,</p>
+                                <p style='font-weight:bold; color:#c0392b;'>The Lion's Den Team 🦁</p>
+                            </div>";
+
+                    var message = new Message(new[] { user.Email }, subject, body);
+                    await emailSender.SendEmailAsync(message);
+                }
+
                 var showtime = await showtimes
                     .Include(s => s.Movie)
                     .Include(s => s.Hall)
                     .ThenInclude(h => h.Theater)
                     .FirstOrDefaultAsync(s => s.Id == dto.ShowtimeId);
 
-                if (showtime == null)
-                {
-                    return BadRequest("Showtime not found");
-                }
+                if (showtime == null) return BadRequest("Showtime not found");
 
-                // Check if showtime is in the past
-                if (showtime.StartTime < DateTime.UtcNow)
-                {
-                    return BadRequest("Cannot purchase tickets for past showtimes");
-                }
+                if (showtime.StartTime < DateTime.UtcNow) return BadRequest("Cannot purchase tickets for past showtimes");
 
-                // Check for available seats
                 var ticketCount = await tickets.CountAsync(t => t.ShowtimeId == dto.ShowtimeId);
                 if (ticketCount >= showtime.Hall.Capacity)
                 {
-                    // Update the IsSoldOut flag if needed
                     if (!showtime.IsSoldOut)
                     {
                         showtime.IsSoldOut = true;
@@ -255,7 +299,6 @@ namespace Selu383.SP25.P03.Api.Controllers
                     return BadRequest("This showtime is sold out");
                 }
 
-                // Check if seat is already taken
                 if (!string.IsNullOrEmpty(dto.SeatNumber))
                 {
                     var seatTaken = await tickets
@@ -267,13 +310,12 @@ namespace Selu383.SP25.P03.Api.Controllers
                     }
                 }
 
-                // Generate confirmation code
                 var confirmationNumber = GenerateConfirmationCode();
 
                 var ticket = new Ticket
                 {
                     ShowtimeId = dto.ShowtimeId,
-                    UserId = userId,
+                    UserId = user.Id,
                     PurchaseDate = DateTime.UtcNow,
                     SeatNumber = dto.SeatNumber,
                     Price = showtime.TicketPrice,
@@ -284,14 +326,49 @@ namespace Selu383.SP25.P03.Api.Controllers
                 tickets.Add(ticket);
                 await dataContext.SaveChangesAsync();
 
-                // Check if this was the last available seat
                 if (ticketCount + 1 >= showtime.Hall.Capacity && !showtime.IsSoldOut)
                 {
                     showtime.IsSoldOut = true;
                     await dataContext.SaveChangesAsync();
                 }
 
-                var result = new TicketDto
+                if (!string.IsNullOrEmpty(user?.Email))
+                {
+                    var emailBody = $@"
+                 <div style='font-family:Segoe UI, sans-serif; padding:20px; color:#333; background-color:#f4f4f4; border-radius:8px; max-width:600px; margin:auto;'>
+                     <div style='background-color:#d35400; color:white; text-align:center; padding:20px; border-top-left-radius:8px; border-top-right-radius:8px;'>
+                         <h2 style='margin:0; font-size:24px;'>🎟️ Your Ticket Confirmation</h2>
+                     </div>
+                     <div style='padding:20px; background-color:white; border-radius:8px; border:1px solid #ddd; box-shadow:0px 4px 8px rgba(0, 0, 0, 0.1);'>
+                         <p style='font-size:16px; color:#333;'>Hello <strong>{user.FirstName}</strong>,</p>
+                         <p style='font-size:16px; color:#333;'>Thank you for booking with <strong>Lion's Den Theaters 🦁</strong>!</p>
+
+                         <div style='border-top:1px solid #ddd; padding-top:10px;'>
+                             <p style='font-size:16px; color:#333;'><strong>Movie:</strong> {showtime.Movie.Title}</p>
+                             <p style='font-size:16px; color:#333;'><strong>Theater:</strong> {showtime.Hall.Theater.Name}</p>
+                             <p style='font-size:16px; color:#333;'><strong>Hall:</strong> {showtime.Hall.HallNumber}</p>
+                             <p style='font-size:16px; color:#333;'><strong>Seat:</strong> {ticket.SeatNumber}</p>
+                             <p style='font-size:16px; color:#333;'><strong>Date & Time:</strong> {showtime.StartTime:dddd, MMM dd yyyy, h:mm tt}</p>
+                             <p style='font-size:16px; color:#333;'><strong>Ticket Type:</strong> {ticket.TicketType}</p>
+                             <p style='font-size:16px; color:#333;'><strong>Price:</strong> ${ticket.Price:F2}</p>
+                             <p style='font-size:16px; color:#333;'><strong>Confirmation:</strong> {ticket.ConfirmationNumber}</p>
+                         </div>
+
+                         <div style='margin-top:20px; background-color:#f0f0f0; padding:10px; text-align:center; border-radius:6px;'>
+                             <p style='font-size:14px; color:#333;'>This email serves as your official ticket. Please present it at the entrance. 🍿</p>
+                         </div>
+                     </div>
+
+                     <div style='text-align:center; padding-top:20px;'>
+                         <p style='font-size:14px; color:#777;'>– The Lion’s Den Team</p>
+                     </div>
+                 </div>";
+
+                    var message = new Message(new[] { user.Email }, "🎟️ Your Lion's Den Ticket Confirmation", emailBody);
+                    await emailSender.SendEmailAsync(message);
+                }
+
+                var resultDto = new TicketDto
                 {
                     Id = ticket.Id,
                     ShowtimeId = ticket.ShowtimeId,
@@ -308,7 +385,7 @@ namespace Selu383.SP25.P03.Api.Controllers
                     ShowtimeStart = showtime.StartTime
                 };
 
-                return CreatedAtAction(nameof(GetTicket), new { id = result.Id }, result);
+                return CreatedAtAction(nameof(GetTicket), new { id = resultDto.Id }, resultDto);
             }
             catch (InvalidOperationException ex)
             {
@@ -587,5 +664,5 @@ namespace Selu383.SP25.P03.Api.Controllers
 
             return Ok(result);
         }
-        }
     }
+}
