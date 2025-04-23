@@ -33,7 +33,7 @@ import "./index.css";
 import TicketConfirmation from "./pages/OrderSummary";
 import CartPage from "./pages/CartPage";
 import ThankYouPage from "./pages/ThankYouPage";
-import ReviewsPage from "./pages/ReviewsPage";
+//import ReviewsPage from "./pages/ReviewsPage";
 
 const App = () => {
   return (
@@ -63,7 +63,6 @@ const App = () => {
                     <Route path="/cart" element={<CartPage />}/>
                     <Route path="/payment" element={<Payment />}/>
                     <Route path="/thankyou" element={<ThankYouPage />} />
-                    <Route path="/theaters/:id/reviews" element={<ReviewsPage />} />
                     
                     {/* Admin Routes */}
                     <Route path="/admin-dashboard" element={<AdminDashboard />} />
