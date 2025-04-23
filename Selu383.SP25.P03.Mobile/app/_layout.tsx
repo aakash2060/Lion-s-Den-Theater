@@ -9,6 +9,8 @@ import '../global.css'
 import { AuthProvider } from '@/context/AuthContext';
 import {SearchProvider} from '@/context/SearchContext';
 import {TheaterProvider} from '@/context/TheaterContext';
+import TheaterGuard from "@/components/TheaterGuard";
+import { BookingProvider } from '@/context/BookingContext';
 
 
 
@@ -36,8 +38,10 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <TheaterProvider>
+      <BookingProvider>
       <SearchProvider>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <TheaterGuard>  
    
       <Stack screenOptions={{headerShown:false}}>
         <Stack.Screen name="(tabs)" />
@@ -47,9 +51,12 @@ export default function RootLayout() {
         
 
       </Stack>
+      </TheaterGuard>  
       <StatusBar style="auto" />
+      
     </ThemeProvider>
     </SearchProvider>
+    </BookingProvider>
     </TheaterProvider>
     </AuthProvider>
   );

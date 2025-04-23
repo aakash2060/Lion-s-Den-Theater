@@ -30,5 +30,7 @@
         public int ShowtimeId { get; set; }
         public string SeatNumber { get; set; }
         public string TicketType { get; set; } = "Adult";
+        public string? Email { get; set; }
+        public string? Password { get; set; }
     }
 }

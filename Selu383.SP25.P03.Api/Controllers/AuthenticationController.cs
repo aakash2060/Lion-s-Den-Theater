@@ -27,14 +27,22 @@ namespace Selu383.SP25.P03.Api.Controllers
         [Route("login")]
         public async Task<ActionResult<UserDto>> Login([FromBody] LoginDto dto)
         {
-            var result = await signInManager.PasswordSignInAsync(dto.UserName, dto.Password, false, false);
+            var user = await userManager.FindByEmailAsync(dto.UserName);
+
+            if (user == null)
+            {
+                user = await userManager.FindByNameAsync(dto.UserName);
+            }
+
+            if (user == null)
+            {
+                return BadRequest("Invalid login attempt.");
+            }
+
+            var result = await signInManager.PasswordSignInAsync(user, dto.Password, false, false);
+            
             if (result.Succeeded)
             {
-                var user = await userManager.FindByNameAsync(dto.UserName);
-                if (user == null)
-                {
-                    return BadRequest();
-                }
                 return new UserDto
                 {
                     Id = user.Id,

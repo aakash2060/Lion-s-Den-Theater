@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FaTrashAlt } from "react-icons/fa";
+
 import { cartService } from "../services/CartApi";
 import { CartDto, CartItemDto, FoodCartItemDto } from "../Data/CartInterfaces";
 import { useAuth } from "../context/AuthContext";
+import { loadStripe } from "@stripe/stripe-js";
+
 
 
 const CartPage: React.FC = () => {
@@ -13,10 +16,14 @@ const CartPage: React.FC = () => {
   const [itemsLoading, setItemsLoading] = useState<{[key: string]: boolean}>({});
   const [error, setError] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestPassword, setGuestPassword] = useState("");
+  const [showGuestEmailInput, setShowGuestEmailInput] = useState(false);
   const { user, isAuthenticated } = useAuth();
 
   const userIdFromQuery = searchParams.get('userId');
   const userId = userIdFromQuery ? parseInt(userIdFromQuery) : (user ? user.id : null);
+
 
   const formatDateTime = (isoString: string): string => {
     if (!isoString || isoString.startsWith('0001-01-01')) return '';
@@ -39,6 +46,7 @@ const CartPage: React.FC = () => {
   };
   
   useEffect(() => {
+
     if (!isAuthenticated && !userIdFromQuery) {
       navigate('/login', { state: { returnUrl: location.pathname } });
     }
@@ -75,6 +83,7 @@ const CartPage: React.FC = () => {
 
   const getTicketsTotal = () => {
     return cart?.items.reduce((acc: number, item: CartItemDto) => acc + getItemTotal(item), 0) || 0;
+
   };
 
   const getCartTotal = () => {
@@ -127,14 +136,27 @@ const CartPage: React.FC = () => {
     }
   };
 
+
   const handleClearCart = async () => {
     if (!userId) {
       setError("User ID is missing. Please log in.");
+    }
+
+  const handleCheckout = async () => {
+    if (!isAuthenticated && (!guestEmail || !guestPassword)) {
+      setShowGuestEmailInput(true);
+      return;
+    }
+
+    if (!isAuthenticated && (!guestEmail.includes("@") || guestPassword.length < 6)) {
+      alert("Please enter a valid email and password (min 6 characters).");
+
       return;
     }
 
     try {
       setLoading(true);
+<
       await cartService.clearCart(userId);
       setCart({
         id: cart?.id || 0,
@@ -145,36 +167,86 @@ const CartPage: React.FC = () => {
     } catch (err) {
       console.error("Error clearing cart:", err);
       setError("Failed to clear cart.");
+
+      for (const order of cartList) {
+        const { showtime, selectedSeats } = order;
+
+        for (const seat of selectedSeats) {
+          const res = await fetch("/api/tickets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              showtimeId: showtime.id,
+              seatNumber: seat,
+              ticketType: "Standard",
+              email: isAuthenticated ? undefined : guestEmail,
+              password: isAuthenticated ? undefined : guestPassword,
+            }),
+          });
+
+          if (!res.ok) {
+            const errorMsg = await res.text();
+            throw new Error(`Failed to book seat ${seat}: ${errorMsg}`);
+          }
+        }
+      }
+
+      // Step 1: Flatten all ticket and food items
+      const services: any[] = [];
+
+      for (const order of cartList) {
+        const { showtime, selectedSeats, foodCart } = order;
+
+        // Add each ticket as a separate service
+        for (const seat of selectedSeats) {
+          services.push({
+            name: `${showtime.movieTitle} - Seat ${seat}`,
+            price: Math.round(showtime.price * 100)
+          });
+        }
+
+        // Add each food item
+        Object.values(foodCart || {}).forEach((foodItem: any) => {
+          services.push({
+            name: foodItem.foodItem.name,
+            price: Math.round(foodItem.foodItem.price * foodItem.quantity * 100),
+          });
+        });
+      }
+
+      if (services.length === 0) {
+        localStorage.removeItem("orderCart");
+        alert("Tickets booked successfully!");
+        navigate("/confirmation");
+        return;
+      }
+
+      const { publicKey } = await fetch("/api/payments/public-key").then((res) => res.json());
+      const stripe = await loadStripe(publicKey);
+
+      const response = await fetch("/api/payments/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ services }),
+      });
+
+      const { sessionId } = await response.json();
+      if (!sessionId) throw new Error("Stripe session not created");
+
+      localStorage.removeItem("orderCart");
+      await stripe?.redirectToCheckout({ sessionId });
+    } catch (error: any) {
+      alert(error.message || "Checkout failed. Please try again.");
+
     } finally {
       setLoading(false);
     }
   };
 
-  if (!userId) {
-    return (
-      <div className="bg-gradient-to-br from-gray-950 to-black min-h-screen text-white py-12 px-4 md:px-10 lg:px-24">
-        <div className="max-w-6xl mx-auto">
-          <p className="text-red-500 text-center">User ID is missing. Please log in.</p>
-          <div className="flex justify-center mt-4">
-            <button
-              onClick={() => navigate("/login", { state: { returnUrl: location.pathname } })}
-              className="bg-blue-600 text-white hover:bg-blue-700 px-6 py-2 rounded-lg font-semibold"
-            >
-              Go to Login
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) return <div className="text-center text-white py-12"><p>Loading your cart...</p></div>;
-  if (error) return <p className="text-red-500 text-center py-12">{error}</p>;
-
   return (
     <div className="bg-gradient-to-br from-gray-950 to-black min-h-screen text-white py-12 px-4 md:px-10 lg:px-24">
       <div className="max-w-6xl mx-auto space-y-12">
-        <h1 className="text-4xl font-extrabold tracking-tight mb-6 text-center">Cart Summary</h1>
+        <h1 className="text-4xl font-extrabold tracking-tight mb-6 text-center">Your Cart</h1>
 
         {(!cart || (cart.items.length === 0 && (cart.foodItems || []).length === 0)) ? (
           <div className="text-center py-10 bg-gray-900 rounded-xl">
@@ -188,6 +260,7 @@ const CartPage: React.FC = () => {
           </div>
         ) : (
           <div>
+
             {/* Ticket Items */}
             {cart.items && cart.items.length > 0 && (
               <div className="mb-8">
@@ -273,9 +346,10 @@ const CartPage: React.FC = () => {
                     </div>
                   </div>
                 ))}
+
               </div>
             )}
-
+            
             {/* Cart Total */}
             <div className="bg-gray-800 rounded-xl p-6 shadow-lg mt-8">
               <div className="space-y-2 border-b border-gray-700 pb-4 mb-4">
@@ -288,10 +362,37 @@ const CartPage: React.FC = () => {
                   <span>${getFoodItemsTotal().toFixed(2)}</span>
                 </div>
               </div>
+
               <div className="flex justify-between font-bold text-xl">
                 <span>Total:</span>
                 <span>${getCartTotal().toFixed(2)}</span>
               </div>
+
+              {!isAuthenticated && showGuestEmailInput && (
+              <div className="mt-2 space-y-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300">Guest Email:</label>
+                  <input
+                    type="email"
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail(e.target.value)}
+                    className="w-full px-4 py-2 rounded-md bg-gray-800 text-white border border-gray-600 focus:border-red-500 outline-none mb-3"
+                    placeholder="guest@example.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300">Create Password:</label>
+                  <input
+                    type="password"
+                    value={guestPassword}
+                    onChange={(e) => setGuestPassword(e.target.value)}
+                    className="w-full px-4 py-2 rounded-md bg-gray-800 text-white border border-gray-600 focus:border-red-500 outline-none mb-3"
+                    placeholder="Enter password"
+                  />
+                </div>
+              </div>
+            )}
+
             </div>
 
             {/* Action Buttons */}
@@ -307,8 +408,19 @@ const CartPage: React.FC = () => {
                 onClick={() => navigate("/checkout", { state: { userId } })}
                 className="bg-green-600 text-white hover:bg-green-700 px-8 py-3 rounded-lg font-semibold"
                 disabled={loading}
+
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={handleCheckout}
+                className={`bg-green-600 text-white hover:bg-green-700 px-8 py-4 rounded-lg font-semibold ${
+                  loading || (!isAuthenticated && showGuestEmailInput && (!guestEmail.includes("@") || guestPassword.length < 6))
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
+                disabled={loading || (!isAuthenticated && showGuestEmailInput && (!guestEmail.includes("@") || guestPassword.length < 6))}
+
               >
-                Proceed to Checkout
+                {loading ? "Processing..." : "Complete Booking"}
               </button>
             </div>
           </div>

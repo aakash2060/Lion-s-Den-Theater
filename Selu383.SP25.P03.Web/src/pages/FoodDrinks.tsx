@@ -9,13 +9,16 @@ const FoodMenuComponent = () => {
   const [menus, setMenus] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+
   const [addingItems, setAddingItems] = useState<{[key: string]: boolean}>({});
   const [successMessage, setSuccessMessage] = useState<string>("");
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   // State to track cart items with their quantities, keyed by foodItem id.
+
   const [cart, setCart] = useState<{ [key: string]: number }>({});
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     const getFoodMenus = async () => {
@@ -31,7 +34,6 @@ const FoodMenuComponent = () => {
     getFoodMenus();
   }, []);
 
-  // Increase the quantity for the given food item.
   const handleIncrement = (id: string) => {
     setCart((prevCart) => ({
       ...prevCart,
@@ -39,7 +41,6 @@ const FoodMenuComponent = () => {
     }));
   };
 
-  // Decrease the quantity for the given food item, ensuring it doesn't go below 0.
   const handleDecrement = (id: string) => {
     setCart((prevCart) => {
       const newValue = Math.max((prevCart[id] || 0) - 1, 0);
@@ -95,6 +96,28 @@ const FoodMenuComponent = () => {
     navigate(`/cart?userId=${user.id}`);
   };
 
+  const handleAddFoodToCart = (item: any, quantity: number) => {
+    if (quantity <= 0) return;
+
+    const cartData = JSON.parse(localStorage.getItem("orderCart") || "[]");
+
+    const foodEntry = {
+      showtime: null,
+      selectedSeats: [],
+      foodCart: {
+        [item.id]: {
+          foodItem: item,
+          quantity: quantity,
+        },
+      },
+    };
+
+    cartData.push(foodEntry);
+    localStorage.setItem("orderCart", JSON.stringify(cartData));
+    setToast(`${item.name} added to cart!`);
+    setTimeout(() => setToast(null), 3000);
+  };
+
   if (loading)
     return (
       <div className="text-center text-white text-xl py-20">Loading...</div>
@@ -108,8 +131,10 @@ const FoodMenuComponent = () => {
   const cartItemsCount = Object.values(cart).reduce((acc, qty) => acc + qty, 0);
 
   return (
+
     <div className="bg-black text-white min-h-screen py-10 px-6">
       <h1 className="text-4xl font-bold text-center mb-10 text-red-400">
+
         🍿 Food & Drinks Menu
       </h1>
 
@@ -145,7 +170,6 @@ const FoodMenuComponent = () => {
               {menu.name}
             </h2>
 
-            {/* Food Items Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {menu.foodMenuItems.map((item: any) => (
                 <div
@@ -167,14 +191,17 @@ const FoodMenuComponent = () => {
                     ${item.foodItem.price}
                   </p>
 
+
                   {!cart[item.foodItem.id] ? (
                     // Add to cart button when no items selected
+
                     <button
                       onClick={() => handleIncrement(item.foodItem.id)}
                       className="mt-4 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold w-full"
                     >
                       Add to Cart
                     </button>
+
                   ) : (
                     // Quantity controls with add to cart when items selected
                     <div className="mt-4 w-full">
@@ -220,6 +247,7 @@ const FoodMenuComponent = () => {
                       </button>
                     </div>
                   )}
+
                 </div>
               ))}
             </div>

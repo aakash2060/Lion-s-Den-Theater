@@ -11,14 +11,19 @@ type Props = {
     address: string;
     seatCount: number;
   };
+  isSelected?: boolean; 
 };
 
-const TheaterCard: React.FC<Props> = ({ theater }) => {
+const TheaterCard: React.FC<Props> = ({ theater, isSelected = false }) => {
   const router = useRouter();
   const { setTheater } = useTheater();
 
   return (
-    <View className="bg-zinc-900 p-4 rounded-xl mb-4 border border-zinc-700">
+    <View
+      className={`p-4 rounded-xl mb-4 border ${
+        isSelected ? "border-red-500 bg-zinc-800" : "border-zinc-700 bg-zinc-900"
+      }`}
+    >
       {/* Name */}
       <View className="flex-row items-center gap-2 mb-1">
         <Building2 size={18} color="#f87171" />
