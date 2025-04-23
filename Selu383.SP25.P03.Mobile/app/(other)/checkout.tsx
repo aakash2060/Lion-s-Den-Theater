@@ -75,7 +75,21 @@ export default function CartScreen() {
       console.error(error);
       Alert.alert("Error", "Something went wrong with payment.");
     }
-  };
+    const postPayment = await fetch(`${BASE_URL}/api/tickets`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        seats: selectedSeats,
+        foodItems: foodItems.map(item => ({
+          id: item.id,
+          quantity: item.quantity,
+        })),
+        showtimeId: currentShowtime?.id,
+        movieId: currentMovie?.id,
+      }),
+    });
+    const postResponse = await postPayment.json();
+  }
   
 
   const navigateToFoodMenu = () => {
