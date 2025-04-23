@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Selu383.SP25.P03.Api.Data;
 
@@ -11,9 +12,11 @@ using Selu383.SP25.P03.Api.Data;
 namespace Selu383.SP25.P03.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250417030044_AddCartAndCartItem")]
+    partial class AddCartAndCartItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -202,15 +205,8 @@ namespace Selu383.SP25.P03.Api.Migrations
                     b.Property<int?>("CartId")
                         .HasColumnType("int");
 
-                    b.Property<int>("HallNumber")
-                        .HasColumnType("int");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
-
-                    b.Property<string>("SelectedSeats")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ShowtimeId")
                         .HasColumnType("int");
@@ -225,35 +221,6 @@ namespace Selu383.SP25.P03.Api.Migrations
                     b.HasIndex("ShowtimeId");
 
                     b.ToTable("CartItems");
-                });
-
-            modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Cart.FoodCartItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CartId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("FoodItemId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<float>("TotalPrice")
-                        .HasColumnType("real");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CartId");
-
-                    b.HasIndex("FoodItemId");
-
-                    b.ToTable("FoodCartItems");
                 });
 
             modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Movies.Movie", b =>
@@ -651,7 +618,8 @@ namespace Selu383.SP25.P03.Api.Migrations
                 {
                     b.HasOne("Selu383.SP25.P03.Api.Features.Cart.Cart", null)
                         .WithMany("Items")
-                        .HasForeignKey("CartId");
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Selu383.SP25.P03.Api.Features.Theaters.Showtime", "Showtime")
                         .WithMany()
@@ -660,25 +628,6 @@ namespace Selu383.SP25.P03.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Showtime");
-                });
-
-            modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Cart.FoodCartItem", b =>
-                {
-                    b.HasOne("Selu383.SP25.P03.Api.Features.Cart.Cart", "Cart")
-                        .WithMany("FoodItems")
-                        .HasForeignKey("CartId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FoodItem", "FoodItem")
-                        .WithMany()
-                        .HasForeignKey("FoodItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Cart");
-
-                    b.Navigation("FoodItem");
                 });
 
             modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Reviews.Review", b =>
@@ -776,8 +725,6 @@ namespace Selu383.SP25.P03.Api.Migrations
 
             modelBuilder.Entity("Selu383.SP25.P03.Api.Features.Cart.Cart", b =>
                 {
-                    b.Navigation("FoodItems");
-
                     b.Navigation("Items");
                 });
 
