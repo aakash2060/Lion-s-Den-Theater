@@ -33,6 +33,7 @@ import "./index.css";
 import TicketConfirmation from "./pages/OrderSummary";
 import CartPage from "./pages/CartPage";
 import ThankYouPage from "./pages/ThankYouPage";
+//import ReviewsPage from "./pages/ReviewsPage";
 
 const App = () => {
   return (
