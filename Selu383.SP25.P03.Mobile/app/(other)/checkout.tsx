@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useBooking } from '@/context/BookingContext';
@@ -7,8 +7,10 @@ import {
   presentPaymentSheet,
 } from '@stripe/stripe-react-native';
 import { BASE_URL } from "@/constants/baseUrl";
+import { AuthContext } from '@/context/AuthContext';
 
 export default function CartScreen() {
+  const useAuth = useContext(AuthContext);
   const router = useRouter();
   const {
     selectedSeats,
@@ -26,6 +28,15 @@ export default function CartScreen() {
   const total = seatTotal + foodTotal;
 
   const handleCheckout = async () => {
+    const isAuthenticated = useAuth?.isAuthenticated;
+    const user = useAuth?.user; 
+    
+    if (!isAuthenticated) {
+      Alert.alert("Authentication Required", "Please sign in to complete your purchase.");
+      router.push('/(auth)/login'); 
+      return;
+    }
+  
     if (selectedSeats.length === 0) {
       Alert.alert("No seats selected", "Please select at least one seat before checkout.");
       return;
@@ -35,11 +46,11 @@ export default function CartScreen() {
       // 1. Request a payment intent from backend
       const response = await fetch(`${BASE_URL}/api/payments/create-payment-intent`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ amount: Math.round(total * 100) }),
       });
-      
-      
   
       const { clientSecret } = await response.json();
   
@@ -53,8 +64,6 @@ export default function CartScreen() {
         paymentIntentClientSecret: clientSecret,
         merchantDisplayName: "Lion's Den Theater",
       });
-      
-      
   
       if (initSheet.error) {
         Alert.alert("Error", initSheet.error.message);
@@ -66,30 +75,57 @@ export default function CartScreen() {
   
       if (paymentResult.error) {
         Alert.alert("Payment failed", paymentResult.error.message);
-      } else {
-        Alert.alert("Success", "Payment complete!");
-        clearCart(); // optionally clear cart
-        router.push('/'); // or wherever you want to go after payment
+        return;
+      }
+  
+      // Payment successful - create tickets
+      try {
+        // Create tickets for each selected seat
+        for (const seat of selectedSeats) {
+          const res = await fetch(`${BASE_URL}/api/tickets`, {
+            method: "POST",
+            headers: { 
+              "Content-Type": "application/json",
+      
+            },
+            body: JSON.stringify({
+              showtimeId: currentShowtime?.id || 0,
+              seatNumber: seat.toString(),
+              ticketType: "Standard",
+              
+            }),
+          });
+  
+          if (!res.ok) {
+            const errorMsg = await res.text();
+            throw new Error(`Failed to book seat ${seat}: ${errorMsg}`);
+          }
+        }
+  
+      
+        if (foodItems.length > 0) {
+       
+        }
+  
+        Alert.alert("Success", "Payment complete and tickets booked!");
+        clearCart();
+        router.push('/'); 
+      } catch (ticketError) {
+        console.error("Ticket creation error:", ticketError);
+        Alert.alert(
+          "Payment Success but Ticket Creation Failed",
+          "Your payment was processed but we couldn't create your tickets. Please contact support with your payment confirmation.",
+          [
+            { text: "OK", onPress: () => router.push('/') }
+          ]
+        );
+        clearCart();
       }
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Something went wrong with payment.");
     }
-    const postPayment = await fetch(`${BASE_URL}/api/tickets`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        seats: selectedSeats,
-        foodItems: foodItems.map(item => ({
-          id: item.id,
-          quantity: item.quantity,
-        })),
-        showtimeId: currentShowtime?.id,
-        movieId: currentMovie?.id,
-      }),
-    });
-    const postResponse = await postPayment.json();
-  }
+  };
   
 
   const navigateToFoodMenu = () => {
