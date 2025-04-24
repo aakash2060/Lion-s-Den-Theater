@@ -26,14 +26,20 @@ const TheatersPage = () => {
   }, []);
 
   const filteredTheaters = cityFilter
-    ? theaters.filter((t) => t.address.toLowerCase().includes(cityFilter.toLowerCase()))
+    ? theaters.filter((t) =>
+        t.address.toLowerCase().includes(cityFilter.toLowerCase())
+      )
     : theaters;
 
   return (
     <div className="relative p-8 max-w-6xl mx-auto text-white">
       <div className="text-center mb-10">
-        <h1 className="text-5xl font-bold text-white drop-shadow-lg">🎭 Our Theaters</h1>
-        <p className="text-gray-400 mt-2 text-lg">Explore locations & pick your favorite 🦁</p>
+        <h1 className="text-5xl font-bold text-white drop-shadow-lg">
+          🎭 Our Theaters
+        </h1>
+        <p className="text-gray-400 mt-2 text-lg">
+          Explore locations & pick your favorite 🦁
+        </p>
 
         {/* Filter input */}
         <input
@@ -68,9 +74,11 @@ const TheatersPage = () => {
               <FaMapMarkerAlt className="text-red-400" />
               <span>{theater.address}</span>
             </div>
-            
+
             <div className="flex items-center gap-1 text-yellow-400 text-sm">
-              {[...Array(4)].map((_, i) => <FaStar key={i} />)}
+              {[...Array(4)].map((_, i) => (
+                <FaStar key={i} />
+              ))}
               <FaStar className="text-gray-600" />
               <span className="ml-1 text-gray-400">(4.0)</span>
             </div>
@@ -87,7 +95,7 @@ const TheatersPage = () => {
               </button>
               <button
                 className="bg-gradient-to-br from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white px-4 py-2 rounded-xl shadow-lg hover:shadow-blue-500/40 transition"
-                onClick={() => navigate(`/theaters/${theater.id}/reviews?theaterId=${theater.id}`)} // Pass theaterId in the query string
+                onClick={() => navigate(`/theaters/${theater.id}/reviews`)}
               >
                 📝 View Reviews
               </button>

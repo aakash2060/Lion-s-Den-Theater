@@ -43,4 +43,10 @@ export const reviewService = {
     });
     if (!res.ok) throw new Error("Failed to delete review");
   },
+  async getByTheater(theaterId: number): Promise<ReviewDto[]> {
+    const res = await fetch(`/api/reviews/theater/${theaterId}`);
+    if (!res.ok) throw new Error("Failed to fetch reviews for theater");
+    return res.json();
+  }
+  
 };
