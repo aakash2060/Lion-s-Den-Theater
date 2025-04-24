@@ -3,6 +3,7 @@ import { Pagination, Navigation, Autoplay } from "swiper/modules";
 import "swiper/swiper-bundle.css";
 import { useState, useEffect } from "react";
 import { movieService } from "../services/api";
+import { showtimeService } from "../services/ShowtimeApi";
 import { useNavigate } from "react-router-dom";
 import { Movie } from "../Data/MovieInterfaces";
 import { useTheater } from "../context/TheaterContext";
@@ -18,28 +19,37 @@ const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies: propMovies }) => 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (propMovies && propMovies.length > 0) {
-      setMovies(propMovies);
-      setLoading(false);
-      return;
-    }
-
-    const fetchMovies = async () => {
+    const fetchMoviesForTheater = async () => {
       try {
-        const data = await movieService.getAll();
-        const sortedMovies = [...data]
+        if (!theater) return;
+
+        const [allMovies, showtimes] = await Promise.all([
+          movieService.getAll(),
+          showtimeService.getByTheaterId(theater.id),
+        ]);
+
+        const movieIdsInTheater = new Set(showtimes.map((s: any) => s.movieId));
+
+        const filteredMovies = allMovies
+          .filter((movie) => movieIdsInTheater.has(movie.id))
           .sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime())
           .slice(0, 5);
-        setMovies(sortedMovies);
+
+        setMovies(filteredMovies);
       } catch (error) {
-        console.error("Failed to fetch movies for carousel:", error);
+        console.error("Failed to fetch filtered movies:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMovies();
-  }, [propMovies]);
+    if (propMovies && propMovies.length > 0) {
+      setMovies(propMovies);
+      setLoading(false);
+    } else {
+      fetchMoviesForTheater();
+    }
+  }, [propMovies, theater]);
 
   if (loading || movies.length === 0) {
     return (
@@ -87,14 +97,13 @@ const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies: propMovies }) => 
                   {movie.description}
                 </p>
                 <div className="mt-4 flex space-x-4 transition duration-700 delay-300">
-
-                  <button 
+                  <button
                     className="bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition"
                     onClick={() => navigate(`/movie/${movie.id}`)}
                   >
                     🎥 View Details
                   </button>
-                  <button 
+                  <button
                     className="bg-primary hover:bg-red-700 text-white px-6 py-2 rounded-lg transition"
                     onClick={() => {
                       if (!theater) {
