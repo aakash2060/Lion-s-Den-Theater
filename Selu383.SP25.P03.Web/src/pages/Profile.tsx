@@ -1,8 +1,6 @@
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { FaSignOutAlt } from "react-icons/fa";
-import { Link } from "react-router-dom"; 
-
+import { useNavigate, Link } from "react-router-dom";
+import { FaSignOutAlt, FaTicketAlt } from "react-icons/fa";
 
 const Profile = () => {
   const { user, logout } = useAuth();
@@ -19,6 +17,7 @@ const Profile = () => {
   return (
     <div className="flex items-center justify-center h-screen bg-gradient-to-b from-gray-900 to-black text-white">
       <div className="w-full max-w-md bg-black bg-opacity-80 backdrop-blur-md shadow-lg rounded-lg p-8 border border-gray-700">
+
         {/* Profile Avatar */}
         <div className="flex justify-center">
           <div className="h-24 w-24 rounded-full flex items-center justify-center bg-gray-700 text-3xl font-bold shadow-md text-white border-4 border-gray-500">
@@ -30,18 +29,26 @@ const Profile = () => {
         <h2 className="text-2xl font-bold text-center mt-4">{user.userName}</h2>
         <p className="text-gray-400 text-center">{user.roles?.join(", ")}</p>
 
-        {/* Admin Dashboard Button */}
+        {/* Admin Dashboard */}
         {user.roles?.includes("Admin") && (
-  <Link
-    to="/admin-dashboard"
-    className="w-full mt-4 py-3 bg-red-600 hover:bg-blue-500 transition-all text-white font-semibold rounded-lg flex items-center justify-center space-x-2 shadow-lg hover:shadow-blue-500"
-  >
-    🛠️ Admin Dashboard
-  </Link>
-)}
+          <Link
+            to="/admin-dashboard"
+            className="w-full mt-4 py-3 bg-red-600 hover:bg-blue-500 transition-all text-white font-semibold rounded-lg flex items-center justify-center space-x-2 shadow-lg hover:shadow-blue-500"
+          >
+            🛠️ Admin Dashboard
+          </Link>
+        )}
 
-       
-        {/* Logout Button */}
+        {/* View Tickets */}
+        <Link
+          to="/my-tickets"
+          className="w-full mt-4 py-3 bg-yellow-600 hover:bg-yellow-700 transition-all text-white font-semibold rounded-lg flex items-center justify-center space-x-2 shadow-lg hover:shadow-yellow-500"
+        >
+          <FaTicketAlt className="text-lg" />
+          <span>View My Tickets</span>
+        </Link>
+
+        {/* Logout */}
         <button
           onClick={async () => {
             await logout();

@@ -46,6 +46,11 @@ const CartPage: React.FC = () => {
     setCartList(updatedCart);
   };
 
+  const saveTicketsLocally = (newTickets: any[]) => {
+    const existing = JSON.parse(localStorage.getItem("userTickets") || "[]");
+    localStorage.setItem("userTickets", JSON.stringify([...existing, ...newTickets]));
+  };
+
   const handleCheckout = async () => {
     setError("");
 
@@ -92,6 +97,9 @@ const CartPage: React.FC = () => {
           }
         }
       }
+
+      // Save a snapshot of the order
+      saveTicketsLocally(cartList);
 
       const services: any[] = [];
 
@@ -164,7 +172,7 @@ const CartPage: React.FC = () => {
                     <div className="flex flex-col space-y-2">
                       <h2 className="text-xl font-semibold text-white">{order.showtime.movieTitle}</h2>
                       <p className="text-sm text-gray-400">
-                        {new Date(order.showtime.startTime).toLocaleDateString()} - {" "}
+                        {new Date(order.showtime.startTime).toLocaleDateString()} -{" "}
                         {new Date(order.showtime.startTime).toLocaleTimeString()}
                       </p>
                       <p className="text-sm text-gray-400">Seats: {order.selectedSeats.join(", ")}</p>
@@ -189,7 +197,9 @@ const CartPage: React.FC = () => {
                             alt={foodItem.foodItem.name}
                             className="w-16 h-16 object-cover rounded-md"
                           />
-                          <span className="text-sm text-white">{foodItem.foodItem.name} × {foodItem.quantity}</span>
+                          <span className="text-sm text-white">
+                            {foodItem.foodItem.name} × {foodItem.quantity}
+                          </span>
                         </div>
                         <span className="text-sm text-white">
                           ${(foodItem.foodItem.price * foodItem.quantity).toFixed(2)}
@@ -216,29 +226,43 @@ const CartPage: React.FC = () => {
                 <span className="text-lg">${getCartTotal().toFixed(2)}</span>
               </div>
 
-              {!isAuthenticated && showGuestEmailInput && (
-                <div className="mt-4 space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300">Guest Email</label>
-                    <input
-                      type="email"
-                      value={guestEmail}
-                      onChange={(e) => setGuestEmail(e.target.value)}
-                      placeholder="guest@example.com"
-                      className="w-full px-4 py-2 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:border-red-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300">Create Password</label>
-                    <input
-                      type="password"
-                      value={guestPassword}
-                      onChange={(e) => setGuestPassword(e.target.value)}
-                      placeholder="Password"
-                      className="w-full px-4 py-2 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:border-red-500"
-                    />
-                  </div>
-                  {error && <p className="text-red-500 text-sm pt-1">{error}</p>}
+              {!isAuthenticated && (
+                <div className="mt-6">
+                  {!showGuestEmailInput ? (
+                    <div className="flex flex-col items-start space-y-4">
+                      <p className="text-sm text-gray-300">You're not logged in.</p>
+                      <button
+                        onClick={() => setShowGuestEmailInput(true)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-semibold transition"
+                      >
+                        Continue as Guest
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3 mt-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300">Guest Email</label>
+                        <input
+                          type="email"
+                          value={guestEmail}
+                          onChange={(e) => setGuestEmail(e.target.value)}
+                          placeholder="you@example.com"
+                          className="w-full px-4 py-2 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300">Create Password</label>
+                        <input
+                          type="password"
+                          value={guestPassword}
+                          onChange={(e) => setGuestPassword(e.target.value)}
+                          placeholder="Password"
+                          className="w-full px-4 py-2 rounded-lg bg-gray-900 text-white border border-gray-700 focus:outline-none focus:border-blue-500"
+                        />
+                      </div>
+                      {error && <p className="text-red-500 text-sm pt-1">{error}</p>}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -247,7 +271,9 @@ const CartPage: React.FC = () => {
               <button
                 onClick={handleCheckout}
                 disabled={loading}
-                className={`bg-green-600 text-white hover:bg-green-700 px-8 py-4 rounded-lg font-semibold transition duration-200 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`bg-green-600 text-white hover:bg-green-700 px-8 py-4 rounded-lg font-semibold transition duration-200 ${
+                  loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
                 {loading ? "Processing..." : "Complete Booking"}
               </button>
