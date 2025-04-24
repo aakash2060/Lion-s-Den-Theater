@@ -1,9 +1,16 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useBooking } from '@/context/BookingContext';
+import {
+  initPaymentSheet,
+  presentPaymentSheet,
+} from '@stripe/stripe-react-native';
+import { BASE_URL } from "@/constants/baseUrl";
+import { AuthContext } from '@/context/AuthContext';
 
 export default function CartScreen() {
+  const useAuth = useContext(AuthContext);
   const router = useRouter();
   const {
     selectedSeats,
@@ -20,13 +27,106 @@ export default function CartScreen() {
   const foodTotal = foodItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const total = seatTotal + foodTotal;
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
+    const isAuthenticated = useAuth?.isAuthenticated;
+    const user = useAuth?.user; 
+    
+    if (!isAuthenticated) {
+      Alert.alert("Authentication Required", "Please sign in to complete your purchase.");
+      router.push('/(auth)/login'); 
+      return;
+    }
+  
     if (selectedSeats.length === 0) {
       Alert.alert("No seats selected", "Please select at least one seat before checkout.");
       return;
     }
-    Alert.alert("Proceeding to Payment", "This would navigate to payment processing.");
+  
+    try {
+      // 1. Request a payment intent from backend
+      const response = await fetch(`${BASE_URL}/api/payments/create-payment-intent`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ amount: Math.round(total * 100) }),
+      });
+  
+      const { clientSecret } = await response.json();
+  
+      if (!clientSecret) {
+        Alert.alert("Error", "Failed to get payment client secret.");
+        return;
+      }
+  
+      // 2. Initialize Stripe payment sheet
+      const initSheet = await initPaymentSheet({
+        paymentIntentClientSecret: clientSecret,
+        merchantDisplayName: "Lion's Den Theater",
+      });
+  
+      if (initSheet.error) {
+        Alert.alert("Error", initSheet.error.message);
+        return;
+      }
+  
+      // 3. Show Stripe payment sheet
+      const paymentResult = await presentPaymentSheet();
+  
+      if (paymentResult.error) {
+        Alert.alert("Payment failed", paymentResult.error.message);
+        return;
+      }
+  
+      // Payment successful - create tickets
+      try {
+        // Create tickets for each selected seat
+        for (const seat of selectedSeats) {
+          const res = await fetch(`${BASE_URL}/api/tickets`, {
+            method: "POST",
+            headers: { 
+              "Content-Type": "application/json",
+      
+            },
+            body: JSON.stringify({
+              showtimeId: currentShowtime?.id || 0,
+              seatNumber: seat.toString(),
+              ticketType: "Standard",
+              
+            }),
+          });
+  
+          if (!res.ok) {
+            const errorMsg = await res.text();
+            throw new Error(`Failed to book seat ${seat}: ${errorMsg}`);
+          }
+        }
+  
+      
+        if (foodItems.length > 0) {
+       
+        }
+  
+        Alert.alert("Success", "Payment complete and tickets booked!");
+        clearCart();
+        router.push('/'); 
+      } catch (ticketError) {
+        console.error("Ticket creation error:", ticketError);
+        Alert.alert(
+          "Payment Success but Ticket Creation Failed",
+          "Your payment was processed but we couldn't create your tickets. Please contact support with your payment confirmation.",
+          [
+            { text: "OK", onPress: () => router.push('/') }
+          ]
+        );
+        clearCart();
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Something went wrong with payment.");
+    }
   };
+  
 
   const navigateToFoodMenu = () => {
     router.push('/(tabs)/foods');
