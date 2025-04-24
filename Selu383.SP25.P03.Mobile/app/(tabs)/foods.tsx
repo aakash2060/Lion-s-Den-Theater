@@ -16,7 +16,14 @@ interface FoodProps {
   stockQuantity: string;
 }
 export default function FoodsScreen() {
+  const [searchQuery, setSearchQuery] = useState(""); //search state
+
   const [foodItems, setFoodItems] = useState([]);
+  const filteredFoodItems = foodItems.filter((item: FoodProps) => {
+    const name = item.name.toLowerCase().replace(/\s+/g, "");
+    const query = searchQuery.toLowerCase().replace(/\s+/g, "");
+    return name.includes(query);
+  });
 
   const handleCart = (foodItem: FoodProps, quantity: number) => {
     const { addFoodItem, updateFoodItemQuantity } = useBooking();
@@ -65,13 +72,24 @@ export default function FoodsScreen() {
           />
           <TextInput
             className="h-10 text-base text-gray-700 flex-1"
+            style={{
+              paddingVertical: 6, 
+              lineHeight: 20, 
+            }}
             placeholder="What are you craving?"
             placeholderTextColor="#888"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
           />
         </View>
 
         {/* Scrollable Food Menu - Pass fetched data */}
-        <FoodMenu foodItems={foodItems} onAddToCart={handleCart} />
+        <FoodMenu foodItems={filteredFoodItems} onAddToCart={handleCart} />
+        {filteredFoodItems.length === 0 && searchQuery.trim() !== "" && (
+          <Text className="text-center text-gray-500 mt-6">
+            No food or drinks match your search.
+          </Text>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
