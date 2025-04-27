@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { View, Text, FlatList, ActivityIndicator } from "react-native";
+import { View, Text, FlatList, ActivityIndicator, SafeAreaView } from "react-native";
 import axios from "axios";
 import { useSearch } from "@/context/SearchContext";
 import { BASE_URL } from "@/constants/baseUrl";
 import MovieCard from "@/components/MovieCard";
+import { useRouter } from "expo-router";
 
 type BackendMovie = {
   id: number;
@@ -11,12 +12,17 @@ type BackendMovie = {
   posterUrl: string;
   duration?: string;
   releaseDate: string;
+  description?: string;
+  director?: string;
+  genre?: string;
+  trailerId?: string;
 };
 
 const SearchResult = () => {
   const { query } = useSearch();
   const [results, setResults] = useState<BackendMovie[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -38,7 +44,8 @@ const SearchResult = () => {
   }, [query]);
 
   return (
-    <View className="flex-1 bg-black px-4 py-6">
+    <SafeAreaView className="flex-1 bg-black px-4 py-12">
+    <View >
       <Text className="text-white text-xl font-bold mb-4">
         Search Results for "{query}"
       </Text>
@@ -67,8 +74,12 @@ const SearchResult = () => {
                 PosterUrl={imageUrl}
                 ReleaseDate={item.releaseDate}
                 onPress={() => {
-                  console.log("Pressed:", item.title);
-                  // You can replace this with navigation if needed
+                  router.push({
+                    pathname: "/(other)/movieDetails",
+                    params: {
+                      movie: JSON.stringify(item),
+                    },
+                  } as any);
                 }}
               />
             );
@@ -81,6 +92,7 @@ const SearchResult = () => {
         />
       )}
     </View>
+    </SafeAreaView>
   );
 };
 

@@ -27,6 +27,8 @@ import ShowtimesPage from "./pages/ShowtimesPage";
 import TheatersPage from "./pages/TheatersPage";
 import SiteStats from "./pages/Admin/Graph/SiteStats";
 import Payment from "./pages/Payment";
+import TheaterReviewsPage from "./pages/TheaterReviewsPage"; 
+import MyTicketsPage from "./pages/MyTicketsPage";
 
 
 import "./index.css";
@@ -63,6 +65,9 @@ const App = () => {
                     <Route path="/cart" element={<CartPage />}/>
                     <Route path="/payment" element={<Payment />}/>
                     <Route path="/thankyou" element={<ThankYouPage />} />
+                    <Route path="/theaters/:id/reviews" element={<TheaterReviewsPage />} />
+                    <Route path="/my-tickets" element={<MyTicketsPage />} />
+
                     
                     {/* Admin Routes */}
                     <Route path="/admin-dashboard" element={<AdminDashboard />} />

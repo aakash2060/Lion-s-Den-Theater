@@ -176,7 +176,7 @@ const Home = () => {
                 activeTab === "Featured" ? "text-blue-400" : "text-gray-400"
               } text-lg font-bold`}
             >
-              Featured
+              FEATURED
             </Text>
           </TouchableOpacity>
         </View>

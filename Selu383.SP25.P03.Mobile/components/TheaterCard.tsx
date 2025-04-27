@@ -36,14 +36,10 @@ const TheaterCard: React.FC<Props> = ({ theater, isSelected = false }) => {
         <Text className="text-gray-400">{theater.address}</Text>
       </View>
 
-      {/* Seat Count */}
-      <View className="flex-row items-center gap-2 mb-4">
-        <Armchair size={16} color="#60a5fa" />
-        <Text className="text-gray-400">Seats: {theater.seatCount}</Text>
-      </View>
+     
 
       {/* Buttons */}
-      <View className="flex-row gap-3">
+      <View className="flex-row gap-3 mt-4">
         <TouchableOpacity
           onPress={() => {
             setTheater(theater);

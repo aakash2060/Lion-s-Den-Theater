@@ -20,11 +20,10 @@ type SeatType = {
 };
 
 const SeatSelection: React.FC<SeatProps> = ({
-  maxRows = 10,
+  maxRows = 7,
   maxCols = 8,
-  bookedSeats = ['A1', 'B5', 'C3'],
+  bookedSeats = [],
   onSeatsSelected = (seats) => console.log(seats),
-  pricePerSeat = 250,
 }) => {
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const { width } = Dimensions.get('window');
@@ -126,7 +125,7 @@ const SeatSelection: React.FC<SeatProps> = ({
     <View style={{
       width: 24,
       height: 24,
-      backgroundColor: '#6B7280', // Tailwind gray-500
+      backgroundColor: '#6B7280', 
       borderColor: '#FFFFFF',
       borderWidth: 2
     }} />

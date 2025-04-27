@@ -50,4 +50,26 @@ public class PaymentsController : ControllerBase
         return Ok(new { publicKey });
     }
 
+
+    [HttpPost("create-payment-intent")]
+    public async Task<IActionResult> CreatePaymentIntent([FromBody] CreatePaymentIntentRequest request)
+    {
+        Stripe.StripeConfiguration.ApiKey = _configuration["Stripe:SecretKey"];
+
+        var options = new Stripe.PaymentIntentCreateOptions
+        {
+            Amount = request.Amount, // amount in cents
+            Currency = "usd",
+            AutomaticPaymentMethods = new Stripe.PaymentIntentAutomaticPaymentMethodsOptions
+            {
+                Enabled = true
+            }
+        };
+
+        var service = new Stripe.PaymentIntentService();
+        var paymentIntent = await service.CreateAsync(options);
+
+        return Ok(new { clientSecret = paymentIntent.ClientSecret });
+    }
+
 }
