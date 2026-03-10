@@ -1,75 +1,89 @@
-# 🎬 Lion's Den Movie Theater
+# Lion's Den Movie Theater
 
-**Lion's Den Movie Theater** is a full-stack web and mobile application that delivers a seamless movie-booking experience. Users can browse movies, find nearby theaters, book and pay for tickets online, and get support — all through an intuitive UI on both web and mobile platforms. Admins can manage content and users through a secure dashboard.
-
----
-
-## 🚀 Features
-
-### 👤 User Features
-- Browse latest and upcoming movies
-- View detailed movie info and showtimes
-- Locate nearby theaters using GPS
-- Book and pay for tickets online (Stripe integration)
-- View booking history and manage profile
-- Responsive mobile-first experience using React Native
-- In-app email chat support for assistance
-
-### 🛠️ Admin Features
-- Dashboard displaying key statistics
-- Add, update, and delete movies and theater listings
-- Manage users and view email chat logs
-- Admin authentication with role-based access control
+A cross-platform movie booking application built with **React Native (Expo)** for iOS/Android and **React + TypeScript** for web. Users can browse movies, find nearby theaters, select seats, order food, and pay — all through a seamless experience on both platforms.
 
 ---
 
-## 🧰 Tech Stack
+## Tech Stack
 
-| Layer        | Technology                                |
-|--------------|--------------------------------------------|
-| Frontend     | React, TypeScript, Tailwind CSS, Vite      |
-| Backend      | ASP.NET Core 9, C#                         |
-| Database     | SQL Server                                 |
-| Mobile App   | React Native, TypeScript, NativeWind, Expo |
-| Payments     | Stripe API                                 |
-| Hosting      | Azure                                      |
+| Layer | Technology |
+|---|---|
+| Web Frontend | React, TypeScript, Tailwind CSS, Vite |
+| Mobile App | React Native, TypeScript, NativeWind, Expo |
+| Backend | ASP.NET Core 9, C# |
+| Database | SQL Server |
+| Payments | Stripe API / Stripe React Native |
+| Hosting | Azure |
 
 ---
 
-## 📦 Getting Started
+## Architecture
 
-### 🔧 Prerequisites
+Both platforms share the same Context API patterns for state management:
 
+- **AuthContext** — session management with AsyncStorage persistence (mobile) and cookie-based auth (web)
+- **BookingContext** — global cart state managing selected seats, food items, and current showtime
+- **TheaterContext** — GPS-based nearest theater detection with Haversine formula and fallback logic
+- **SearchContext** — shared movie search state across both platforms
+
+---
+
+## Features
+
+### User
+- Browse current and upcoming movies with showtimes
+- GPS-powered nearest theater detection using Haversine formula and Nominatim geocoding
+- Interactive seat selection with real-time availability (booked seats fetched per showtime)
+- Food & drinks ordering as part of the checkout flow
+- Stripe payment sheet integration for end-to-end ticket purchasing
+- Booking history and profile management
+- QR code ticket generation (web)
+
+### Admin
+- Dashboard with live ticket sales charts and site statistics
+- Full CRUD for movies, theaters, and showtimes
+- User management and role-based access control
+- Admin-only routes protected across both platforms
+
+---
+
+## Project Structure
+
+```
+├── Selu383.SP25.P03.Web      # React + TypeScript web frontend
+├── Selu383.SP25.P03.Mobile   # React Native + Expo mobile app
+├── Selu383.SP25.P03.Api      # ASP.NET Core 9 backend
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
 - Node.js & npm
 - .NET 9 SDK
-- SQL Server (local or cloud)
+- SQL Server
 - Expo CLI (`npm install -g expo-cli`)
 
----
-
-### 🌐 Start Web App (React + Vite)
-bash
+### Web
+```bash
 cd Selu383.SP25.P03.Web
 npm install
 npm run dev
+```
 
-📱 Start Mobile App (React Native + Expo)
+### Mobile
 ```bash
 cd Selu383.SP25.P03.Mobile
 npm install
 npm run start
-Open the Expo QR code in your Expo Go app (iOS/Android) to run the app on your device.
+```
+Scan the Expo QR code with Expo Go on iOS or Android.
 
-🖥️ Start Backend (ASP.NET Core 9)
+### Backend
+```bash
 cd Selu383.SP25.P03.Api
 dotnet restore
 dotnet run
-Ensure your SQL Server connection string is correctly set in appsettings.json.
-
-📁 Project Structure
-├── Selu383.SP25.P03.Web  # React web frontend
-├── Selu383.SP25.P03.Mobile  # React Native mobile app
-├── Selu383.SP25.P03.Api    # ASP.NET Core backend API
-
-🙌 Contributing
-Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+```
+Set your SQL Server connection string in `appsettings.json`.
